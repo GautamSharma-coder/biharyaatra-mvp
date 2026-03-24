@@ -1,0 +1,117 @@
+import { Request, Response } from 'express';
+import { supabase } from '../config/supabase';
+
+// GET /api/v1/transports
+export const getTransports = async (req: Request, res: Response) => {
+  try {
+    const { data, error } = await supabase
+      .from('transports')
+      .select('id, vehicle_type, model, location, price_per_km, price_per_day, capacity, ac_available, images, avg_rating, review_count, is_verified')
+      .eq('is_available', true);
+
+    if (error) throw error;
+    return res.status(200).json(data);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+// GET /api/v1/transports/:id
+export const getTransportById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('transports')
+      .select('*, users!provider_id(id, name, avatar_url, phone)')
+      .eq('id', id)
+      .single();
+
+    if (error) return res.status(404).json({ error: 'Transport not found' });
+    return res.status(200).json(data);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+// POST /api/v1/transports (Providers/Admins)
+export const createTransport = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.user_id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const transportData = { ...req.body, provider_id: userId };
+
+    const { data, error } = await supabase
+      .from('transports')
+      .insert([transportData])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return res.status(201).json(data);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+// PUT /api/v1/transports/:id
+export const updateTransport = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.user_id;
+
+    const { data: currentTransport, error: fetchError } = await supabase
+      .from('transports')
+      .select('provider_id')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !currentTransport) return res.status(404).json({ error: 'Transport not found' });
+
+    if (currentTransport.provider_id !== userId && req.user?.role !== 'admin' && req.user?.role !== 'superadmin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const { data, error } = await supabase
+      .from('transports')
+      .update(req.body)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return res.status(200).json(data);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+// DELETE /api/v1/transports/:id
+export const deleteTransport = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.user_id;
+
+    const { data: currentTransport } = await supabase
+      .from('transports')
+      .select('provider_id')
+      .eq('id', id)
+      .single();
+
+    if (!currentTransport) return res.status(404).json({ error: 'Transport not found' });
+
+    if (currentTransport.provider_id !== userId && req.user?.role !== 'admin' && req.user?.role !== 'superadmin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const { error } = await supabase
+      .from('transports')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return res.status(204).send();
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};

@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Bihar Yaatra - Discover the Soul of India</title>
+  <meta name="title" content="Bihar Yaatra - Discover the Soul of India">
+  <meta name="description"
+    content="Book immersive tours to Bodh Gaya, Nalanda, Rajgir, and more. Experience the rich heritage, spirituality, and nature of Bihar with verified guides.">
+  <meta name="keywords"
+    content="Bihar tourism, Bodh Gaya tours, Nalanda university, Rajgir tourism, Bihar travel packages, spiritual tourism India, eco tourism bihar">
+  <meta name="author" content="Bihar Yaatra">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  
+
+  <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="preload" as="image" href="https://i.pinimg.com/1200x/7c/59/2b/7c592b623e07cb7645b1822c39a28cd3.jpg">
+  <script type="importmap">
+  {
+    "imports": {
+      "@google/generative-ai": "https://esm.run/@google/generative-ai"
+    }
+  }
+</script>
+
+  <style>
+    .icon-shadow {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    }
+    .bg-teal-400-custom { background-color: #2dd4bf; }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 12px); }
+    @keyframes pulse-slow {
+        0%, 100% { transform: scale(1); box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.4); }
+        50% { transform: scale(1.05); box-shadow: 0 15px 30px -5px rgba(249, 115, 22, 0.6); }
+    }
+    .animate-pulse-slow { animation: pulse-slow 3s infinite ease-in-out; }
+    @media (max-width: 768px) { footer { padding-bottom: 100px !important; } }
+    .bg-blue-500-custom { background-color: #3b82f6; }
+    .bg-purple-500-custom { background-color: #a855f7; }
+    .bg-green-500-custom { background-color: #22c55e; }
+    .bg-orange-500-custom { background-color: #f97316; }
+    .bg-gray-800-custom { background-color: #1f2937; }
+    body { font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; }
+    .font-display { font-family: 'Syne', sans-serif; }
+    [x-cloak] { display: none !important; }
+    .morph-bg {
+      border-radius: 30px;
+      background: #ffffff;
+      box-shadow: 20px 20px 60px #d9d9d9, -20px -20px 60px #ffffff;
+      transition: all 0.3s ease;
+    }
+    .morph-bg:hover {
+      box-shadow: 10px 10px 30px #d9d9d9, -10px -10px 30px #ffffff;
+      transform: translateY(-5px);
+    }
+    .image-reveal {
+      clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
+      transition: clip-path 1.2s cubic-bezier(0.77, 0, 0.175, 1);
+    }
+    .image-reveal.revealed { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+    .text-gradient {
+      background: linear-gradient(90deg, #FF9933, #EC4899);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .bg-gradient { background: linear-gradient(135deg, #FF9933, #EC4899); }
+    .animate-float { animation: float 6s ease-in-out infinite; }
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+      100% { transform: translateY(0px); }
+    }
+    .nav-item { position: relative; }
+    .nav-item::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #FF9933;
+      transition: width 0.3s ease;
+    }
+    .nav-item:hover::after { width: 100%; }
+    .cursor-dot {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: rgba(255, 153, 51, 0.2);
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      mix-blend-mode: multiply;
+      transition: width 0.2s, height 0.2s;
+    }
+    .destination-card { position: relative; overflow: hidden; }
+    .destination-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+      opacity: 0.6;
+      transition: opacity 0.3s;
+      z-index: 1;
+    }
+    .destination-card:hover::before { opacity: 0.8; }
+    .destination-card img { transition: transform 0.7s ease; }
+    .destination-card:hover img { transform: scale(1.1); }
+    .scroll-hidden::-webkit-scrollbar { display: none; }
+    .scroll-hidden { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900"
+  x-data="{ mobileMenu: false, mouseX: 0, mouseY: 0, showModal: false, selectedTour: null, isLoggedIn: false, userName: 'User', userAvatar: '' }"
+  @mousemove="mouseX = $event.clientX; mouseY = $event.clientY;"
+  @auth-change.window="isLoggedIn = !!$event.detail; if($event.detail) { userName = $event.detail.displayName || 'Traveler'; userAvatar = $event.detail.photoURL || `https://ui-avatars.com/api/?name=${userName}&background=f97316&color=fff`; }">
+
+  <div class="cursor-dot hidden lg:block" :style="`left: ${mouseX}px; top: ${mouseY}px`" x-show="mouseX > 0"></div>
+
+  <header x-data="{ isScrolled: false, userMenu: false }" 
+    @scroll.window="isScrolled = window.pageYOffset > 60"
+    :class="{'bg-white/90 backdrop-blur-lg shadow-md py-3': isScrolled, 'bg-transparent py-5': !isScrolled}"
+    class="fixed w-full top-0 z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="flex items-center justify-between">
+            <a href="/index.html" class="font-display font-bold text-2xl tracking-tighter flex items-center gap-2">
+                Bihar<span class="text-gradient">Yaatra</span>
+            </a>
+
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="/pages/explore-destination.html" class="nav-item font-medium">Destinations</a>
+                
+                <div x-data="{ servicesOpen: false }" class="relative" @click.away="servicesOpen = false">
+                    <button @click="servicesOpen = !servicesOpen" class="nav-item font-medium flex items-center gap-1.5 transition-colors duration-200">
+                        Services <i class="fas fa-chevron-down text-xs ml-1 transition-transform" :class="servicesOpen ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="servicesOpen" x-cloak x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute left-1/2 -translate-x-1/2 mt-4 w-56 bg-white rounded-xl shadow-xl border border-gray-100 p-2 transform origin-top">
+                        <a href="/pages/packages.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"><i class="fas fa-calendar-alt w-4 mr-2 text-blue-500"></i> Tour Packages</a>
+                        <a href="/pages/aiplanner.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"><i class="fas fa-compass w-4 mr-2 text-purple-500"></i> AI Trip Planner</a>
+                        <a href="/pages/homestay.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"><i class="fas fa-heart w-4 mr-2 text-orange-500"></i> Homestays</a>
+                        <a href="/pages/transport.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"><i class="fas fa-bus-alt w-4 mr-2 text-green-500"></i> Transport</a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <a href="/pages/guide_support.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"><i class="fas fa-user-tie w-4 mr-2 text-teal-500"></i> Expert Guides</a>
+                    </div>
+                </div>
+                <a href="./pages/about.html" class="nav-item font-medium">About</a>
+                <a href="./pages/contact.html" class="nav-item font-medium">Contact</a>
+
+                <template x-if="!isLoggedIn">
+                    <a href="./pages/auth.html"
+                        class="px-6 py-2.5 rounded-full bg-gradient text-white font-medium transition-all shadow-md hover:shadow-lg hover:scale-105 hover:-translate-y-0.5">
+                        Login
+                    </a>
+                </template>
+
+                <template x-if="isLoggedIn">
+                    <div class="relative" @click.away="userMenu = false">
+                        <button @click="userMenu = !userMenu" class="flex items-center gap-2 focus:outline-none">
+                            <img :src="userAvatar" class="w-10 h-10 rounded-full border-2 border-orange-100 object-cover" alt="User Pic">
+                            <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform" :class="userMenu ? 'rotate-180' : ''"></i>
+                        </button>
+
+                        <div x-show="userMenu" x-cloak x-transition
+                            class="absolute right-0 mt-4 w-48 bg-white rounded-xl shadow-xl border border-gray-100 p-2 overflow-hidden">
+                            <a href="./pannel/users/index.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 rounded-lg transition-colors">Dashboard</a>
+                            <div class="border-t border-gray-100 my-1"></div>
+                            <button onclick="window.logout()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors">Logout</button>
+                        </div>
+                    </div>
+                </template>
+            </nav>
+
+            <button @click="mobileMenu = !mobileMenu" class="md:hidden focus:outline-none text-gray-800">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </div>
+  </header>
+
+  <div x-show="mobileMenu" x-cloak class="fixed inset-0 z-50 flex justify-end">
+    <div @click="mobileMenu = false" x-show="mobileMenu" x-transition:enter="transition ease-out duration-300" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+    <div x-show="mobileMenu" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+        class="relative w-full max-w-xs bg-white shadow-2xl h-full flex flex-col">
+
+        <div class="px-6 py-6 flex items-center justify-between border-b border-gray-100">
+             <span class="font-display font-bold text-xl">Menu</span>
+            <button @click="mobileMenu = false" class="text-gray-500 hover:text-red-500 transition">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <template x-if="isLoggedIn">
+            <div class="px-6 py-6 bg-orange-50/50 border-b border-orange-100 flex items-center gap-4">
+                 <img :src="userAvatar" class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" alt="Profile">
+                 <div>
+                     <p class="text-xs text-gray-500 font-bold uppercase">Welcome back</p>
+                     <h3 class="font-display font-bold text-xl text-gray-900" x-text="userName"></h3>
+                 </div>
+            </div>
+        </template>
+
+        <div class="flex-1 px-6 py-6 overflow-y-auto">
+            <nav class="space-y-4">
+                <template x-if="isLoggedIn">
+                    <div>
+                        <a href="./pannel/users/index.html" class="flex items-center gap-3 px-4 py-3 text-lg font-medium text-gray-900 bg-orange-50 rounded-xl transition">
+                            <i class="fas fa-th-large text-orange-500"></i> Dashboard
+                        </a>
+                        <div class="border-t border-gray-100 my-4"></div>
+                    </div>
+                </template>
+
+                <a href="./packages.html" class="flex items-center gap-4 text-lg font-medium hover:text-orange-600 transition">
+                        <div class="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600"><i class="fas fa-suitcase-rolling"></i></div>
+                        Packages
+                    </a>
+                    
+                    <a href="./pages/homestay.html" class="flex items-center gap-4 text-lg font-medium hover:text-orange-600 transition">
+                        <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-600"><i class="fas fa-home"></i></div>
+                        Homestays
+                    </a>
+                    <a href="./pages/transport.html" class="flex items-center gap-4 text-lg font-medium hover:text-orange-600 transition">
+                        <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-600"><i class="fas fa-car"></i></div>
+                        Transports
+                    </a>
+                    <a href="./pages/guide_support.html" class="flex items-center gap-4 text-lg font-medium hover:text-orange-600 transition">
+                        <div class="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-600"><i class="fas fa-user-tie"></i></div>
+                        Guides
+                    </a>
+                    <a href="./pages/about.html" class="flex items-center gap-4 text-lg font-medium text-orange-600 transition">
+                        <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-600"><i class="fas fa-info-circle"></i></div>
+                        About Us
+                    </a>
+                    <a href="./pages/contact.html" class="flex items-center gap-4 text-lg font-medium hover:text-orange-600 transition">
+                        <div class="w-8 h-8 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-600"><i class="fas fa-envelope"></i></div>
+                        Contact
+                    </a>
+            </nav>
+        </div>
+
+        <div class="p-6 bg-gray-50">
+            <template x-if="!isLoggedIn">
+                <a href="./pages/auth.html" class="block w-full text-center py-4 rounded-xl bg-gradient text-white font-medium shadow-lg">
+                    Login / Sign Up
+                </a>
+            </template>
+            <template x-if="isLoggedIn">
+                <button onclick="window.logout()" class="block w-full text-center py-4 rounded-xl bg-white border border-gray-200 text-red-600 font-bold shadow-sm hover:bg-red-50">
+                    Sign Out
+                </button>
+            </template>
+        </div>
+    </div>
+  </div>
+
+  <section class="relative pt-32 pb-20 overflow-hidden min-h-screen flex items-center">
+    <div
+      class="absolute -right-64 -top-64 w-[40rem] h-[40rem] bg-orange-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-float">
+    </div>
+    <div
+      class="absolute -left-20 top-1/2 w-96 h-96 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
+      style="animation: float 7s ease-in-out infinite reverse"></div>
+
+    <div class="max-w-7xl mx-auto px-6 w-full">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div class="space-y-8 z-10" x-data="{ shown: false }" x-init="setTimeout(() => shown = true, 300)">
+          <div 
+  class="relative inline-block p-[1px] overflow-hidden rounded-full mb-2"
+  x-show="shown">
+  
+  <div class="absolute inset-[-1000%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#ffedd5_0%,#f97316_50%,#ffedd5_100%)]"></div>
+
+  <div class="relative px-4 py-1.5 rounded-full bg-orange-50 text-orange-600 text-sm font-semibold tracking-wide">
+    #1 Trusted Tourism Platform in Bihar
+  </div>
+</div>
+
+
+          <h1 class="font-display text-5xl lg:text-7xl font-bold leading-[1.1]" x-show="shown"
+            x-transition:enter="transition ease-out duration-700 delay-100"
+            x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0">
+            Discover the <br>
+            <span class="text-gradient">Soul of India</span>
+          </h1>
+
+          <p class="text-lg text-gray-600 max-w-xl leading-relaxed" x-show="shown"
+            x-transition:enter="transition ease-out duration-700 delay-300"
+            x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0">
+            From the enlightenment of Bodh Gaya to the ruins of Nalanda. Experience a journey through history,
+            spirituality, and untouched nature.
+          </p>
+
+          <div class="flex flex-wrap gap-4" x-show="shown"
+            x-transition:enter="transition ease-out duration-700 delay-500"
+            x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0">
+            <a href="/pages/explore-destination.html"
+              class="px-8 py-4 bg-black text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              Explore Destinations
+            </a>
+            <button @click="$el.scrollIntoView({behavior: 'smooth'})"
+              class="px-8 py-4 bg-white text-black font-medium rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 flex items-center gap-2">
+              <i class="fas fa-play-circle text-orange-500 text-xl"></i> Watch Video
+            </button>
+          </div>
+
+          <div class="pt-8 flex items-center gap-6" x-show="shown"
+            x-transition:enter="transition ease-out duration-700 delay-700" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100">
+            <div>
+              <p class="text-3xl font-bold font-display">50+</p>
+              <p class="text-sm text-gray-500">Heritage Sites</p>
+            </div>
+            <div class="w-px h-10 bg-gray-200"></div>
+            <div>
+              <p class="text-3xl font-bold font-display">10k+</p>
+              <p class="text-sm text-gray-500">Happy Travelers</p>
+            </div>
+            <div class="w-px h-10 bg-gray-200"></div>
+            <div>
+              <p class="text-3xl font-bold font-display">4.9</p>
+              <p class="text-sm text-gray-500">Rating</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative" x-data="{ shown: false }" x-intersect="shown = true">
+          <div
+            class="relative z-10 rounded-[2.5rem] overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-all duration-700">
+            <div class="image-reveal bg-gray-200 aspect-[4/5]" :class="{'revealed': shown}">
+              <img src="https://i.pinimg.com/1200x/7c/59/2b/7c592b623e07cb7645b1822c39a28cd3.jpg" alt="Mahabodhi Temple"
+                class="w-full h-full object-cover">
+            </div>
+
+            <div
+              class="absolute bottom-32' left-8 right-8 bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/50 transform translate-y-full opacity-0 transition-all duration-700 delay-700"
+              :class="{'translate-y-0 opacity-100': shown}">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                  <i class="fas fa-map-marker-alt text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-gray-900">Mahabodhi Temple</h4>
+                  <p class="text-sm text-gray-600">UNESCO World Heritage Site</p>
+                </div>
+                <div class="ml-auto">
+                  <span class="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded">Open</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="absolute -bottom-10 -right-10 w-64 h-64 bg-gradient opacity-20 rounded-full filter blur-3xl">
+          </div>
+          <div class="absolute -left-10 -top-10 w-40 h-40 border-[1.5rem] border-pink-50 rounded-full -z-10"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-24 bg-white relative">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-20">
+        <span class="text-orange-600 font-bold tracking-widest text-sm uppercase mb-2 block">Why Choose Us</span>
+        <h2 class="text-4xl md:text-5xl font-display font-bold mb-6">Experience Bihar <br>Like Never Before</h2>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+          We provide a seamless platform to explore the hidden gems of Bihar with modern amenities and local expertise.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-1 gap-8">
+        <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 bg-white">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <div class="bg-white rounded-2xl shadow-xl p-8 transition duration-300 hover:shadow-2xl">
+              <div class="mb-4">
+                <div
+                  class="w-14 h-14 rounded-xl flex items-center justify-center bg-teal-400-custom text-white icon-shadow">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-map-pin-check">
+                    <path
+                      d="M11 15h10a1 1 0 0 0 .9-.5l2-4a1 1 0 0 0 0-.8L21.9.5a1 1 0 0 0-1.8-.7L12 11.5a1 1 0 0 0 .3 1.2l.5.3M12 21.7l-1-2.2-4-8.8m-2 4a5.5 5.5 0 1 0 11 0 5.5 5.5 0 0 0-11 0Z" />
+                    <path d="m17 21 2 2 4-4" />
+                  </svg>
+                </div>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">Explore Destinations</h3>
+              <p class="text-gray-500">Discover hidden gems and must-see historical sites across Bihar.</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl p-8 transition duration-300 hover:shadow-2xl">
+              <div class="mb-4">
+                <div
+                  class="w-14 h-14 rounded-xl flex items-center justify-center bg-blue-500-custom text-white icon-shadow">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-calendar-plus">
+                    <path d="M8 2v4" />
+                    <path d="M16 2v4" />
+                    <path d="M21 17h-2.5a.5.5 0 0 1-.5-.5v-13" />
+                    <rect x="3" y="11" width="18" height="12" rx="2" />
+                  </svg>
+                </div>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">Tour Packages</h3>
+              <p class="text-gray-500">Curated, all-inclusive packages for every traveler type and budget.</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl p-8 transition duration-300 hover:shadow-2xl">
+              <div class="mb-4">
+                <div
+                  class="w-14 h-14 rounded-xl flex items-center justify-center bg-purple-500-custom text-white icon-shadow">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-compass">
+                    <circle cx="12" cy="12" r="10" />
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+                  </svg>
+                </div>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">AI Trip Planner</h3>
+              <p class="text-gray-500">Smart, personalized planning for your perfect, optimized Bihar trip itinerary.
+              </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl p-8 transition duration-300 hover:shadow-2xl">
+              <div class="mb-4">
+                <div
+                  class="w-14 h-14 rounded-xl flex items-center justify-center bg-green-500-custom text-white icon-shadow">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-users-round">
+                    <path d="M18 21a8 8 0 0 0-16 0" />
+                    <circle cx="10" cy="8" r="5" />
+                    <path d="M22 20c0-2.76-2.24-5-5-5s-5 2.24-5 5" />
+                    <path d="M17 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                  </svg>
+                </div>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">Expert Guides</h3>
+              <p class="text-gray-500">Local, knowledgeable guides with deep insight into Bihar's history and culture.
+              </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl p-8 transition duration-300 hover:shadow-2xl">
+              <div class="mb-4">
+                <div
+                  class="w-14 h-14 rounded-xl flex items-center justify-center bg-orange-500-custom text-white icon-shadow">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-heart">
+                    <path
+                      d="M19 14c1.49-1.46 3-3.23 3-5.5a5.5 5.5 0 0 0-11-1c-.05.5-.16 1.07-.35 1.77L12 21l-7.7-7.7c-.19-.7-.3-1.27-.35-1.77a5.5 5.5 0 0 0-11 1c0 2.27 1.51 4.04 3 5.5L12 21Z" />
+                  </svg>
+                </div>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">Authentic Homestays</h3>
+              <p class="text-gray-500">Experience true local Bihar culture with vetted, comfortable homestay options.
+              </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl p-8 transition duration-300 hover:shadow-2xl">
+              <div class="mb-4">
+                <div
+                  class="w-14 h-14 rounded-xl flex items-center justify-center bg-gray-800-custom text-white icon-shadow">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-shield-check">
+                    <path d="M20 13V5.5L12 2 4 5.5V13c0 5 4 8 8 8s8-3 8-8Z" />
+                    <path d="M9 12l2 2 4-4" />
+                  </svg>
+                </div>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">Safe & Secure</h3>
+              <p class="text-gray-500">Verified services and reliable 24/7 support for a worry-free travel experience.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="destinations" class="py-24 bg-gray-50" x-data="{ activeTab: 'all' }">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+        <div>
+          <h2 class="text-4xl font-display font-bold mb-4">Explore Destinations</h2>
+          <p class="text-gray-600">Handpicked places for every kind of traveler.</p>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button @click="activeTab = 'all'"
+            :class="activeTab === 'all' ? 'bg-black text-white' : 'bg-white text-gray-600 hover:bg-gray-100'"
+            class="px-6 py-2.5 rounded-full font-medium transition-colors shadow-sm">All</button>
+          <button @click="activeTab = 'spiritual'"
+            :class="activeTab === 'spiritual' ? 'bg-orange-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'"
+            class="px-6 py-2.5 rounded-full font-medium transition-colors shadow-sm">Spiritual</button>
+          <button @click="activeTab = 'history'"
+            :class="activeTab === 'history' ? 'bg-orange-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'"
+            class="px-6 py-2.5 rounded-full font-medium transition-colors shadow-sm">Historical</button>
+          <button @click="activeTab = 'nature'"
+            :class="activeTab === 'nature' ? 'bg-orange-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'"
+            class="px-6 py-2.5 rounded-full font-medium transition-colors shadow-sm">Nature</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div x-show="activeTab === 'all' || activeTab === 'spiritual'" x-transition.opacity.duration.500ms
+          class="destination-card group rounded-3xl h-96 relative cursor-pointer bg-gray-200">
+          <img src="https://i.pinimg.com/736x/ab/2c/80/ab2c80083514a7dd02e3bed8ccec0464.jpg"
+            alt="Bodh Gaya" class="w-full h-full object-cover">
+          <div
+            class="absolute bottom-0 left-0 w-full p-6 z-10 translate-y-2 group-hover:translate-y-0 transition-transform">
+            <span class="text-orange-400 text-xs font-bold tracking-wider uppercase mb-1 block">Spiritual</span>
+            <h3 class="text-2xl font-bold text-white mb-2">Bodh Gaya</h3>
+            <div
+              class="h-0 group-hover:h-auto overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100">
+              <p class="text-gray-300 text-sm mb-4 line-clamp-2">The place of enlightenment. Visit the Mahabodhi Temple
+                and the Bodhi Tree.</p>
+              <button
+                @click="selectedTour = {name: 'Bodh Gaya', image: 'https://i.pinimg.com/736x/ab/2c/80/ab2c80083514a7dd02e3bed8ccec0464.jpg', price: '₹1,500', duration: '2 Days', desc: 'Experience peace at the UNESCO World Heritage site.'}; showModal = true"
+                class="w-full py-2 bg-white text-black font-bold rounded-lg hover:bg-orange-50 transition">View
+                Details</button>
+            </div>
+          </div>
+        </div>
+
+        <div x-show="activeTab === 'all' || activeTab === 'history'" x-transition.opacity.duration.500ms
+          class="destination-card group rounded-3xl h-96 relative cursor-pointer bg-gray-200">
+          <img src="https://i.pinimg.com/736x/b5/5b/81/b55b81e65445766877f062297692e427.jpg"
+            alt="Nalanda" class="w-full h-full object-cover">
+          <div
+            class="absolute bottom-0 left-0 w-full p-6 z-10 translate-y-2 group-hover:translate-y-0 transition-transform">
+            <span class="text-pink-400 text-xs font-bold tracking-wider uppercase mb-1 block">Historical</span>
+            <h3 class="text-2xl font-bold text-white mb-2">Nalanda Ruins</h3>
+            <div
+              class="h-0 group-hover:h-auto overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100">
+              <p class="text-gray-300 text-sm mb-4 line-clamp-2">Explore the ancient seat of learning and the
+                archaeological museum.</p>
+              <button
+                @click="selectedTour = {name: 'Nalanda Ruins', image: 'https://i.pinimg.com/736x/b5/5b/81/b55b81e65445766877f062297692e427.jpg', price: '₹1,200', duration: '1 Day', desc: 'Walk through the corridors of the world\'s first residential university.'}; showModal = true"
+                class="w-full py-2 bg-white text-black font-bold rounded-lg hover:bg-orange-50 transition">View
+                Details</button>
+            </div>
+          </div>
+        </div>
+
+        <div x-show="activeTab === 'all' || activeTab === 'nature' || activeTab === 'history'"
+          x-transition.opacity.duration.500ms
+          class="destination-card group rounded-3xl h-96 relative cursor-pointer bg-gray-200">
+          <img src="https://i.pinimg.com/736x/e1/a5/df/e1a5dfac0b5d116096114a797a641e8c.jpg"
+            alt="Rajgir" class="w-full h-full object-cover">
+          <div
+            class="absolute bottom-0 left-0 w-full p-6 z-10 translate-y-2 group-hover:translate-y-0 transition-transform">
+            <span class="text-green-400 text-xs font-bold tracking-wider uppercase mb-1 block">Nature & History</span>
+            <h3 class="text-2xl font-bold text-white mb-2">Rajgir</h3>
+            <div
+              class="h-0 group-hover:h-auto overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100">
+              <p class="text-gray-300 text-sm mb-4 line-clamp-2">Glass bridge, ropeway, and ancient cyclopean walls.</p>
+              <button
+                @click="selectedTour = {name: 'Rajgir Adventure', image: 'https://i.pinimg.com/736x/e1/a5/df/e1a5dfac0b5d116096114a797a641e8c.jpg', price: '₹2,000', duration: '2 Days', desc: 'Visit the Glass Bridge, Vishwa Shanti Stupa, and hot springs.'}; showModal = true"
+                class="w-full py-2 bg-white text-black font-bold rounded-lg hover:bg-orange-50 transition">View
+                Details</button>
+            </div>
+          </div>
+        </div>
+
+        <div x-show="activeTab === 'all' || activeTab === 'nature'" x-transition.opacity.duration.500ms
+          class="destination-card group rounded-3xl h-96 relative cursor-pointer bg-gray-200">
+          <img
+            src="https://i.pinimg.com/736x/bc/c8/04/bcc8049f278aef46044c749158637637.jpg"
+            alt="Valmiki Tiger Reserve" class="w-full h-full object-cover">
+          <div
+            class="absolute bottom-0 left-0 w-full p-6 z-10 translate-y-2 group-hover:translate-y-0 transition-transform">
+            <span class="text-yellow-400 text-xs font-bold tracking-wider uppercase mb-1 block">Wildlife</span>
+            <h3 class="text-2xl font-bold text-white mb-2">Valmiki Reserve</h3>
+            <div
+              class="h-0 group-hover:h-auto overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100">
+              <p class="text-gray-300 text-sm mb-4 line-clamp-2">The only tiger reserve in Bihar. Jungle safari and
+                eco-huts.</p>
+              <button
+                @click="selectedTour = {name: 'Valmiki Tiger Safari', image: 'https://i.pinimg.com/736x/bc/c8/04/bcc8049f278aef46044c749158637637.jpg', price: '₹3,500', duration: '3 Days', desc: 'Thrilling jungle safari and stay in eco-cottages.'}; showModal = true"
+                class="w-full py-2 bg-white text-black font-bold rounded-lg hover:bg-orange-50 transition">View
+                Details</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div x-show="showModal"  x-cloak  class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div @click="showModal = false" x-show="showModal" x-transition.opacity
+        class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+      <div x-show="showModal" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-90 translate-y-10"
+        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+        x-transition:leave-end="opacity-0 scale-90 translate-y-10"
+        class="bg-white rounded-3xl overflow-hidden max-w-2xl w-full relative z-10 shadow-2xl flex flex-col md:flex-row">
+
+        <div class="w-full md:w-2/5 h-48 md:h-auto relative">
+          <img :src="selectedTour?.image" class="w-full h-full object-cover" alt="Tour Image">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden"></div>
+          <h3 x-text="selectedTour?.name" class="absolute bottom-4 left-4 text-white font-bold text-xl md:hidden"></h3>
+        </div>
+
+        <div class="w-full md:w-3/5 p-8 flex flex-col">
+          <div class="flex justify-between items-start mb-4">
+            <h3 x-text="selectedTour?.name" class="text-2xl font-bold font-display hidden md:block"></h3>
+            <button @click="showModal = false" class="text-gray-400 hover:text-red-500 transition">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+
+          <div class="space-y-4 flex-1">
+            <p x-text="selectedTour?.desc" class="text-gray-600"></p>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-gray-50 p-3 rounded-xl">
+                <span class="text-xs text-gray-500 uppercase font-bold">Duration</span>
+                <p x-text="selectedTour?.duration" class="font-semibold text-gray-900"></p>
+              </div>
+              <div class="bg-gray-50 p-3 rounded-xl">
+                <span class="text-xs text-gray-500 uppercase font-bold">Price</span>
+                <p x-text="selectedTour?.price" class="font-semibold text-orange-600"></p>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <p class="text-sm font-semibold">Included:</p>
+              <div class="flex flex-wrap gap-2">
+                <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-md">Guide</span>
+                <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-md">Transport</span>
+                <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-md">Entry Fees</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8 pt-6 border-t border-gray-100">
+            <button
+              class="w-full py-3 bg-gradient text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all">
+              Book This Tour
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-24 bg-white overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-4xl font-display font-bold mb-12">Trending Packages</h2>
+
+      <div class="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory scroll-hidden">
+        <div
+          class="min-w-[300px] md:min-w-[350px] snap-center bg-white rounded-3xl border border-gray-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow group">
+          <div class="h-48 overflow-hidden relative">
+            <img src="https://i.pinimg.com/1200x/a7/a7/b6/a7a7b6f07530bd5efaac43688b8bf5be.jpg"
+              alt="Buddhist Circuit"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+            <div
+              class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-orange-600 shadow-sm">
+              5 Days
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="flex gap-1 text-yellow-400 text-xs mb-2">
+              <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                class="fas fa-star"></i><i class="fas fa-star"></i>
+              <span class="text-gray-400 ml-1">(120 Reviews)</span>
+            </div>
+            <h3 class="text-xl font-bold mb-2">The Buddhist Circuit</h3>
+            <p class="text-gray-500 text-sm mb-4">Patna - Vaishali - Kesaria - Kushinagar</p>
+            <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+              <span class="text-2xl font-bold text-gray-900">₹12,999</span>
+              <button
+                class="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-orange-600 transition-colors">
+                <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="min-w-[300px] md:min-w-[350px] snap-center bg-white rounded-3xl border border-gray-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow group">
+          <div class="h-48 overflow-hidden relative">
+            <img
+              src="https://i.pinimg.com/1200x/7b/cd/bb/7bcdbb3d0eb704974bbb291ffc3664e4.jpg"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+            <div
+              class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-green-600 shadow-sm">
+              3 Days
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="flex gap-1 text-yellow-400 text-xs mb-2">
+              <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+              <span class="text-gray-400 ml-1">(85 Reviews)</span>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Kakolat Falls & Nature</h3>
+            <p class="text-gray-500 text-sm mb-4">Nawada - Kakolat - Rajgir Hills</p>
+            <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+              <span class="text-2xl font-bold text-gray-900">₹6,499</span>
+              <button
+                class="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-orange-600 transition-colors">
+                <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="min-w-[300px] md:min-w-[350px] snap-center bg-white rounded-3xl border border-gray-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow group">
+          <div class="h-48 overflow-hidden relative">
+            <img src="https://i.pinimg.com/1200x/31/ad/ae/31adae19090db0f84f1e1678068e99d2.jpg"
+              alt="Patna Sahib"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+            <div
+              class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-blue-600 shadow-sm">
+              1 Day
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="flex gap-1 text-yellow-400 text-xs mb-2">
+              <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                class="fas fa-star"></i><i class="fas fa-star"></i>
+              <span class="text-gray-400 ml-1">(200+ Reviews)</span>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Patna City Heritage</h3>
+            <p class="text-gray-500 text-sm mb-4">Golghar - Museum - Patna Sahib Gurudwara</p>
+            <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+              <span class="text-2xl font-bold text-gray-900">₹1,999</span>
+              <button
+                class="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-orange-600 transition-colors">
+                <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-24 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient z-0 opacity-90"></div>
+    <div
+      class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay z-0 opacity-20">
+    </div>
+
+    <div class="max-w-5xl mx-auto px-6 relative z-10">
+      <div class="bg-white rounded-[3rem] p-12 shadow-2xl relative overflow-hidden">
+        <div class="absolute -right-20 -top-20 w-64 h-64 bg-orange-100 rounded-full blur-3xl opacity-50"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div>
+            <h2 class="text-3xl md:text-4xl font-display font-bold mb-6">Plan Your Journey Today</h2>
+            <p class="text-gray-600 mb-8 text-lg">
+              Don't just visit Bihar, experience it. From booking hotels to finding the best local street food spots, we
+              handle it all.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4">
+              <a href="/pages/packages.html"
+                class="inline-flex justify-center items-center px-8 py-4 bg-black text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                Start Booking
+              </a>
+              <a href="#"
+                class="inline-flex justify-center items-center px-8 py-4 bg-white text-black border border-gray-200 font-medium rounded-full shadow-md hover:bg-gray-50 transition-all duration-300">
+                Talk to Expert
+              </a>
+            </div>
+          </div>
+
+          <div class="relative">
+            <div class="absolute -left-4 -bottom-4 w-full h-full bg-gradient rounded-3xl -z-10 rotate-3"></div>
+            <img src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=800&auto=format&fit=crop"
+              alt="Traveler in India" class="w-full h-64 md:h-80 object-cover rounded-3xl shadow-lg">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-24 bg-white relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+      <div
+        class="absolute top-20 -left-20 w-72 h-72 bg-orange-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30">
+      </div>
+      <div
+        class="absolute bottom-20 -right-20 w-72 h-72 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30">
+      </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+
+      <div class="mb-24">
+        <div class="text-center mb-16">
+          <span class="text-orange-600 font-bold tracking-widest text-sm uppercase mb-2 block">Community Love</span>
+          <h2 class="text-4xl md:text-5xl font-display font-bold mb-6">Stories from the Road</h2>
+          <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+            Real experiences from travelers who discovered the hidden gems of Bihar with us.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div
+            class="group bg-gray-50 rounded-[2rem] p-8 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-gray-100">
+            <div class="flex items-center gap-4 mb-6">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop"
+                class="w-14 h-14 rounded-full object-cover border-2 border-orange-200" alt="Traveler">
+              <div>
+                <h4 class="font-bold font-display text-lg">Aisha Kapoor</h4>
+                <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Mumbai, India</p>
+              </div>
+              <div class="ml-auto text-orange-400 text-2xl opacity-20">
+                <i class="fas fa-quote-right"></i>
+              </div>
+            </div>
+            <div class="flex text-yellow-400 text-sm mb-4">
+              <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                class="fas fa-star"></i><i class="fas fa-star"></i>
+            </div>
+            <p class="text-gray-600 leading-relaxed">
+              "I always thought Bihar was just for history buffs, but the <span
+                class="text-orange-600 font-medium">Rajgir Glass Bridge</span> and the safari at Valmiki Nagar blew my
+              mind. The arrangements were top-notch!"
+            </p>
+          </div>
+
+          <div
+            class="group bg-gray-50 rounded-[2rem] p-8 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-gray-100">
+            <div class="flex items-center gap-4 mb-6">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop"
+                class="w-14 h-14 rounded-full object-cover border-2 border-orange-200" alt="Traveler">
+              <div>
+                <h4 class="font-bold font-display text-lg">Kenji Tanaka</h4>
+                <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Kyoto, Japan</p>
+              </div>
+              <div class="ml-auto text-orange-400 text-2xl opacity-20">
+                <i class="fas fa-quote-right"></i>
+              </div>
+            </div>
+            <div class="flex text-yellow-400 text-sm mb-4">
+              <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                class="fas fa-star"></i><i class="fas fa-star"></i>
+            </div>
+            <p class="text-gray-600 leading-relaxed">
+              "Finding a reliable guide for the <span class="text-orange-600 font-medium">Buddhist Circuit</span> was my
+              main concern. Bihar Yaatra connected me with a guide who spoke fluent Japanese. Arigato!"
+            </p>
+          </div>
+
+          <div
+            class="group bg-gray-50 rounded-[2rem] p-8 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-gray-100">
+            <div class="flex items-center gap-4 mb-6">
+              <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=200&auto=format&fit=crop"
+                class="w-14 h-14 rounded-full object-cover border-2 border-orange-200" alt="Traveler">
+              <div>
+                <h4 class="font-bold font-display text-lg">Priya Singh</h4>
+                <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Patna, Bihar</p>
+              </div>
+              <div class="ml-auto text-orange-400 text-2xl opacity-20">
+                <i class="fas fa-quote-right"></i>
+              </div>
+            </div>
+            <div class="flex text-yellow-400 text-sm mb-4">
+              <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+            </div>
+            <p class="text-gray-600 leading-relaxed">
+              "Living in Patna, I never visited <span class="text-orange-600 font-medium">Nalanda Ruins</span> properly.
+              The 'Weekend Heritage Walk' package gave me a completely new perspective on my own culture."
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="max-w-3xl mx-auto" x-data="{ activeAccordion: 1 }">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-display font-bold mb-4">Have Questions?</h2>
+          <p class="text-gray-600">Everything you need to know about traveling in Bihar.</p>
+        </div>
+
+        <div class="space-y-4">
+
+          <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden transition-all duration-300"
+            :class="activeAccordion === 1 ? 'shadow-lg ring-1 ring-orange-100' : 'shadow-sm'">
+            <button @click="activeAccordion = activeAccordion === 1 ? null : 1"
+              class="w-full flex items-center justify-between p-6 text-left focus:outline-none">
+              <span class="font-bold text-lg font-display text-gray-900">What is the best time to visit Bihar?</span>
+              <span
+                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-transform duration-300"
+                :class="activeAccordion === 1 ? 'rotate-180 bg-orange-100 text-orange-600' : ''">
+                <i class="fas fa-chevron-down text-sm"></i>
+              </span>
+            </button>
+            <div x-show="activeAccordion === 1" x-collapse x-transition:enter="transition ease-out duration-200"
+              x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+              class="px-6 pb-6">
+              <p class="text-gray-600 leading-relaxed border-t border-gray-100 pt-4">
+                The best time to visit is between <span class="font-semibold text-gray-900">October and March</span>.
+                The weather is pleasant and cool, perfect for walking tours in Bodh Gaya and Nalanda. Summers
+                (April-June) can be quite hot.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden transition-all duration-300"
+            :class="activeAccordion === 2 ? 'shadow-lg ring-1 ring-orange-100' : 'shadow-sm'">
+            <button @click="activeAccordion = activeAccordion === 2 ? null : 2"
+              class="w-full flex items-center justify-between p-6 text-left focus:outline-none">
+              <span class="font-bold text-lg font-display text-gray-900">Is it safe for solo female travelers?</span>
+              <span
+                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-transform duration-300"
+                :class="activeAccordion === 2 ? 'rotate-180 bg-orange-100 text-orange-600' : ''">
+                <i class="fas fa-chevron-down text-sm"></i>
+              </span>
+            </button>
+            <div x-show="activeAccordion === 2" x-collapse x-transition:enter="transition ease-out duration-200"
+              x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+              class="px-6 pb-6">
+              <p class="text-gray-600 leading-relaxed border-t border-gray-100 pt-4">
+                Absolutely. Bihar tourism has improved significantly in safety. We provide <span
+                  class="font-semibold text-gray-900">verified guides</span> and tracked transportation options. For
+                major hubs like Bodh Gaya and Rajgir, there are dedicated tourist police stations as well.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden transition-all duration-300"
+            :class="activeAccordion === 3 ? 'shadow-lg ring-1 ring-orange-100' : 'shadow-sm'">
+            <button @click="activeAccordion = activeAccordion === 3 ? null : 3"
+              class="w-full flex items-center justify-between p-6 text-left focus:outline-none">
+              <span class="font-bold text-lg font-display text-gray-900">Do you offer customized packages?</span>
+              <span
+                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-transform duration-300"
+                :class="activeAccordion === 3 ? 'rotate-180 bg-orange-100 text-orange-600' : ''">
+                <i class="fas fa-chevron-down text-sm"></i>
+              </span>
+            </button>
+            <div x-show="activeAccordion === 3" x-collapse x-transition:enter="transition ease-out duration-200"
+              x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+              class="px-6 pb-6">
+              <p class="text-gray-600 leading-relaxed border-t border-gray-100 pt-4">
+                Yes! While we have pre-made packages, our <span class="text-orange-600 font-medium">AI Trip
+                  Planner</span> can build a custom itinerary based on your budget, days, and interests (Historical,
+                Spiritual, or Nature).
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden transition-all duration-300"
+            :class="activeAccordion === 4 ? 'shadow-lg ring-1 ring-orange-100' : 'shadow-sm'">
+            <button @click="activeAccordion = activeAccordion === 4 ? null : 4"
+              class="w-full flex items-center justify-between p-6 text-left focus:outline-none">
+              <span class="font-bold text-lg font-display text-gray-900">How do I book a guide?</span>
+              <span
+                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-transform duration-300"
+                :class="activeAccordion === 4 ? 'rotate-180 bg-orange-100 text-orange-600' : ''">
+                <i class="fas fa-chevron-down text-sm"></i>
+              </span>
+            </button>
+            <div x-show="activeAccordion === 4" x-collapse x-transition:enter="transition ease-out duration-200"
+              x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+              class="px-6 pb-6">
+              <p class="text-gray-600 leading-relaxed border-t border-gray-100 pt-4">
+                You can book a government-approved guide directly through our "Expert Guides" section. You can view
+                their profile, languages spoken, and rating before booking.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+  <!-- Saarthi AI Sidebar -->
+<div x-data="{ 
+    SaarthiSidebar: false, 
+    userInput: '', 
+    chatHistory: [], 
+    isLoading: false,
+    
+    // Formatting logic for bold and bullets
+    formatMessage(text) {
+        if (!text) return '';
+        let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong class=\'font-bold text-gray-900\'>$1</strong>');
+        formatted = formatted.replace(/^\* (.*)/gm, '<div class=\'flex gap-2 ml-1 my-1\'><span>•</span><span>$1</span></div>');
+        return formatted.replace(/\n/g, '<br>');
+    },
+
+    // Typing effect logic
+    async typeMessage(fullText, index) {
+        let currentText = '';
+        const words = fullText.split(' ');
+        for (let word of words) {
+            currentText += word + ' ';
+            this.chatHistory[index].displayedText = this.formatMessage(currentText);
+            
+            // Auto-scroll as text grows
+            this.$nextTick(() => { 
+                this.$refs.chatContainer.scrollTop = this.$refs.chatContainer.scrollHeight; 
+            });
+            
+            await new Promise(resolve => setTimeout(resolve, 50)); // Speed of typing
+        }
+    },
+
+    async quickAction(text) {
+        this.userInput = text;
+        await this.sendMessage();
+    },
+
+    async sendMessage() {
+        if (!this.userInput.trim() || this.isLoading) return;
+        
+        const userText = this.userInput;
+        this.chatHistory.push({ role: 'user', text: userText });
+        this.userInput = '';
+        this.isLoading = true;
+
+        try {
+            const response = await window.askSaarthi(userText);
+            // Push empty assistant message first to initialize typing
+            const newIndex = this.chatHistory.push({ 
+                role: 'assistant', 
+                text: response, 
+                displayedText: '' 
+            }) - 1;
+            
+            this.isLoading = false;
+            await this.typeMessage(response, newIndex);
+        } catch (error) {
+            this.isLoading = false;
+            this.chatHistory.push({ 
+                role: 'assistant', 
+                displayedText: 'I apologize, I am having trouble connecting. Please try again.' 
+            });
+        }
+    }
+}" class="fixed inset-y-0 right-0 z-[100] flex items-center pointer-events-none">
+    
+    <button @click="SaarthiSidebar = !SaarthiSidebar" 
+            class="pointer-events-auto bg-gray-900 text-white py-6 px-2 rounded-l-2xl shadow-2xl flex flex-col items-center gap-4 transition-all hover:pr-4 group border-y border-l border-white/10">
+        <i class="fas fa-robot text-orange-500 group-hover:scale-110 transition-transform"></i>
+        <span class="[writing-mode:vertical-lr] rotate-180 text-[10px] font-bold uppercase tracking-[0.3em] opacity-70">Saarthi AI</span>
+    </button>
+
+    <div x-show="SaarthiSidebar" 
+         x-cloak
+         @click.away="SaarthiSidebar = false"
+         x-transition:enter="transition ease-out duration-500"
+         x-transition:enter-start="translate-x-full"
+         x-transition:enter-end="translate-x-0"
+         class="pointer-events-auto w-96 h-screen bg-white shadow-[-20px_0_50px_rgba(0,0,0,0.1)] border-l border-gray-100 flex flex-col">
+        
+        <div class="p-8 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+            <div>
+                <h3 class="font-display font-bold text-xl">Bihar Saarthi</h3>
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">AI Concierge Service</p>
+            </div>
+            <button @click="SaarthiSidebar = false" class="w-10 h-10 rounded-full hover:bg-gray-200 flex items-center justify-center transition-colors">
+                <i class="fas fa-times text-gray-400"></i>
+            </button>
+        </div>
+
+        <div x-ref="chatContainer" class="flex-1 overflow-y-auto p-8 space-y-6 scroll-hidden">
+            
+            <template x-if="chatHistory.length === 0">
+                <div class="space-y-8">
+                    <div class="space-y-2">
+                        <div class="inline-block bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-[10px] font-bold">NAMASTE</div>
+                        <h4 class="text-2xl font-display font-bold text-gray-900 leading-tight">Your Bihar journey starts here.</h4>
+                    </div>
+
+                    <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100 text-sm text-gray-600 leading-relaxed italic">
+                        "I can help you coordinate transport to the Buddhist Circuit, find heritage stays, or explain the history of Nalanda."
+                    </div>
+
+                    <div class="space-y-3">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Suggested Queries</p>
+                        <button @click="quickAction('Tell me about the Mahabodhi Temple history')" class="w-full flex items-center justify-between p-4 bg-white border border-gray-100 rounded-xl hover:border-orange-500 hover:shadow-md transition-all group">
+                            <span class="text-sm font-semibold">Mahabodhi Temple History</span>
+                            <i class="fas fa-chevron-right text-xs text-gray-300 group-hover:text-orange-500"></i>
+                        </button>
+                    </div>
+                </div>
+            </template>
+
+            <template x-for="(msg, index) in chatHistory" :key="index">
+                <div :class="msg.role === 'user' ? 'text-right' : 'text-left'">
+                    <div :class="msg.role === 'user' ? 'bg-orange-500 text-white rounded-l-2xl rounded-tr-2xl' : 'bg-gray-100 text-gray-800 rounded-r-2xl rounded-tl-2xl border border-gray-200'" 
+                         class="inline-block p-4 max-w-[90%] text-sm shadow-sm leading-relaxed text-left" 
+                         x-html="msg.role === 'user' ? formatMessage(msg.text) : msg.displayedText"></div>
+                </div>
+            </template>
+
+            <div x-show="isLoading" class="text-left">
+                <div class="bg-gray-100 p-4 rounded-r-2xl rounded-tl-2xl inline-block">
+                    <i class="fas fa-circle-notch animate-spin text-orange-500"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-8 pb-26 bg-white border-t border-gray-100">
+            <div class="relative">
+                <textarea x-model="userInput" 
+                          @keydown.enter.prevent="sendMessage()"
+                          placeholder="Ask Saarthi anything..." 
+                          class="w-full p-4 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-orange-500/20 outline-none resize-none"
+                          rows="2"></textarea>
+                <button @click="sendMessage()" class="absolute bottom-4 right-4 text-orange-500 hover:scale-110 transition-transform">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="module">
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+
+    const genAI = new GoogleGenerativeAI("AIzaSyBz9jq7sYtx9UHl0Es5DGkUJBc7ePxzoB0");
+    const model = genAI.getGenerativeModel({ 
+        model: "gemini-2.5-flash-lite",
+        systemInstruction: "You are Saarthi, a helpful AI travel guide for Bihar. You specialize in Bihar's history (Nalanda, Rajgir), spirituality (Bodh Gaya), and modern travel tips. Keep responses helpful, culturally respectful, and concise."
+    });
+
+    window.askSaarthi = async (prompt) => {
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+    };
+</script>
+<!-- Mobile Bottom Navigation -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-xl border-t border-gray-100 px-6 py-3 pb-safe shadow-[0_-10px_25px_rgba(0,0,0,0.05)]">
+    <nav class="flex items-center justify-between max-w-md mx-auto">
+        <a href="/index.html" class="flex flex-col items-center gap-1 text-orange-600 transition-all duration-300">
+            <div class="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center">
+                <i class="fas fa-home text-lg"></i>
+            </div>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Home</span>
+        </a>
+
+        <a href="./pages/explore-destination.html" class="flex flex-col items-center gap-1 text-gray-400 hover:text-orange-500 transition-all duration-300">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fas fa-map-marked-alt text-lg"></i>
+            </div>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Explore</span>
+        </a>
+
+        <a href="./pages/aiplanner.html" class="flex flex-col items-center gap-1 -translate-y-6">
+            <div class="w-14 h-14 rounded-full bg-gradient text-white flex items-center justify-center shadow-lg shadow-orange-500/30 border-4 border-white animate-pulse-slow">
+                <i class="fas fa-magic text-xl"></i>
+            </div>
+            <span class="text-[10px] font-bold text-gray-900 uppercase tracking-wider translate-y-2">Saarthi AI</span>
+        </a>
+
+        <a href="./pages/homestay.html" class="flex flex-col items-center gap-1 text-gray-400 hover:text-orange-500 transition-all duration-300">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fas fa-bed text-lg"></i>
+            </div>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Stay</span>
+        </a>
+
+        <a href="./pages/auth.html" class="flex flex-col items-center gap-1 text-gray-400 hover:text-orange-500 transition-all duration-300">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fas fa-user text-lg"></i>
+            </div>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Profile</span>
+        </a>
+    </nav>
+</div>
+<!-- footer section  -->
+  <footer class="bg-gray-900 text-white pt-20 pb-10 rounded-t-[3rem] mt-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+        <div class="col-span-1 md:col-span-1">
+          <a href="#" class="font-display font-bold text-2xl tracking-tighter flex items-center gap-2 mb-6">
+
+            Bihar<span class="text-orange-500">Yaatra</span>
+          </a>
+          <p class="text-gray-400 leading-relaxed mb-6">
+            Rediscover the land of enlightenment. We are dedicated to showcasing the true beauty and history of Bihar to
+            the world.
+          </p>
+          <div class="flex gap-4">
+            <a href="https://www.facebook.com/profile.php?id=61582069628622"
+              class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-orange-600 transition"><i
+                class="fab fa-facebook-f"></i></a>
+            <a href="https://www.instagram.com/biharyaatra?igsh=MXc5MGJneDhwNGJzNw=="
+              class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-pink-600 transition"><i
+                class="fab fa-instagram"></i></a>
+            <a href="https://x.com/biharyaatra"
+              class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-blue-400 transition"><i
+                class="fab fa-twitter"></i></a>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-bold mb-6 font-display">Destinations</h4>
+          <ul class="space-y-3 text-gray-400">
+            <li><a href="#" class="hover:text-orange-400 transition">Bodh Gaya</a></li>
+            <li><a href="#" class="hover:text-orange-400 transition">Nalanda University</a></li>
+            <li><a href="#" class="hover:text-orange-400 transition">Rajgir Hills</a></li>
+            <li><a href="#" class="hover:text-orange-400 transition">Valmiki Nagar</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-bold mb-6 font-display">Company</h4>
+          <ul class="space-y-3 text-gray-400">
+            <li><a href="/pages/about.html" class="hover:text-orange-400 transition">About Us</a></li>
+            <li><a href="/pages/contact.html" class="hover:text-orange-400 transition">Contact</a></li>
+            <li><a href="/pages/guides.html" class="hover:text-orange-400 transition">Become a Guide</a></li>
+            <li><a href="/pages/privacy-policy.html" class="hover:text-orange-400 transition">Privacy Policy</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-bold mb-6 font-display">Newsletter</h4>
+          <p class="text-gray-400 mb-4">Subscribe for seasonal offers and travel tips.</p>
+          <form class="flex flex-col gap-3">
+            <input type="email" placeholder="Your email"
+              class="px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-orange-500 transition" />
+            <button type="submit"
+              class="px-4 py-3 bg-gradient text-white font-bold rounded-xl hover:opacity-90 transition">Subscribe</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+        &copy; 2025 Bihar Yaatra. Proudly Made in Bihar.
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Reusing the same config as rest of the site
+    const firebaseConfig = {
+      apiKey: "AIzaSyAO1bKiSsTHCsGlgFXm_-D2gbFBqXdWQuE",
+      authDomain: "biharyaatra-t.firebaseapp.com",
+      projectId: "biharyaatra-t",
+      storageBucket: "biharyaatra-t.firebasestorage.app",
+      messagingSenderId: "101220485604",
+      appId: "1:101220485604:web:e96c3230ee36de85ba1ff1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Monitor Auth State
+    onAuthStateChanged(auth, (user) => {
+        // Dispatch custom event to update Alpine.js
+        window.dispatchEvent(new CustomEvent('auth-change', { detail: user }));
+        
+        if (user) {
+            console.log("User Logged In:", user.uid);
+            // REDIRECT LOGIC: Uncomment the line below if you want to force redirect all logged-in users to dashboard.
+            // window.location.href = './pannel/users/index.html'; 
+        } else {
+            console.log("No User found");
+        }
+    });
+
+    // Global Logout Function
+    window.logout = async () => {
+        try {
+            await signOut(auth);
+            window.location.reload();
+        } catch (error) {
+            console.error("Logout failed", error);
+        }
+    }
+  </script>
+</body>
+
+</html>

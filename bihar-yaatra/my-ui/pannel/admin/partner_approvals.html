@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Partner Approvals — Bihar Yaatra Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .font-display {
+            font-family: 'Syne', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        .threat-pulse {
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, .4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        .modal-bg {
+            backdrop-filter: blur(6px);
+            background: rgba(0, 0, 0, .65);
+        }
+
+        .card-in {
+            animation: cardIn 0.25s ease forwards;
+        }
+
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen" x-data="approvalApp()" x-init="init()">
+
+    <!-- ACCESS DENIED -->
+    <div x-show="accessDenied" x-cloak
+        class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-[999] text-center p-8">
+        <div class="w-20 h-20 bg-red-900/30 rounded-full flex items-center justify-center mb-6 threat-pulse">
+            <i class="fas fa-ban text-red-500 text-3xl"></i>
+        </div>
+        <h1 class="font-display text-3xl font-bold text-red-400 mb-2">ACCESS DENIED</h1>
+        <p class="text-slate-400 text-sm mb-8">You need <span class="text-orange-400 font-bold">admin</span> clearance
+            for this panel.</p>
+        <a href="../../index.html"
+            class="px-6 py-3 bg-slate-800 text-white rounded-xl font-bold text-sm hover:bg-orange-600 transition">
+            <i class="fas fa-arrow-left mr-2"></i> Return to Login
+        </a>
+    </div>
+
+    <!-- LOADING -->
+    <div x-show="authLoading" x-cloak class="fixed inset-0 bg-slate-950 flex items-center justify-center z-[998]">
+        <div class="flex flex-col items-center gap-4">
+            <div class="w-12 h-12 border-4 border-slate-700 border-t-orange-500 rounded-full animate-spin"></div>
+            <p class="text-slate-500 text-sm font-mono">Verifying clearance...</p>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div x-show="toast.show" x-cloak x-transition class="fixed top-6 right-6 z-[100] max-w-sm w-full">
+        <div class="flex items-start gap-3 p-4 rounded-2xl border shadow-2xl"
+            :class="toast.type==='success' ? 'bg-green-950 border-green-800 text-green-300' : toast.type==='error' ? 'bg-red-950 border-red-800 text-red-300' : 'bg-amber-950 border-amber-800 text-amber-300'">
+            <i :class="toast.type==='success' ? 'fas fa-check-circle text-green-400' : toast.type==='error' ? 'fas fa-times-circle text-red-400' : 'fas fa-exclamation-triangle text-amber-400'"
+                class="mt-0.5"></i>
+            <p class="text-sm font-bold" x-text="toast.message"></p>
+        </div>
+    </div>
+
+    <!-- REJECT MODAL -->
+    <div x-show="rejectModal.show" x-cloak class="fixed inset-0 modal-bg flex items-center justify-center z-50 p-4"
+        @click.self="rejectModal.show=false">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl p-8 max-w-sm w-full shadow-2xl"
+            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100">
+            <div class="w-14 h-14 rounded-2xl bg-red-900/40 flex items-center justify-center mb-5 mx-auto">
+                <i class="fas fa-times text-red-400 text-xl"></i>
+            </div>
+            <h3 class="font-bold text-xl text-center mb-2">Reject Application</h3>
+            <p class="text-slate-400 text-sm text-center mb-5"
+                x-text="'Rejecting: ' + (rejectModal.applicant?.name || '')"></p>
+            <div class="mb-5">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Reason (optional)</label>
+                <textarea x-model="rejectModal.reason" rows="3"
+                    placeholder="e.g. Incomplete documents, area not serviceable..."
+                    class="w-full p-3 bg-slate-800 border border-slate-600 rounded-xl text-sm text-white outline-none focus:border-red-500 resize-none"></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button @click="rejectModal.show=false"
+                    class="flex-1 py-3 bg-slate-800 text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-700 transition">Cancel</button>
+                <button @click="confirmReject()"
+                    class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 transition">
+                    <i class="fas fa-times-circle mr-1"></i> Reject
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APPROVE MODAL (create credentials) -->
+    <div x-show="approveModal.show" x-cloak class="fixed inset-0 modal-bg flex items-center justify-center z-50 p-4"
+        @click.self="approveModal.show=false">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl p-8 max-w-sm w-full shadow-2xl"
+            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100">
+            <div class="w-14 h-14 rounded-2xl bg-green-900/40 flex items-center justify-center mb-5 mx-auto">
+                <i class="fas fa-check text-green-400 text-xl"></i>
+            </div>
+            <h3 class="font-bold text-xl text-center mb-1">Approve Partner</h3>
+            <p class="text-slate-400 text-sm text-center mb-5" x-text="approveModal.applicant?.name"></p>
+
+            <div class="space-y-4">
+                <!-- Login email — pre-filled but editable -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Login Email <span
+                            class="text-orange-400">*</span></label>
+                    <input type="email" x-model="approveModal.loginEmail"
+                        class="w-full p-3 bg-slate-800 border border-slate-600 rounded-xl text-sm text-white outline-none focus:border-green-500 font-mono">
+                </div>
+                <!-- Password -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Set Initial Password <span
+                            class="text-orange-400">*</span></label>
+                    <div class="flex gap-2">
+                        <input type="text" x-model="approveModal.password"
+                            class="flex-1 p-3 bg-slate-800 border border-slate-600 rounded-xl text-sm text-white font-mono outline-none focus:border-green-500">
+                        <button type="button" @click="approveModal.password = generatePwd()"
+                            class="px-3 bg-slate-700 rounded-xl text-slate-400 hover:text-white transition"
+                            title="Generate">
+                            <i class="fas fa-dice"></i>
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-600 mt-1">Share these credentials with the partner after approval.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Credential display after creation -->
+            <div x-show="approveModal.done" x-cloak
+                class="mt-4 p-3 bg-green-950 border border-green-800 rounded-xl text-xs">
+                <p class="text-green-400 font-bold mb-1">✅ Account Created! Share with partner:</p>
+                <p class="font-mono text-white">Email: <span x-text="approveModal.loginEmail"></span></p>
+                <p class="font-mono text-white">Password: <span x-text="approveModal.password"></span></p>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button @click="approveModal.show=false; approveModal.done=false;"
+                    class="flex-1 py-3 bg-slate-800 text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-700 transition">
+                    <span x-text="approveModal.done ? 'Close' : 'Cancel'"></span>
+                </button>
+                <button x-show="!approveModal.done" @click="confirmApprove()"
+                    :disabled="!approveModal.loginEmail || approveModal.password.length < 8 || approveModal.working"
+                    class="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold text-sm hover:bg-green-700 transition disabled:opacity-40">
+                    <i class="fas fa-spinner fa-spin mr-1" x-show="approveModal.working"></i>
+                    <i class="fas fa-user-plus mr-1" x-show="!approveModal.working"></i>
+                    <span x-text="approveModal.working ? 'Creating...' : 'Approve & Create'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <!-- MAIN LAYOUT -->
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <div x-show="!authLoading && !accessDenied" x-cloak class="flex h-screen">
+
+        <!-- SIDEBAR -->
+        <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col flex-shrink-0">
+            <div class="p-5 border-b border-slate-800">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-9 h-9 rounded-xl bg-orange-500/20 flex items-center justify-center">
+                        <i class="fas fa-shield-halved text-orange-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-mono text-orange-400 uppercase tracking-widest">Admin Panel</p>
+                        <p class="font-display font-bold text-sm">Bihar Yaatra</p>
+                    </div>
+                </div>
+                <div class="text-[11px] font-mono text-slate-600 truncate">
+                    <i class="fas fa-terminal text-orange-400 mr-1"></i>
+                    <span x-text="currentAdmin.email"></span>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-1">
+                <a href="admin_dashboard.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm">
+                    <i class="fas fa-gauge w-4"></i> Dashboard
+                </a>
+                <a href="cms.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm">
+                    <i class="fas fa-pen-to-square w-4"></i> CMS
+                </a>
+                <button @click="viewMode='partners'"
+                    :class="viewMode==='partners' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-sm">
+                    <i class="fas fa-handshake w-4 text-orange-400"></i> Partner Approvals
+                    <span x-show="pendingCount > 0"
+                        class="ml-auto bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        x-text="pendingCount"></span>
+                </button>
+                <button @click="viewMode='listings'"
+                    :class="viewMode==='listings' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-sm">
+                    <i class="fas fa-home w-4 text-green-400"></i> Listing Reviews
+                    <span x-show="pendingListings.length > 0"
+                        class="ml-auto bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        x-text="pendingListings.length"></span>
+                </button>
+                <a href="../../admin_create.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm">
+                    <i class="fas fa-user-plus w-4"></i> Create Identity
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800">
+                <button @click="logout()"
+                    class="w-full flex items-center gap-2 px-4 py-2.5 bg-red-900/20 border border-red-800 text-red-400 text-xs font-bold rounded-xl hover:bg-red-900/40 transition justify-center">
+                    <i class="fas fa-sign-out-alt"></i> End Session
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="flex-1 flex flex-col overflow-hidden">
+
+            <!-- Top Bar -->
+            <header
+                class="h-16 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between px-8 flex-shrink-0">
+                <div class="flex items-center gap-4">
+                    <h1 class="font-display font-bold text-white"
+                        x-text="viewMode==='listings' ? 'Listing Reviews' : 'Partner Applications'"></h1>
+                    <span x-show="viewMode==='partners'"
+                        class="bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-bold px-2 py-1 rounded-lg">
+                        <span x-text="pendingCount"></span> pending
+                    </span>
+                    <span x-show="viewMode==='listings'"
+                        class="bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-bold px-2 py-1 rounded-lg">
+                        <span x-text="pendingListings.length"></span> pending
+                    </span>
+                </div>
+
+                <!-- Tab Filter (partners mode) -->
+                <div x-show="viewMode==='partners'"
+                    class="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1">
+                    <template x-for="tab in ['pending','approved','rejected','all']" :key="tab">
+                        <button @click="activeTab = tab"
+                            :class="activeTab === tab ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-white'"
+                            class="px-4 py-1.5 rounded-lg text-xs font-bold capitalize transition">
+                            <span x-text="tab"></span>
+                            <span class="ml-1 text-[10px] opacity-60"
+                                x-text="'(' + requests.filter(r => tab === 'all' || r.status === tab).length + ')'"></span>
+                        </button>
+                    </template>
+                </div>
+                <!-- Tab Filter (listings mode) -->
+                <div x-show="viewMode==='listings'"
+                    class="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1">
+                    <template x-for="ltab in ['pending','approved','rejected','all']" :key="ltab">
+                        <button @click="listingTab = ltab"
+                            :class="listingTab === ltab ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-white'"
+                            class="px-4 py-1.5 rounded-lg text-xs font-bold capitalize transition">
+                            <span x-text="ltab"></span>
+                            <span class="ml-1 text-[10px] opacity-60"
+                                x-text="'(' + listings.filter(l => ltab==='all' || l.status===ltab).length + ')'"></span>
+                        </button>
+                    </template>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto custom-scroll p-8">
+
+                <!-- Loading state -->
+                <div x-show="dataLoading" class="flex items-center justify-center h-48">
+                    <div class="w-8 h-8 border-4 border-slate-700 border-t-orange-500 rounded-full animate-spin"></div>
+                </div>
+
+                <!-- ══ LISTINGS REVIEW SECTION ══ -->
+                <div x-show="viewMode==='listings' && !dataLoading">
+                    <div x-show="filteredListings.length === 0"
+                        class="flex flex-col items-center justify-center h-48 text-slate-600">
+                        <i class="fas fa-home text-4xl mb-3"></i>
+                        <p class="text-sm"
+                            x-text="listingTab==='pending' ? 'No pending listings.' : 'No ' + listingTab + ' listings.'">
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-5">
+                        <template x-for="lst in filteredListings" :key="lst.id">
+                            <div class="card-in bg-slate-900 border rounded-2xl p-5 transition-all hover:border-slate-700"
+                                :class="lst.status==='pending' ? 'border-amber-800/40' : lst.status==='approved' ? 'border-green-800/50' : 'border-red-800/50'">
+                                <!-- Header -->
+                                <div class="flex items-start justify-between mb-3">
+                                    <div>
+                                        <h3 class="font-bold text-white text-sm"
+                                            x-text="lst.name || 'Unnamed Property'"></h3>
+                                        <p class="text-slate-500 text-xs mt-0.5"
+                                            x-text="(lst.location || '—') + ' • ₹' + (lst.price || 0) + '/night'"></p>
+                                    </div>
+                                    <span class="text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg flex-shrink-0"
+                                        :class="lst.status==='pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                                               : lst.status==='approved' ? 'bg-green-500/10 text-green-400 border border-green-500/30'
+                                               : 'bg-red-500/10 text-red-400 border border-red-500/30'"
+                                        x-text="lst.status"></span>
+                                </div>
+                                <!-- Details -->
+                                <div class="space-y-1 mb-3 text-xs text-slate-400">
+                                    <p x-show="lst.description"><i class="fas fa-align-left w-4 text-slate-600"></i>
+                                        <span
+                                            x-text="(lst.description||'').substring(0,80) + (lst.description?.length>80?'...':'')"></span>
+                                    </p>
+                                    <p x-show="lst.rooms?.length"><i class="fas fa-bed w-4 text-slate-600"></i> <span
+                                            x-text="lst.rooms.length + ' room type(s)'"></span></p>
+                                    <p x-show="lst.amenities?.length"><i
+                                            class="fas fa-list-check w-4 text-slate-600"></i> <span
+                                            x-text="(lst.amenities||[]).join(', ')"></span></p>
+                                    <p x-show="lst.submittedAt"><i class="fas fa-clock w-4 text-slate-600"></i> <span
+                                            x-text="lst.submittedAt ? new Date(lst.submittedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : ''"></span>
+                                    </p>
+                                </div>
+                                <!-- Reviewed by -->
+                                <p x-show="lst.reviewedBy" class="text-[10px] text-slate-600 font-mono mb-3">
+                                    <i class="fas fa-user-shield mr-1"></i>
+                                    <span
+                                        x-text="(lst.status==='approved'?'Approved':'Rejected') + ' by ' + (lst.reviewedBy||'—')"></span>
+                                </p>
+                                <!-- Rejection reason -->
+                                <div x-show="lst.status==='rejected' && lst.rejectionReason"
+                                    class="mb-3 p-2 bg-red-950 border border-red-800/40 rounded-lg text-xs text-red-300">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                    <span x-text="'Reason: ' + lst.rejectionReason"></span>
+                                </div>
+                                <!-- Actions -->
+                                <div x-show="lst.status==='pending'" class="flex gap-3 pt-4 border-t border-slate-800">
+                                    <button @click="approveListing(lst)"
+                                        class="flex-1 py-2.5 bg-green-900/30 border border-green-700 text-green-400 text-xs font-bold rounded-xl hover:bg-green-900/60 transition">
+                                        <i class="fas fa-check mr-1"></i> Approve
+                                    </button>
+                                    <button @click="rejectListing(lst)"
+                                        class="flex-1 py-2.5 bg-red-900/20 border border-red-800 text-red-400 text-xs font-bold rounded-xl hover:bg-red-900/40 transition">
+                                        <i class="fas fa-times mr-1"></i> Reject
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- ══ PARTNER APPLICATIONS SECTION ══ -->
+                <div x-show="viewMode==='partners' && !dataLoading">
+                    <!-- Empty state -->
+                    <div x-show="filteredRequests.length === 0"
+                        class="flex flex-col items-center justify-center h-48 text-slate-600">
+                        <i class="fas fa-inbox text-4xl mb-3"></i>
+                        <p class="text-sm"
+                            x-text="activeTab === 'pending' ? 'No pending applications.' : 'No ' + activeTab + ' applications.'">
+                        </p>
+                    </div>
+
+                    <!-- Applications Grid -->
+                    <div class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-5">
+                        <template x-for="req in filteredRequests" :key="req.id">
+                            <div class="card-in bg-slate-900 border rounded-2xl p-5 transition-all hover:border-slate-700"
+                                :class="req.status === 'pending' ? 'border-slate-800' : req.status === 'approved' ? 'border-green-800/50' : 'border-red-800/50'">
+
+                                <!-- Header row -->
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <!-- Type icon -->
+                                        <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                                            :class="req.partnerType === 'homestay' ? 'bg-amber-500/10' : req.partnerType === 'transport' ? 'bg-blue-500/10' : 'bg-green-500/10'">
+                                            <i
+                                                :class="req.partnerType === 'homestay' ? 'fas fa-home text-amber-400' : req.partnerType === 'transport' ? 'fas fa-car text-blue-400' : 'fas fa-flag text-green-400'"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-white text-sm"
+                                                x-text="req.businessName || 'Unnamed'">
+                                            </h3>
+                                            <p class="text-slate-500 text-xs capitalize"
+                                                x-text="req.partnerType + ' • ' + (req.location || '—')"></p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Status badge -->
+                                    <span class="text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg flex-shrink-0"
+                                        :class="req.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                                            : req.status === 'approved' ? 'bg-green-500/10 text-green-400 border border-green-500/30'
+                                            : 'bg-red-500/10 text-red-400 border border-red-500/30'"
+                                        x-text="req.status"></span>
+                                </div>
+
+                                <!-- Details -->
+                                <div class="space-y-1.5 mb-4 text-xs text-slate-400">
+                                    <p><i class="fas fa-user w-4 text-slate-600"></i> <span x-text="req.name"></span>
+                                    </p>
+                                    <p><i class="fas fa-envelope w-4 text-slate-600"></i> <span class="font-mono"
+                                            x-text="req.email"></span></p>
+                                    <p><i class="fas fa-phone w-4 text-slate-600"></i> <span x-text="req.phone"></span>
+                                    </p>
+                                    <p x-show="req.description"><i class="fas fa-quote-left w-4 text-slate-600"></i>
+                                        <span x-text="req.description"></span></p>
+
+                                    <!-- Type-specific details -->
+                                    <p x-show="req.rooms"><i class="fas fa-bed w-4 text-slate-600"></i> <span
+                                            x-text="req.rooms + ' rooms, capacity ' + req.capacity"></span></p>
+                                    <p x-show="req.vehicleType"><i class="fas fa-car w-4 text-slate-600"></i> <span
+                                            x-text="req.vehicleType + ' — ' + req.fleetSize + ' vehicles'"></span></p>
+                                    <p x-show="req.languages"><i class="fas fa-language w-4 text-slate-600"></i> <span
+                                            x-text="req.languages"></span></p>
+                                    <p x-show="req.speciality"><i class="fas fa-map-pin w-4 text-slate-600"></i> <span
+                                            x-text="req.speciality"></span></p>
+                                </div>
+
+                                <!-- Rejection reason display -->
+                                <div x-show="req.status === 'rejected' && req.rejectionReason"
+                                    class="mb-3 p-2.5 bg-red-950 border border-red-800/40 rounded-lg text-xs text-red-300">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                    <span x-text="'Reason: ' + req.rejectionReason"></span>
+                                </div>
+
+                                <!-- Reviewed by -->
+                                <div x-show="req.status !== 'pending' && req.reviewedBy"
+                                    class="mb-3 text-[10px] text-slate-600 font-mono">
+                                    <i class="fas fa-user-shield mr-1"></i>
+                                    <span
+                                        x-text="(req.status === 'approved' ? 'Approved' : 'Rejected') + ' by ' + (req.reviewedBy || '—')"></span>
+                                </div>
+
+                                <!-- Timestamp -->
+                                <div class="text-[10px] text-slate-700 font-mono mb-4">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    <span
+                                        x-text="req.submittedAt ? formatDate(req.submittedAt) : 'Pending timestamp'"></span>
+                                    <span class="ml-2 text-slate-800">ID: <span
+                                            x-text="req.id.substring(0,8)"></span></span>
+                                </div>
+
+                                <!-- Action buttons (only for pending) -->
+                                <div x-show="req.status === 'pending'"
+                                    class="flex gap-3 pt-4 border-t border-slate-800">
+                                    <button @click="openApprove(req)"
+                                        class="flex-1 py-2.5 bg-green-900/30 border border-green-700 text-green-400 text-xs font-bold rounded-xl hover:bg-green-900/60 transition">
+                                        <i class="fas fa-check mr-1"></i> Approve
+                                    </button>
+                                    <button @click="openReject(req)"
+                                        class="flex-1 py-2.5 bg-red-900/20 border border-red-800 text-red-400 text-xs font-bold rounded-xl hover:bg-red-900/40 transition">
+                                        <i class="fas fa-times mr-1"></i> Reject
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div><!-- /partners section -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase + Alpine -->
+    <script type="module">
+        import { auth, db, appId } from '../../assets/js/firebase-config.js';
+        import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/module.esm.js';
+        import { onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { collection, onSnapshot, doc, updateDoc, setDoc, addDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.fAuth = auth;
+        window.fDb = db;
+        window.fAppId = appId;
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.signOut = signOut;
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.onSnapshot = onSnapshot;
+        window.collection = collection;
+        window.doc = doc;
+        window.updateDoc = updateDoc;
+        window.setDoc = setDoc;
+        window.addDoc = addDoc;
+        window.serverTimestamp = serverTimestamp;
+        window.getDoc = getDoc;
+
+        window.dispatchEvent(new CustomEvent('firebase-ready'));
+        window.Alpine = Alpine;
+        Alpine.start();
+    </script>
+
+    <script>
+        function approvalApp() {
+            return {
+                authLoading: true,
+                accessDenied: false,
+                dataLoading: true,
+                currentAdmin: { email: '', uid: '' },
+                requests: [],
+                listings: [],
+                activeTab: 'pending',
+                listingTab: 'pending',
+                viewMode: 'partners',
+                toast: { show: false, message: '', type: 'info' },
+
+                rejectModal: { show: false, applicant: null, reason: '' },
+                approveModal: { show: false, applicant: null, loginEmail: '', password: '', working: false, done: false },
+
+                get filteredRequests() {
+                    if (this.activeTab === 'all') return this.requests;
+                    return this.requests.filter(r => r.status === this.activeTab);
+                },
+                get filteredListings() {
+                    if (this.listingTab === 'all') return this.listings;
+                    return this.listings.filter(l => l.status === this.listingTab);
+                },
+                get pendingCount() {
+                    return this.requests.filter(r => r.status === 'pending').length;
+                },
+                get pendingListings() {
+                    return this.listings.filter(l => l.status === 'pending');
+                },
+
+                async init() {
+                    if (!window.fAuth) {
+                        window.addEventListener('firebase-ready', () => this.startAuth());
+                    } else {
+                        this.startAuth();
+                    }
+                },
+
+                startAuth() {
+                    window.onAuthStateChanged(window.fAuth, async (user) => {
+                        if (!user) {
+                            this.accessDenied = true;
+                            this.authLoading = false;
+                            return;
+                        }
+                        // Check role
+                        const snap = await window.getDoc(window.doc(window.fDb, 'artifacts', window.fAppId, 'users', user.uid));
+                        const data = snap.exists() ? snap.data() : {};
+                        if (!['super_admin', 'admin'].includes(data.role)) {
+                            this.accessDenied = true;
+                            this.authLoading = false;
+                            return;
+                        }
+                        this.currentAdmin = { email: user.email, uid: user.uid };
+                        this.authLoading = false;
+                        this.listenRequests();
+                        this.listenListings();
+                    });
+                },
+
+                listenRequests() {
+                    this.dataLoading = true;
+                    const ref = window.collection(window.fDb, 'artifacts', window.fAppId, 'partner_requests');
+                    window.onSnapshot(ref, (snap) => {
+                        this.requests = snap.docs
+                            .map(d => ({ id: d.id, ...d.data() }))
+                            .sort((a, b) => {
+                                if (a.status === 'pending' && b.status !== 'pending') return -1;
+                                if (b.status === 'pending' && a.status !== 'pending') return 1;
+                                return 0;
+                            });
+                        this.dataLoading = false;
+                    });
+                },
+
+                // ── Listen to all public homestay listings ─────
+                listenListings() {
+                    const ref = window.collection(window.fDb, 'artifacts', window.fAppId, 'public', 'data', 'homestays');
+                    window.onSnapshot(ref, (snap) => {
+                        this.listings = snap.docs
+                            .map(d => ({ id: d.id, ...d.data() }))
+                            .sort((a, b) => {
+                                if (a.status === 'pending' && b.status !== 'pending') return -1;
+                                if (b.status === 'pending' && a.status !== 'pending') return 1;
+                                return 0;
+                            });
+                    });
+                },
+
+                // ── Approve a listing ──────────────────────────
+                async approveListing(lst) {
+                    try {
+                        await window.updateDoc(
+                            window.doc(window.fDb, 'artifacts', window.fAppId, 'public', 'data', 'homestays', lst.id),
+                            { status: 'approved', reviewedBy: this.currentAdmin.email, reviewedAt: window.serverTimestamp() }
+                        );
+                        await window.addDoc(window.collection(window.fDb, 'artifacts', window.fAppId, 'audit_log'), {
+                            action: 'LISTING_APPROVED', listingId: lst.id, listingName: lst.name,
+                            operatorEmail: this.currentAdmin.email, timestamp: window.serverTimestamp()
+                        });
+                        this.showToast(`✅ "${lst.name}" is now live!`, 'success');
+                    } catch (e) { this.showToast('Approve failed: ' + e.message, 'error'); }
+                },
+
+                // ── Reject a listing ───────────────────────────
+                async rejectListing(lst) {
+                    const reason = prompt(`Reason for rejecting "${lst.name}"? (optional)`) ?? '';
+                    try {
+                        await window.updateDoc(
+                            window.doc(window.fDb, 'artifacts', window.fAppId, 'public', 'data', 'homestays', lst.id),
+                            { status: 'rejected', rejectionReason: reason, reviewedBy: this.currentAdmin.email, reviewedAt: window.serverTimestamp() }
+                        );
+                        await window.addDoc(window.collection(window.fDb, 'artifacts', window.fAppId, 'audit_log'), {
+                            action: 'LISTING_REJECTED', listingId: lst.id, listingName: lst.name, reason,
+                            operatorEmail: this.currentAdmin.email, timestamp: window.serverTimestamp()
+                        });
+                        this.showToast(`Listing "${lst.name}" rejected.`, 'warn');
+                    } catch (e) { this.showToast('Reject failed: ' + e.message, 'error'); }
+                },
+
+                // ── Open Approve Modal ─────────────────────────
+                openApprove(req) {
+                    this.approveModal = {
+                        show: true,
+                        applicant: req,
+                        loginEmail: req.email,
+                        password: this.generatePwd(),
+                        working: false,
+                        done: false
+                    };
+                },
+
+                // ── Confirm Approve ────────────────────────────
+                async confirmApprove() {
+                    this.approveModal.working = true;
+                    const req = this.approveModal.applicant;
+                    try {
+                        // 1. Create Firebase Auth user
+                        const cred = await window.createUserWithEmailAndPassword(
+                            window.fAuth, this.approveModal.loginEmail, this.approveModal.password
+                        );
+                        const uid = cred.user.uid;
+
+                        // 2. Create Firestore user document
+                        await window.setDoc(window.doc(window.fDb, 'artifacts', window.fAppId, 'users', uid), {
+                            uid,
+                            name: req.name,
+                            email: this.approveModal.loginEmail,
+                            personalEmail: req.email,
+                            phone: req.phone,
+                            role: req.partnerType,
+                            businessName: req.businessName,
+                            location: req.location,
+                            status: 'active',
+                            createdAt: window.serverTimestamp(),
+                            createdBy: this.currentAdmin.uid
+                        });
+
+                        // 3. Update partner_request status
+                        await window.updateDoc(window.doc(window.fDb, 'artifacts', window.fAppId, 'partner_requests', req.id), {
+                            status: 'approved',
+                            reviewedBy: this.currentAdmin.email,
+                            reviewedAt: window.serverTimestamp(),
+                            createdUid: uid
+                        });
+
+                        // 4. Write audit log
+                        await window.addDoc(window.collection(window.fDb, 'artifacts', window.fAppId, 'audit_log'), {
+                            action: 'PARTNER_APPROVED',
+                            targetEmail: this.approveModal.loginEmail,
+                            targetRole: req.partnerType,
+                            requestId: req.id,
+                            operatorUid: this.currentAdmin.uid,
+                            operatorEmail: this.currentAdmin.email,
+                            timestamp: window.serverTimestamp()
+                        });
+
+                        this.approveModal.done = true;
+                        this.showToast(`✅ ${req.name} approved as ${req.partnerType}!`, 'success');
+
+                        // Re-sign in as admin (createUserWithEmailAndPassword changes session)
+                        // This is a known client-SDK limitation. Admin must log in again.
+                        setTimeout(async () => {
+                            this.approveModal.show = false;
+                            this.showToast('Session changed — please log in again.', 'warn');
+                            setTimeout(() => { window.location.href = '../../index.html'; }, 2000);
+                        }, 4000);
+
+                    } catch (e) {
+                        let msg = e.message;
+                        if (e.code === 'auth/email-already-in-use') msg = 'This email is already registered in Firebase Auth.';
+                        this.showToast('Error: ' + msg, 'error');
+                        console.error(e);
+                    } finally {
+                        this.approveModal.working = false;
+                    }
+                },
+
+                // ── Open Reject Modal ──────────────────────────
+                openReject(req) {
+                    this.rejectModal = { show: true, applicant: req, reason: '' };
+                },
+
+                // ── Confirm Reject ─────────────────────────────
+                async confirmReject() {
+                    const req = this.rejectModal.applicant;
+                    try {
+                        await window.updateDoc(window.doc(window.fDb, 'artifacts', window.fAppId, 'partner_requests', req.id), {
+                            status: 'rejected',
+                            rejectionReason: this.rejectModal.reason || '',
+                            reviewedBy: this.currentAdmin.email,
+                            reviewedAt: window.serverTimestamp()
+                        });
+                        await window.addDoc(window.collection(window.fDb, 'artifacts', window.fAppId, 'audit_log'), {
+                            action: 'PARTNER_REJECTED',
+                            targetEmail: req.email,
+                            requestId: req.id,
+                            reason: this.rejectModal.reason || '',
+                            operatorUid: this.currentAdmin.uid,
+                            operatorEmail: this.currentAdmin.email,
+                            timestamp: window.serverTimestamp()
+                        });
+                        this.showToast(`Application from ${req.name} rejected.`, 'warn');
+                        this.rejectModal.show = false;
+                    } catch (e) {
+                        this.showToast('Reject failed: ' + e.message, 'error');
+                    }
+                },
+
+                // ── Generate Secure Password ───────────────────
+                generatePwd() {
+                    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+                    let p = '';
+                    for (let i = 0; i < 12; i++) p += chars.charAt(Math.floor(Math.random() * chars.length));
+                    return p;
+                },
+
+                formatDate(ts) {
+                    if (!ts) return '—';
+                    const d = ts.toDate ? ts.toDate() : new Date(ts);
+                    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                },
+
+                async logout() {
+                    await window.signOut(window.fAuth);
+                    window.location.href = '../../index.html';
+                },
+
+                showToast(message, type = 'info') {
+                    this.toast = { show: true, message, type };
+                    setTimeout(() => this.toast.show = false, 4000);
+                }
+            };
+        }
+    </script>
+</body>
+
+</html>

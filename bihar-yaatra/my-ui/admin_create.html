@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Root Access — Identity Manager | Bihar Yaatra</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .font-display {
+            font-family: 'Syne', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        /* Password strength bar */
+        .strength-bar {
+            transition: width 0.4s ease, background-color 0.4s ease;
+        }
+
+        /* Glowing input focus */
+        .secure-input:focus {
+            box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.25);
+            border-color: #f97316;
+        }
+
+        /* Animated gradient badge */
+        .root-badge {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border: 1px solid #f97316;
+        }
+
+        /* Threat level pulse */
+        @keyframes pulse-ring {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        .threat-pulse {
+            animation: pulse-ring 2s infinite;
+        }
+
+        /* Countdown ring */
+        @keyframes countdown-shrink {
+            from {
+                stroke-dashoffset: 0;
+            }
+
+            to {
+                stroke-dashoffset: 251;
+            }
+        }
+
+        .countdown-ring {
+            stroke-dasharray: 251;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        /* Slide-in modal */
+        .modal-overlay {
+            backdrop-filter: blur(6px);
+            background: rgba(0, 0, 0, 0.6);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen" x-data="adminTool()" x-init="init()">
+
+    <!-- ═══════════════════════════════════════ 
+         SECURITY GATE — Shown if not root admin
+    ═══════════════════════════════════════ -->
+    <div x-show="accessDenied" x-cloak
+        class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-[999] text-center p-8">
+        <div class="w-20 h-20 bg-red-900/30 rounded-full flex items-center justify-center mb-6 threat-pulse">
+            <i class="fas fa-ban text-red-500 text-3xl"></i>
+        </div>
+        <h1 class="font-display text-3xl font-bold text-red-400 mb-2">ACCESS DENIED</h1>
+        <p class="text-slate-400 text-sm mb-2">You do not have <span
+                class="text-orange-400 font-bold">super_admin</span> clearance to access this panel.</p>
+        <p class="text-slate-600 text-xs font-mono mb-8">This attempt has been logged.</p>
+        <a href="index.html"
+            class="px-6 py-3 bg-slate-800 text-white rounded-xl font-bold text-sm hover:bg-orange-600 transition">
+            <i class="fas fa-arrow-left mr-2"></i>Return to Login
+        </a>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         LOADING GATE
+    ═══════════════════════════════════════ -->
+    <div x-show="authLoading" x-cloak class="fixed inset-0 bg-slate-950 flex items-center justify-center z-[998]">
+        <div class="flex flex-col items-center gap-4">
+            <div class="w-12 h-12 border-4 border-slate-700 border-t-orange-500 rounded-full animate-spin"></div>
+            <p class="text-slate-500 text-sm font-mono">Verifying clearance...</p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         CONFIRMATION MODAL
+    ═══════════════════════════════════════ -->
+    <div x-show="modal.show" x-cloak class="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-4"
+        @click.self="modal.show = false">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl p-8 max-w-sm w-full shadow-2xl"
+            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 mx-auto"
+                :class="modal.type === 'delete' ? 'bg-red-900/40' : 'bg-amber-900/40'">
+                <i class="text-2xl"
+                    :class="modal.type === 'delete' ? 'fas fa-trash-alt text-red-400' : 'fas fa-user-shield text-amber-400'"></i>
+            </div>
+            <h3 class="font-bold text-xl text-center mb-2" x-text="modal.title"></h3>
+            <p class="text-slate-400 text-sm text-center mb-6" x-text="modal.body"></p>
+
+            <!-- Confirmation input for destructive actions -->
+            <div x-show="modal.type === 'delete'" class="mb-4">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Type <span
+                        class="text-red-400 font-mono">DELETE</span> to confirm</label>
+                <input type="text" x-model="modal.confirmText"
+                    class="w-full p-3 bg-slate-800 border border-slate-600 rounded-xl text-sm font-mono text-red-400 outline-none focus:border-red-500 secure-input">
+            </div>
+
+            <div class="flex gap-3">
+                <button @click="modal.show = false"
+                    class="flex-1 py-3 bg-slate-800 text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-700 transition">
+                    Cancel
+                </button>
+                <button @click="modal.onConfirm()" :disabled="modal.type === 'delete' && modal.confirmText !== 'DELETE'"
+                    class="flex-1 py-3 rounded-xl font-bold text-sm transition disabled:opacity-30"
+                    :class="modal.type === 'delete' ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-amber-600 hover:bg-amber-700 text-white'">
+                    <span x-text="modal.btnLabel"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         TOAST NOTIFICATION
+    ═══════════════════════════════════════ -->
+    <div x-show="toast.show" x-cloak x-transition class="fixed top-6 right-6 z-[100] max-w-sm w-full"
+        :class="toast.type === 'success' ? 'text-green-300' : toast.type === 'error' ? 'text-red-300' : 'text-amber-300'">
+        <div class="flex items-start gap-3 p-4 rounded-2xl border shadow-2xl"
+            :class="toast.type === 'success' ? 'bg-green-950 border-green-800' : toast.type === 'error' ? 'bg-red-950 border-red-800' : 'bg-amber-950 border-amber-800'">
+            <i class="mt-0.5"
+                :class="toast.type === 'success' ? 'fas fa-check-circle text-green-400' : toast.type === 'error' ? 'fas fa-times-circle text-red-400' : 'fas fa-exclamation-triangle text-amber-400'"></i>
+            <p class="text-sm font-bold" x-text="toast.message"></p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         AUTO-LOGOUT WARNING MODAL
+    ═══════════════════════════════════════ -->
+    <div x-show="showIdleWarning" x-cloak
+        class="fixed inset-0 modal-overlay flex items-center justify-center z-[200] p-4"
+        x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100">
+        <div class="bg-slate-900 border border-amber-700/60 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center"
+            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100">
+
+            <!-- Countdown Ring -->
+            <div class="relative w-24 h-24 mx-auto mb-5">
+                <svg class="w-full h-full" viewBox="0 0 86 86">
+                    <circle cx="43" cy="43" r="40" fill="none" stroke="#334155" stroke-width="5" />
+                    <circle cx="43" cy="43" r="40" fill="none" :stroke="idleRemaining <= 30 ? '#ef4444' : '#f97316'"
+                        stroke-width="5" stroke-linecap="round" class="countdown-ring transition-all duration-1000"
+                        :style="`stroke-dashoffset: ${251 - (251 * idleRemaining / 120)}`" />
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span class="font-display font-bold text-xl"
+                        :class="idleRemaining <= 30 ? 'text-red-400' : 'text-amber-400'"
+                        x-text="Math.floor(idleRemaining / 60) + ':' + String(idleRemaining % 60).padStart(2,'0')"></span>
+                    <span class="text-[9px] text-slate-500 uppercase tracking-wider">remaining</span>
+                </div>
+            </div>
+
+            <h3 class="font-display font-bold text-lg text-white mb-1">Session Expiring</h3>
+            <p class="text-slate-400 text-sm mb-6">You've been inactive. For security, this session will be terminated
+                automatically.</p>
+
+            <div class="flex gap-3">
+                <button @click="logout()"
+                    class="flex-1 py-3 bg-slate-800 text-slate-400 font-bold text-sm rounded-xl hover:bg-slate-700 transition">
+                    Logout Now
+                </button>
+                <button @click="stayLoggedIn()"
+                    class="flex-1 py-3 bg-orange-600 text-white font-bold text-sm rounded-xl hover:bg-orange-500 transition shadow-lg shadow-orange-900/40">
+                    <i class="fas fa-shield-check mr-1"></i> Stay Logged In
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         MAIN LAYOUT
+    ═══════════════════════════════════════ -->
+    <div x-show="!authLoading && !accessDenied" x-cloak class="flex h-screen">
+
+        <!-- LEFT SIDEBAR -->
+        <aside class="w-80 bg-slate-900 border-r border-slate-800 flex flex-col flex-shrink-0 overflow-hidden">
+
+            <!-- Header -->
+            <div class="p-6 border-b border-slate-800">
+                <div class="root-badge rounded-xl px-4 py-3 flex items-center gap-3 mb-4">
+                    <div class="w-9 h-9 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-shield-halved text-orange-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-mono text-orange-400 uppercase tracking-widest">Root Access</p>
+                        <p class="font-display font-bold text-sm text-white">Identity Manager</p>
+                    </div>
+                    <div class="ml-auto w-2 h-2 bg-green-500 rounded-full threat-pulse"></div>
+                </div>
+                <div class="bg-slate-800/60 rounded-xl p-3 text-xs font-mono text-slate-500 leading-relaxed">
+                    <i class="fas fa-terminal text-orange-400 mr-2"></i>
+                    Operator: <span class="text-orange-300" x-text="currentAdmin.email || 'Unknown'"></span><br>
+                    Session: <span class="text-slate-400" x-text="sessionId"></span>
+                </div>
+                <!-- SESSION EXPIRY CLOCK -->
+                <div class="mt-3 flex items-center gap-2 px-1">
+                    <i class="fas fa-clock text-[10px]"
+                        :class="idleRemaining <= 120 ? (idleRemaining <= 60 ? 'text-red-500' : 'text-amber-500') : 'text-slate-600'"></i>
+                    <p class="text-[10px] font-mono"
+                        :class="idleRemaining <= 120 ? (idleRemaining <= 60 ? 'text-red-400' : 'text-amber-400') : 'text-slate-600'">
+                        Auto-logout in
+                        <span x-text="Math.floor(idleRemaining / 60) + 'm ' + (idleRemaining % 60) + 's'"></span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Create User Form -->
+            <div class="flex-1 overflow-y-auto custom-scroll p-6">
+                <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i class="fas fa-user-plus text-orange-400"></i> Create New Identity
+                </h2>
+
+                <form @submit.prevent="createUser()" class="space-y-4">
+
+                    <!-- Full Name -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Full Name</label>
+                        <input type="text" x-model="form.name" required placeholder="e.g. Amit Kumar"
+                            class="secure-input w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm outline-none transition placeholder-slate-600">
+                    </div>
+
+                    <!-- Personal Gmail -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">
+                            Personal Gmail <span class="text-orange-400">*</span>
+                        </label>
+                        <input type="email" x-model="form.gmail" required placeholder="personal@gmail.com"
+                            class="secure-input w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm outline-none transition placeholder-slate-600">
+                        <p class="text-[10px] text-slate-600 mt-1"><i class="fas fa-info-circle mr-1"></i>Used for
+                            recovery &amp; contact only.</p>
+                    </div>
+
+                    <!-- Official Email -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">
+                            Official Login Email <span class="text-orange-400">*</span>
+                        </label>
+                        <input type="email" x-model="form.email" required placeholder="user@biharyaatra.com"
+                            class="secure-input w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm outline-none transition placeholder-slate-600">
+                    </div>
+
+                    <!-- Password with Strength Meter -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Password</label>
+                        <div class="relative">
+                            <input :type="form.showPassword ? 'text' : 'password'" x-model="form.password" required
+                                @input="checkStrength()" placeholder="Min 8 characters" autocomplete="new-password"
+                                class="secure-input w-full p-3 pr-10 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm outline-none transition font-mono placeholder-slate-600">
+                            <button type="button" @click="form.showPassword = !form.showPassword"
+                                class="absolute right-3 top-3.5 text-slate-500 hover:text-orange-400 transition focus:outline-none">
+                                <i class="fas text-xs" :class="form.showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                            </button>
+                        </div>
+                        <!-- Strength Bar -->
+                        <div class="mt-2 h-1 bg-slate-700 rounded-full overflow-hidden">
+                            <div class="strength-bar h-full rounded-full" :style="`width: ${passwordStrength.score}%`"
+                                :class="passwordStrength.color"></div>
+                        </div>
+                        <p class="text-[10px] mt-1 font-bold" :class="passwordStrength.textColor"
+                            x-text="passwordStrength.label"></p>
+                    </div>
+
+                    <!-- Generate Password Button -->
+                    <button type="button" @click="generatePassword()"
+                        class="w-full py-2 rounded-xl border border-dashed border-slate-600 text-slate-400 text-xs font-bold hover:border-orange-500 hover:text-orange-400 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-dice"></i> Auto-Generate Strong Password
+                    </button>
+
+                    <!-- Phone (optional) -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Phone (Optional)</label>
+                        <input type="tel" x-model="form.phone" placeholder="+91 98765 43210"
+                            class="secure-input w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm outline-none transition placeholder-slate-600">
+                    </div>
+
+                    <!-- System Role -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">System Role</label>
+                        <div class="relative">
+                            <select x-model="form.role"
+                                class="secure-input w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm outline-none transition appearance-none cursor-pointer">
+                                <option value="super_admin">⚡ Super Admin (Root)</option>
+                                <option value="admin">🛡️ Regional Admin</option>
+                                <option value="homestay">🏠 Homestay Partner</option>
+                                <option value="transport">🚕 Transport Partner</option>
+                                <option value="guide">🚩 Tour Guide</option>
+                            </select>
+                            <i
+                                class="fas fa-chevron-down absolute right-4 top-4 text-slate-500 text-xs pointer-events-none"></i>
+                        </div>
+                        <!-- Super Admin Warning -->
+                        <div x-show="form.role === 'super_admin'" x-transition
+                            class="mt-2 p-3 bg-red-950 border border-red-800 rounded-xl flex gap-2 items-start">
+                            <i class="fas fa-exclamation-triangle text-red-400 mt-0.5 text-xs"></i>
+                            <p class="text-[10px] text-red-300 font-bold">You are granting ROOT-level access. This user
+                                will have unrestricted control over all system data.</p>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit" :disabled="loading || passwordStrength.score < 50"
+                        class="w-full py-4 rounded-xl bg-orange-600 text-white font-bold text-sm hover:bg-orange-500 transition-all shadow-lg shadow-orange-900/40 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed mt-2">
+                        <span x-show="!loading"><i class="fas fa-user-plus mr-2"></i>Create Identity &amp;
+                            Register</span>
+                        <span x-show="loading" class="flex items-center gap-2">
+                            <i class="fas fa-spinner fa-spin"></i> Processing...
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Copied Password display -->
+                <div x-show="generatedPwd" x-transition x-cloak
+                    class="mt-4 p-4 bg-slate-800 border border-orange-500/30 rounded-xl">
+                    <p class="text-[10px] text-orange-400 font-bold uppercase mb-2"><i
+                            class="fas fa-key mr-1"></i>Generated Password — Copy now!</p>
+                    <p class="font-mono text-green-400 text-xs break-all" x-text="generatedPwd"></p>
+                    <button @click="copyPwd()" class="mt-2 text-[10px] text-slate-400 hover:text-white transition">
+                        <i class="fas fa-copy mr-1"></i>Copy to clipboard
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-slate-950">
+
+            <!-- Top Bar -->
+            <header
+                class="h-16 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between px-8 flex-shrink-0">
+                <div class="flex items-center gap-4">
+                    <h1 class="font-display font-bold text-white">Active System Users</h1>
+                    <span
+                        class="bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-bold px-2 py-1 rounded-lg">
+                        <span x-text="filteredUsers.length"></span> / <span x-text="users.length"></span> shown
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <!-- Search -->
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                        <input type="text" x-model="search" placeholder="Search users..."
+                            class="w-56 pl-8 pr-4 py-2 bg-slate-800 border border-slate-700 text-white text-sm rounded-xl outline-none focus:border-orange-500 transition placeholder-slate-600">
+                    </div>
+                    <!-- Role Filter -->
+                    <select x-model="filterRole"
+                        class="py-2 px-3 bg-slate-800 border border-slate-700 text-white text-sm rounded-xl outline-none focus:border-orange-500 transition">
+                        <option value="">All Roles</option>
+                        <option value="super_admin">Super Admin</option>
+                        <option value="admin">Regional Admin</option>
+                        <option value="homestay">Homestay</option>
+                        <option value="transport">Transport</option>
+                        <option value="guide">Guide</option>
+                    </select>
+                    <!-- Logout -->
+                    <button @click="logout()"
+                        class="flex items-center gap-2 px-4 py-2 bg-red-900/20 border border-red-800 text-red-400 text-xs font-bold rounded-xl hover:bg-red-900/40 transition">
+                        <i class="fas fa-sign-out-alt"></i> End Session
+                    </button>
+                </div>
+            </header>
+
+            <!-- Users Table -->
+            <div class="flex-1 overflow-y-auto custom-scroll p-8">
+
+                <!-- Empty State -->
+                <div x-show="filteredUsers.length === 0 && !usersLoading"
+                    class="flex flex-col items-center justify-center h-48 text-slate-600">
+                    <i class="fas fa-users-slash text-3xl mb-3"></i>
+                    <p class="text-sm">No users match your search.</p>
+                </div>
+
+                <!-- Loading -->
+                <div x-show="usersLoading" class="flex items-center justify-center h-48">
+                    <div class="w-8 h-8 border-4 border-slate-700 border-t-orange-500 rounded-full animate-spin"></div>
+                </div>
+
+                <!-- User Cards Grid -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                    <template x-for="user in filteredUsers" :key="user.id">
+                        <div x-data="{ showPwdPanel: false, newPass: '', pwdStrength: {score:0, color:'', label:'', textColor:''} }"
+                            class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition group">
+
+                            <!-- User Info Row -->
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center gap-4">
+                                    <!-- Avatar -->
+                                    <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold shadow-lg flex-shrink-0"
+                                        :class="getRoleColor(user.role)">
+                                        <span x-text="(user.name || 'U').charAt(0).toUpperCase()"></span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-white text-sm" x-text="user.name || 'Unnamed User'">
+                                        </h3>
+                                        <p class="text-xs font-mono text-slate-400" x-text="user.email"></p>
+                                        <p class="text-xs text-slate-600 font-mono" x-show="user.personalEmail"
+                                            x-text="'↳ ' + user.personalEmail"></p>
+                                    </div>
+                                </div>
+
+                                <!-- Role Badge -->
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg"
+                                        :class="getRoleBadge(user.role)" x-text="user.role?.replace('_', ' ')"></span>
+                                </div>
+                            </div>
+
+                            <!-- Meta Info -->
+                            <div class="flex items-center gap-4 mb-4 text-[10px] font-mono text-slate-600">
+                                <span><i class="fas fa-fingerprint mr-1"></i><span
+                                        x-text="user.id?.substring(0,8) + '...'"></span></span>
+                                <span x-show="user.createdAt"><i class="fas fa-clock mr-1"></i><span
+                                        x-text="formatDate(user.createdAt)"></span></span>
+                                <span class="ml-auto flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                    <span class="text-green-600" x-text="user.status || 'active'"></span>
+                                </span>
+                            </div>
+
+                            <!-- Actions Row -->
+                            <div class="flex items-center gap-3 pt-4 border-t border-slate-800">
+                                <!-- Role Change (with confirmation) -->
+                                <div class="relative flex-1">
+                                    <select @change="confirmRoleChange(user, $event)"
+                                        class="w-full text-xs font-bold bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 outline-none focus:border-orange-500 cursor-pointer appearance-none">
+                                        <option value="super_admin" :selected="user.role === 'super_admin'">⚡ Super
+                                            Admin</option>
+                                        <option value="admin" :selected="user.role === 'admin'">🛡️ Admin</option>
+                                        <option value="homestay" :selected="user.role === 'homestay'">🏠 Homestay
+                                        </option>
+                                        <option value="transport" :selected="user.role === 'transport'">🚕 Transport
+                                        </option>
+                                        <option value="guide" :selected="user.role === 'guide'">🚩 Guide</option>
+                                    </select>
+                                    <i
+                                        class="fas fa-chevron-down absolute right-3 top-2.5 text-slate-500 text-[10px] pointer-events-none"></i>
+                                </div>
+
+                                <!-- Password Panel Toggle -->
+                                <button @click="showPwdPanel = !showPwdPanel"
+                                    :class="showPwdPanel ? 'bg-blue-900/40 text-blue-400 border-blue-700' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-blue-400'"
+                                    class="w-9 h-9 flex items-center justify-center rounded-xl border transition"
+                                    title="Password Management">
+                                    <i class="fas fa-key text-xs"></i>
+                                </button>
+
+                                <!-- Delete (with confirmation) -->
+                                <button @click="confirmDelete(user)"
+                                    class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800 text-slate-400 border border-slate-700 hover:bg-red-900/30 hover:text-red-400 hover:border-red-800 transition"
+                                    title="Delete Identity">
+                                    <i class="fas fa-trash-alt text-xs"></i>
+                                </button>
+                            </div>
+
+                            <!-- Password Management Panel (expandable) -->
+                            <div x-show="showPwdPanel" x-transition class="mt-4 pt-4 border-t border-slate-800">
+                                <p class="text-[10px] font-bold text-slate-500 uppercase mb-3">
+                                    <i class="fas fa-lock text-orange-400 mr-1"></i>Password Management
+                                </p>
+                                <div class="space-y-3">
+                                    <!-- New Password Input -->
+                                    <div>
+                                        <input type="password" x-model="newPass"
+                                            @input="pwdStrength = calcStrength(newPass)"
+                                            placeholder="New password (min 8 chars)"
+                                            class="w-full p-2.5 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white font-mono outline-none focus:border-orange-500 transition">
+                                        <div class="mt-1.5 h-1 bg-slate-700 rounded-full overflow-hidden">
+                                            <div class="strength-bar h-full rounded-full"
+                                                :style="`width: ${pwdStrength.score}%`" :class="pwdStrength.color">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button
+                                            @click="forceUpdatePassword(user.id, newPass); showPwdPanel=false; newPass='';"
+                                            :disabled="newPass.length < 8"
+                                            class="flex-1 py-2 bg-slate-700 text-white text-xs font-bold rounded-xl hover:bg-orange-600 transition disabled:opacity-30">
+                                            <i class="fas fa-bolt mr-1"></i>Force Update
+                                        </button>
+                                        <button @click="sendResetEmail(user.email); showPwdPanel=false;"
+                                            class="flex-1 py-2 bg-slate-800 text-slate-300 border border-slate-700 text-xs font-bold rounded-xl hover:bg-slate-700 transition">
+                                            <i class="fas fa-envelope mr-1"></i>Send Reset Link
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Audit Log Section -->
+                <div class="mt-8">
+                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i class="fas fa-scroll text-orange-400"></i> Session Audit Log
+                    </h2>
+                    <div
+                        class="bg-slate-900 border border-slate-800 rounded-2xl p-5 font-mono text-xs space-y-2 max-h-48 overflow-y-auto custom-scroll">
+                        <template x-for="(entry, i) in auditLog" :key="i">
+                            <div class="flex items-start gap-3">
+                                <span class="text-slate-600 flex-shrink-0" x-text="entry.time"></span>
+                                <span
+                                    :class="entry.type === 'error' ? 'text-red-400' : entry.type === 'warn' ? 'text-amber-400' : 'text-green-400'"
+                                    x-text="'[' + entry.type.toUpperCase() + ']'"></span>
+                                <span class="text-slate-300" x-text="entry.msg"></span>
+                            </div>
+                        </template>
+                        <div x-show="auditLog.length === 0" class="text-slate-600">No activity yet in this session.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         FIREBASE + ALPINE SCRIPT
+    ═══════════════════════════════════════ -->
+    <script type="module">
+        import { auth, db, appId } from './assets/js/firebase-config.js';
+        import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/module.esm.js';
+
+        import {
+            createUserWithEmailAndPassword,
+            signOut,
+            sendPasswordResetEmail,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        import {
+            collection, doc, setDoc, deleteDoc,
+            onSnapshot, serverTimestamp, updateDoc, addDoc, getDoc
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.adminTool = function () {
+            return {
+                // ── State ──────────────────────────────────────
+                authLoading: true,
+                accessDenied: false,
+                usersLoading: true,
+                loading: false,
+                users: [],
+                search: '',
+                filterRole: '',
+                currentAdmin: { email: '', uid: '' },
+                sessionId: 'SES-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                auditLog: [],
+                generatedPwd: '',
+
+                // ── Auto-Logout State ─────────────────────────────────────
+                IDLE_LIMIT: 15 * 60,       // 15 minutes total inactivity before logout
+                WARN_BEFORE: 2 * 60,       // show warning at 2 minutes remaining
+                idleRemaining: 15 * 60,    // current countdown (seconds)
+                showIdleWarning: false,
+                _idleInterval: null,       // setInterval handle
+
+                modal: {
+                    show: false, type: '', title: '', body: '',
+                    btnLabel: 'Confirm', confirmText: '',
+                    onConfirm: () => { }
+                },
+
+                toast: { show: false, message: '', type: 'info' },
+
+                form: {
+                    name: '', email: '', gmail: '', password: '',
+                    phone: '', role: 'admin', showPassword: false
+                },
+
+                passwordStrength: { score: 0, color: 'bg-slate-600', label: '', textColor: 'text-slate-500' },
+
+                // ── Computed ───────────────────────────────────
+                get filteredUsers() {
+                    return this.users.filter(u => {
+                        const q = this.search.toLowerCase();
+                        const matchSearch = !q || (u.name || '').toLowerCase().includes(q)
+                            || (u.email || '').toLowerCase().includes(q);
+                        const matchRole = !this.filterRole || u.role === this.filterRole;
+                        return matchSearch && matchRole;
+                    });
+                },
+
+                // ── Init ───────────────────────────────────────
+                async init() {
+                    this.log('info', `Session ${this.sessionId} started`);
+
+                    onAuthStateChanged(auth, async (user) => {
+                        if (!user) {
+                            this.accessDenied = true;
+                            this.authLoading = false;
+                            this.log('warn', 'Unauthenticated access attempt blocked');
+                            return;
+                        }
+
+                        // Check role in Firestore
+                        const snap = await getDoc(doc(db, 'artifacts', appId, 'users', user.uid));
+                        const data = snap.exists() ? snap.data() : {};
+
+                        if (data.role !== 'super_admin') {
+                            this.accessDenied = true;
+                            this.authLoading = false;
+                            this.log('error', `Access denied for uid:${user.uid.substring(0, 8)} — role:${data.role || 'unknown'}`);
+                            return;
+                        }
+
+                        this.currentAdmin = { email: user.email, uid: user.uid };
+                        this.log('info', `Authenticated as ${user.email}`);
+                        this.authLoading = false;
+                        this.listenUsers();
+
+                        // ── Start auto-logout idle timer after successful auth ──
+                        this.startIdleTimer();
+                    });
+                },
+
+                // ── Auto-Logout: Start Idle Timer ──────────────
+                startIdleTimer() {
+                    this.idleRemaining = this.IDLE_LIMIT;
+                    this.showIdleWarning = false;
+
+                    // Listen for any user activity and reset the timer
+                    const events = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+                    const reset = () => this.resetIdleTimer();
+                    events.forEach(e => window.addEventListener(e, reset, { passive: true }));
+
+                    // Tick every second
+                    clearInterval(this._idleInterval);
+                    this._idleInterval = setInterval(async () => {
+                        this.idleRemaining--;
+
+                        // Show warning modal 2 minutes before expiry
+                        if (this.idleRemaining <= this.WARN_BEFORE && !this.showIdleWarning) {
+                            this.showIdleWarning = true;
+                            this.log('warn', 'Idle warning shown — session expiring soon');
+                        }
+
+                        // Hard logout at zero
+                        if (this.idleRemaining <= 0) {
+                            clearInterval(this._idleInterval);
+                            this.log('warn', `Auto-logout triggered — idle for ${this.IDLE_LIMIT / 60} minutes`);
+                            // Write to Firestore audit log
+                            try {
+                                await addDoc(collection(db, 'artifacts', appId, 'audit_log'), {
+                                    action: 'AUTO_LOGOUT',
+                                    reason: 'Idle timeout',
+                                    operatorUid: this.currentAdmin.uid,
+                                    operatorEmail: this.currentAdmin.email,
+                                    timestamp: serverTimestamp(),
+                                    sessionId: this.sessionId
+                                });
+                            } catch (_) { }
+                            await signOut(auth);
+                            window.location.href = 'index.html';
+                        }
+                    }, 1000);
+                },
+
+                // ── Auto-Logout: Reset Timer on Activity ───────
+                resetIdleTimer() {
+                    if (!this._idleInterval) return; // not started yet
+                    this.idleRemaining = this.IDLE_LIMIT;
+                    if (this.showIdleWarning) {
+                        this.showIdleWarning = false;
+                    }
+                },
+
+                // ── Auto-Logout: "Stay Logged In" button ───────
+                stayLoggedIn() {
+                    this.resetIdleTimer();
+                    this.log('info', 'Session extended by operator');
+                },
+
+                // ── Real-time User List ────────────────────────
+                listenUsers() {
+                    this.usersLoading = true;
+                    const ref = collection(db, 'artifacts', appId, 'users');
+                    onSnapshot(ref, (snap) => {
+                        this.users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        this.usersLoading = false;
+                        this.log('info', `Loaded ${this.users.length} identities from Firestore`);
+                    });
+                },
+
+                // ── Create User ────────────────────────────────
+                async createUser() {
+                    if (this.passwordStrength.score < 50) {
+                        this.showToast('Password is too weak. Use a stronger password.', 'error');
+                        return;
+                    }
+                    this.loading = true;
+                    try {
+                        const cred = await createUserWithEmailAndPassword(auth, this.form.email, this.form.password);
+                        const uid = cred.user.uid;
+
+                        await setDoc(doc(db, 'artifacts', appId, 'users', uid), {
+                            uid,
+                            name: this.form.name,
+                            email: this.form.email,
+                            personalEmail: this.form.gmail,
+                            phone: this.form.phone || '',
+                            role: this.form.role,
+                            createdAt: serverTimestamp(),
+                            createdBy: this.currentAdmin.uid,
+                            status: 'active'
+                        });
+
+                        // Audit log entry in Firestore
+                        await addDoc(collection(db, 'artifacts', appId, 'audit_log'), {
+                            action: 'USER_CREATED',
+                            targetEmail: this.form.email,
+                            targetRole: this.form.role,
+                            operatorUid: this.currentAdmin.uid,
+                            operatorEmail: this.currentAdmin.email,
+                            timestamp: serverTimestamp(),
+                            sessionId: this.sessionId
+                        });
+
+                        this.log('info', `Created identity: ${this.form.email} [${this.form.role}]`);
+                        this.showToast(`✅ Identity created: ${this.form.name} (${this.form.role})`, 'success');
+
+                        // Reset form
+                        this.form = { name: '', email: '', gmail: '', password: '', phone: '', role: 'admin', showPassword: false };
+                        this.passwordStrength = { score: 0, color: 'bg-slate-600', label: '', textColor: 'text-slate-500' };
+                        this.generatedPwd = '';
+
+                        // Re-sign-in current super admin (createUser signs them out)
+                        // Note: Firebase client-side createUser changes active auth session.
+                        // This is a known limitation. Reload to restore session.
+                        await signOut(auth);
+                        this.showToast('Session ended after creation. Please log back in.', 'warn');
+                        setTimeout(() => window.location.href = 'index.html', 2500);
+
+                    } catch (e) {
+                        let msg = e.message;
+                        if (e.code === 'auth/email-already-in-use') msg = 'This email is already registered.';
+                        if (e.code === 'auth/weak-password') msg = 'Password too weak (min 6 chars).';
+                        if (e.code === 'auth/invalid-email') msg = 'Invalid email format.';
+                        this.log('error', `Create failed: ${e.code}`);
+                        this.showToast(msg, 'error');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                // ── Confirm Delete (with typed confirmation) ───
+                confirmDelete(user) {
+                    this.modal = {
+                        show: true,
+                        type: 'delete',
+                        title: 'Delete Identity',
+                        body: `You are about to permanently remove "${user.name || user.email}" from the database. This is irreversible.`,
+                        btnLabel: 'Delete Permanently',
+                        confirmText: '',
+                        onConfirm: async () => {
+                            if (this.modal.confirmText !== 'DELETE') return;
+                            this.modal.show = false;
+                            await this.deleteUser(user.id, user.email);
+                        }
+                    };
+                },
+
+                async deleteUser(id, email) {
+                    try {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'users', id));
+                        await addDoc(collection(db, 'artifacts', appId, 'audit_log'), {
+                            action: 'USER_DELETED',
+                            targetEmail: email,
+                            operatorUid: this.currentAdmin.uid,
+                            operatorEmail: this.currentAdmin.email,
+                            timestamp: serverTimestamp(),
+                            sessionId: this.sessionId
+                        });
+                        this.log('warn', `Deleted identity: ${email}`);
+                        this.showToast(`Identity "${email}" removed.`, 'success');
+                    } catch (e) {
+                        this.log('error', `Delete failed: ${e.message}`);
+                        this.showToast('Delete failed: ' + e.message, 'error');
+                    }
+                },
+
+                // ── Confirm Role Change ────────────────────────
+                confirmRoleChange(user, event) {
+                    const newRole = event.target.value;
+                    if (newRole === user.role) return;
+                    this.modal = {
+                        show: true,
+                        type: 'role',
+                        title: 'Change System Role',
+                        body: `Change "${user.name || user.email}" from [${user.role}] → [${newRole}]? This affects their system access immediately.`,
+                        btnLabel: 'Confirm Role Change',
+                        confirmText: '',
+                        onConfirm: async () => {
+                            this.modal.show = false;
+                            await this.updateRole(user.id, user.email, newRole);
+                        }
+                    };
+                },
+
+                async updateRole(id, email, newRole) {
+                    try {
+                        await updateDoc(doc(db, 'artifacts', appId, 'users', id), { role: newRole });
+                        await addDoc(collection(db, 'artifacts', appId, 'audit_log'), {
+                            action: 'ROLE_CHANGED',
+                            targetEmail: email,
+                            newRole,
+                            operatorUid: this.currentAdmin.uid,
+                            operatorEmail: this.currentAdmin.email,
+                            timestamp: serverTimestamp(),
+                            sessionId: this.sessionId
+                        });
+                        this.log('warn', `Role changed: ${email} → ${newRole}`);
+                        this.showToast('Role updated successfully.', 'success');
+                    } catch (e) {
+                        this.log('error', 'Role update failed: ' + e.message);
+                        this.showToast('Failed to update role.', 'error');
+                    }
+                },
+
+                // ── Force Password Update (Backend limitation note) ─
+                async forceUpdatePassword(uid, newPass) {
+                    if (!newPass || newPass.length < 8) {
+                        this.showToast('Password must be at least 8 characters.', 'error');
+                        return;
+                    }
+                    // Firebase client SDK cannot update another user's password.
+                    // This requires Admin SDK / Cloud Functions.
+                    this.showToast('⚠️ Force update requires Firebase Admin SDK (Cloud Function). Use "Send Reset Link" instead.', 'warn');
+                    this.log('warn', `Force password attempt for uid:${uid.substring(0, 8)} — requires Cloud Function`);
+                },
+
+                // ── Send Password Reset Email ──────────────────
+                async sendResetEmail(email) {
+                    try {
+                        await sendPasswordResetEmail(auth, email);
+                        this.log('info', `Reset email sent to ${email}`);
+                        this.showToast(`Reset link sent to ${email}`, 'success');
+                    } catch (e) {
+                        this.log('error', `Reset email failed: ${e.message}`);
+                        this.showToast('Failed to send reset email.', 'error');
+                    }
+                },
+
+                // ── Logout ─────────────────────────────────────
+                async logout() {
+                    this.log('info', `Session ${this.sessionId} ended by operator`);
+                    await signOut(auth);
+                    window.location.href = 'index.html';
+                },
+
+                // ── Password Strength ──────────────────────────
+                checkStrength() {
+                    this.passwordStrength = this.calcStrength(this.form.password);
+                },
+
+                calcStrength(pwd) {
+                    let score = 0;
+                    if (!pwd) return { score: 0, color: 'bg-slate-600', label: '', textColor: 'text-slate-500' };
+                    if (pwd.length >= 8) score += 20;
+                    if (pwd.length >= 12) score += 10;
+                    if (/[A-Z]/.test(pwd)) score += 20;
+                    if (/[0-9]/.test(pwd)) score += 20;
+                    if (/[^A-Za-z0-9]/.test(pwd)) score += 30;
+                    if (score < 40) return { score, color: 'bg-red-500', label: 'Weak', textColor: 'text-red-400' };
+                    if (score < 70) return { score, color: 'bg-amber-500', label: 'Moderate', textColor: 'text-amber-400' };
+                    return { score, color: 'bg-green-500', label: 'Strong ✓', textColor: 'text-green-400' };
+                },
+
+                // ── Auto-Generate Strong Password ──────────────
+                generatePassword() {
+                    const chars = 'ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*';
+                    let pwd = '';
+                    for (let i = 0; i < 16; i++) pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+                    this.form.password = pwd;
+                    this.generatedPwd = pwd;
+                    this.form.showPassword = true;
+                    this.checkStrength();
+                },
+
+                copyPwd() {
+                    navigator.clipboard.writeText(this.generatedPwd).then(() => {
+                        this.showToast('Password copied to clipboard!', 'success');
+                    });
+                },
+
+                // ── Utilities ──────────────────────────────────
+                showToast(message, type = 'info') {
+                    this.toast = { show: true, message, type };
+                    setTimeout(() => this.toast.show = false, 4000);
+                },
+
+                log(type, msg) {
+                    const time = new Date().toLocaleTimeString('en-IN', { hour12: false });
+                    this.auditLog.unshift({ time, type, msg });
+                    if (this.auditLog.length > 50) this.auditLog.pop();
+                },
+
+                formatDate(ts) {
+                    if (!ts) return 'Unknown';
+                    const d = ts.toDate ? ts.toDate() : new Date(ts);
+                    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                },
+
+                getRoleColor(role) {
+                    return {
+                        'super_admin': 'bg-slate-800 border-2 border-orange-500',
+                        'admin': 'bg-blue-600',
+                        'homestay': 'bg-orange-500',
+                        'transport': 'bg-green-600',
+                        'guide': 'bg-purple-500'
+                    }[role] || 'bg-slate-500';
+                },
+
+                getRoleBadge(role) {
+                    return {
+                        'super_admin': 'bg-orange-500/10 text-orange-400 border border-orange-500/30',
+                        'admin': 'bg-blue-500/10 text-blue-400 border border-blue-500/30',
+                        'homestay': 'bg-amber-500/10 text-amber-400 border border-amber-500/30',
+                        'transport': 'bg-green-500/10 text-green-400 border border-green-500/30',
+                        'guide': 'bg-purple-500/10 text-purple-400 border border-purple-500/30'
+                    }[role] || 'bg-slate-500/10 text-slate-400';
+                }
+            };
+        };
+
+        window.Alpine = Alpine;
+        Alpine.start();
+    </script>
+</body>
+
+</html>

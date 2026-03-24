@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Sign Up - Bihar Yaatra</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF9933',
+                        secondary: '#138808',
+                    },
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'sans-serif'],
+                        display: ['Syne', 'sans-serif'],
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 3s infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .font-display {
+            font-family: 'Syne', sans-serif;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .text-gradient {
+            background: linear-gradient(90deg, #FF9933, #EC4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FF9933;
+            border-radius: 10px;
+        }
+
+        /* Hide number input spinners */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 h-screen flex flex-col" x-data="authApp()"
+    @auth-success.window="handleSuccessEvent($event.detail)" @otp-sent.window="phoneStep = 2">
+
+    <header class="absolute w-full top-0 z-50 py-6">
+        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+            <a href="../index.html" class="font-display font-bold text-2xl tracking-tighter flex items-center gap-2">
+                Bihar<span class="text-gradient">Yaatra</span>
+            </a>
+            <a href="../index.html"
+                class="text-sm font-bold text-gray-500 hover:text-black transition flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Back to Home</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-1 top-12 flex items-center justify-center p-6 relative">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
+            <div class="absolute top-[-10%] right-[-5%] w-96 h-96 bg-orange-100 rounded-full blur-3xl opacity-50"></div>
+            <div class="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-green-50 rounded-full blur-3xl opacity-50"></div>
+        </div>
+
+        <div
+            class="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 min-h-[650px] border border-gray-100 relative">
+
+            <div class="relative hidden md:flex flex-col justify-end p-12 text-white bg-gray-900 overflow-hidden group">
+                <div class="absolute inset-0">
+                    <img src="../assets/images/Lumbini.jpg"
+                        class="w-full h-full object-cover opacity-60 transition-transform duration-[10s] hover:scale-110"
+                        onerror="this.src='https://images.unsplash.com/photo-1598556776374-0f5f78165537?q=80&w=1965&auto=format&fit=crop'">
+                </div>
+
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+
+                <div class="relative z-10 min-h-[140px]">
+                    <template x-for="(fact, index) in facts" :key="index">
+                        <div x-show="currentFact === index" x-transition:enter="transition ease-out duration-700"
+                            x-transition:enter-start="opacity-0 translate-y-4"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-300"
+                            x-transition:leave-start="opacity-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 -translate-y-4" class="absolute bottom-0 w-full">
+                            <div
+                                class="inline-block px-3 py-1 mb-4 text-xs font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md rounded-full border border-white/10 text-orange-300">
+                                Did You Know?
+                            </div>
+                            <h2 class="text-3xl font-display font-bold mb-3" x-text="fact.title"></h2>
+                            <p class="text-gray-300 text-lg leading-relaxed" x-text="fact.desc"></p>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="relative z-10 flex gap-2 mt-6">
+                    <template x-for="(fact, index) in facts" :key="index">
+                        <button @click="currentFact = index" class="h-1 rounded-full transition-all duration-300"
+                            :class="currentFact === index ? 'w-8 bg-orange-500' : 'w-2 bg-white/30 hover:bg-white'">
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="p-8 md:p-12 flex flex-col justify-center relative bg-white">
+
+                <div class="flex justify-center mb-8 bg-gray-50 p-1 rounded-full w-fit mx-auto border border-gray-100">
+                    <button @click="switchTab('login')"
+                        class="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300"
+                        :class="activeTab === 'login' ? 'bg-white shadow-md text-black' : 'text-gray-400 hover:text-gray-600'">
+                        Login
+                    </button>
+                    <button @click="switchTab('phone')"
+                        class="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300"
+                        :class="activeTab === 'phone' ? 'bg-white shadow-md text-black' : 'text-gray-400 hover:text-gray-600'">
+                        Phone
+                    </button>
+                    <button @click="switchTab('signup')"
+                        class="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300"
+                        :class="activeTab === 'signup' ? 'bg-white shadow-md text-black' : 'text-gray-400 hover:text-gray-600'">
+                        Sign Up
+                    </button>
+                </div>
+
+                <div id="authError"
+                    class="hidden mb-4 p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3 text-red-600 text-sm font-medium animate-pulse">
+                    <i class="fas fa-circle-exclamation mt-0.5"></i>
+                    <span id="authErrorText">Error message here</span>
+                </div>
+
+                <div x-show="activeTab === 'login'" x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-x-4"
+                    x-transition:enter-end="opacity-100 translate-x-0">
+                    <div class="text-center mb-6">
+                        <h3 class="font-display text-3xl font-bold mb-2">Login to Account</h3>
+                        <p class="text-gray-500 text-sm">Welcome back! Please enter your details.</p>
+                    </div>
+
+                    <form class="space-y-4" onsubmit="window.handleLogin(event)">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Email
+                                Address</label>
+                            <input type="email" id="login-email" required
+                                class="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-orange-500 outline-none transition"
+                                placeholder="name@example.com">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Password</label>
+                            <div class="relative">
+                                <input :type="showPass ? 'text' : 'password'" id="login-password" required
+                                    class="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-orange-500 outline-none transition"
+                                    placeholder="••••••••">
+                                <button type="button" @click="showPass = !showPass"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                    <i class="fas" :class="showPass ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                </button>
+                            </div>
+                            <div class="flex justify-between items-center mt-2">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox"
+                                        class="accent-orange-500 h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500">
+                                    <span class="text-xs text-gray-500 font-medium">Remember me</span>
+                                </label>
+                                <button type="button" @click="showForgotModal = true"
+                                    class="text-xs text-orange-600 font-bold hover:underline">Forgot Password?</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="login-btn"
+                            class="w-full py-4 bg-black text-white font-bold rounded-2xl shadow-lg hover:bg-orange-600 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 group">
+                            <span>Sign In</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div x-show="activeTab === 'phone'" x-cloak x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4"
+                    x-transition:enter-end="opacity-100 translate-y-0">
+                    <div class="text-center mb-6">
+                        <h3 class="font-display text-3xl font-bold mb-2">Phone Login</h3>
+                        <p class="text-gray-500 text-sm"
+                            x-text="phoneStep === 1 ? 'Enter your mobile number to get OTP.' : 'Enter the code sent to your phone.'">
+                        </p>
+                    </div>
+
+                    <div x-show="phoneStep === 1">
+                        <form onsubmit="window.handlePhoneAuth(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Mobile
+                                    Number</label>
+                                <div class="flex gap-2">
+                                    <div class="p-4 bg-gray-100 rounded-2xl font-bold text-gray-600 select-none">+91
+                                    </div>
+                                    <input type="tel" id="phone-input" required pattern="[0-9]{10}" maxlength="10"
+                                        class="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-orange-500 outline-none transition font-medium tracking-wide"
+                                        placeholder="98765 43210">
+                                </div>
+                            </div>
+                            <div id="recaptcha-container"></div>
+
+                            <button type="submit" id="get-otp-btn"
+                                class="w-full py-4 bg-black text-white font-bold rounded-2xl shadow-lg hover:bg-orange-600 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 group">
+                                <span>Get OTP</span>
+                                <i class="fas fa-paper-plane group-hover:translate-x-1 transition-transform"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div x-show="phoneStep === 2" x-cloak>
+                        <form onsubmit="window.handleVerifyOtp(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Verification
+                                    Code</label>
+                                <input type="text" id="otp-input" maxlength="6"
+                                    class="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-orange-500 outline-none transition text-center text-2xl tracking-[0.5em] font-bold"
+                                    placeholder="------">
+                            </div>
+
+                            <button type="submit" id="verify-otp-btn"
+                                class="w-full py-4 bg-green-600 text-white font-bold rounded-2xl shadow-lg hover:bg-green-700 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 group">
+                                <span>Verify & Login</span>
+                                <i class="fas fa-check-circle"></i>
+                            </button>
+
+                            <div class="text-center mt-4">
+                                <button type="button" @click="phoneStep = 1"
+                                    class="text-xs text-gray-500 hover:text-black font-bold">
+                                    Change Number?
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div x-show="activeTab === 'signup'" x-cloak x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 -translate-x-4"
+                    x-transition:enter-end="opacity-100 translate-x-0">
+                    <div class="text-center mb-6">
+                        <h3 class="font-display text-3xl font-bold mb-2">Create Account</h3>
+                        <p class="text-gray-500 text-sm">Join the community of travelers.</p>
+                    </div>
+
+                    <form class="space-y-4" onsubmit="window.handleSignUp(event)">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Full Name</label>
+                            <input type="text" id="signup-name" required
+                                class="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-orange-500 outline-none transition"
+                                placeholder="John Doe">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Email
+                                Address</label>
+                            <input type="email" id="signup-email" required
+                                class="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-orange-500 outline-none transition"
+                                placeholder="name@example.com">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Password</label>
+                            <div class="relative">
+                                <input :type="showPass ? 'text' : 'password'" id="signup-password" required
+                                    @input="checkStrength($event.target.value)"
+                                    class="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-orange-500 outline-none transition"
+                                    placeholder="Create a strong password">
+                                <button type="button" @click="showPass = !showPass"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                    <i class="fas" :class="showPass ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                </button>
+                            </div>
+
+                            <div class="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="h-full transition-all duration-300" :class="{
+                                     'bg-red-500 w-1/4': passwordStrength === 1,
+                                     'bg-yellow-500 w-2/4': passwordStrength === 2,
+                                     'bg-blue-500 w-3/4': passwordStrength === 3,
+                                     'bg-green-500 w-full': passwordStrength === 4
+                                   }"></div>
+                            </div>
+                            <p class="text-[10px] mt-1 text-gray-400 text-right" x-text="strengthText"></p>
+                        </div>
+
+                        <div class="flex items-start gap-2">
+                            <input type="checkbox" id="terms" x-model="termsAccepted"
+                                class="mt-1 accent-orange-500 h-4 w-4 rounded border-gray-300 focus:ring-orange-500 cursor-pointer">
+                            <label for="terms" class="text-xs text-gray-500 cursor-pointer select-none">
+                                I agree to the <a href="#" class="text-orange-600 hover:underline">Terms of Service</a>
+                                and <a href="#" class="text-orange-600 hover:underline">Privacy Policy</a>.
+                            </label>
+                        </div>
+
+                        <button type="submit" id="signup-btn" :disabled="!termsAccepted"
+                            class="w-full py-4 bg-black text-white font-bold rounded-2xl shadow-lg hover:bg-orange-600 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group">
+                            <span>Create Account</span>
+                            <i class="fas fa-user-plus group-hover:scale-110 transition-transform"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-100"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm"><span class="px-2 bg-white text-gray-400">Or
+                            continue with</span></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="window.handleGoogleLogin()"
+                        class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-200 hover:bg-gray-50 transition font-medium text-sm">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                        <span>Google</span>
+                    </button>
+                    <button
+                        class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-200 hover:bg-gray-50 transition font-medium opacity-50 cursor-not-allowed text-sm"
+                        title="Coming Soon">
+                        <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" class="w-5 h-5"
+                            alt="Facebook">
+                        <span>Facebook</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <div x-cloak x-show="showForgotModal" class="fixed inset-0 z-[60] flex items-center justify-center px-4"
+        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showForgotModal = false"></div>
+
+        <div class="relative bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl transform transition-all"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-90 translate-y-4"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+
+            <button @click="showForgotModal = false"
+                class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center transition">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <div
+                    class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 text-orange-600">
+                    <i class="fas fa-key text-xl"></i>
+                </div>
+                <h3 class="text-2xl font-display font-bold">Forgot Password?</h3>
+                <p class="text-gray-500 text-sm mt-2">Enter your email and we'll send you a link to reset your password.
+                </p>
+            </div>
+
+            <form onsubmit="window.handleResetPassword(event)">
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Email Address</label>
+                    <input type="email" id="reset-email" required
+                        class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:ring-2 focus:ring-orange-500 outline-none transition"
+                        placeholder="name@example.com">
+                </div>
+                <div id="resetMsg" class="hidden mb-4 text-sm font-medium text-center"></div>
+                <button type="submit" id="reset-btn"
+                    class="w-full py-3 bg-black text-white font-bold rounded-xl shadow hover:bg-orange-600 transition-colors">
+                    Send Reset Link
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div x-cloak x-show="showSuccessModal" class="fixed inset-0 z-[100] flex items-center justify-center px-4"
+        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+        <div class="relative bg-white rounded-[2.5rem] p-10 max-w-sm w-full text-center shadow-2xl transform transition-all border border-white/20"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-90 translate-y-4"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+
+            <div
+                class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-green-50 mb-6 animate-bounce-slow">
+                <div
+                    class="h-16 w-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-200">
+                    <i class="fas fa-check text-3xl text-white"></i>
+                </div>
+            </div>
+
+            <h3 class="text-2xl font-display font-bold text-gray-900 mb-3" x-text="successTitle"></h3>
+            <p class="text-gray-500 mb-8 leading-relaxed" x-text="successMessage"></p>
+
+            <div class="flex flex-col items-center gap-3">
+                <div class="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-xs font-bold text-orange-500 tracking-widest uppercase">Redirecting...</span>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-8 text-center text-gray-400 text-xs">
+        &copy; 2025 Bihar Yaatra. All rights reserved.
+    </footer>
+
+    <script>
+        // Alpine Data Logic
+        function authApp() {
+            return {
+                activeTab: 'login', // Changed from isLogin boolean to string
+                showSuccessModal: false,
+                showForgotModal: false,
+                successTitle: '',
+                successMessage: '',
+
+                // New Features State
+                showPass: false,
+                termsAccepted: false,
+                passwordStrength: 0,
+                strengthText: 'Too short',
+
+                // Phone Auth State
+                phoneStep: 1, // 1 = input number, 2 = input otp
+
+                // Carousel State
+                currentFact: 0,
+                facts: [
+                    { title: "Bodh Gaya", desc: "The place where Prince Siddhartha attained enlightenment and became the Buddha. A UNESCO World Heritage site." },
+                    { title: "Nalanda University", desc: "Once the center of learning for the world, hosting over 10,000 students from across Asia in the 5th century." },
+                    { title: "Sher Shah Suri", desc: "The ruler from Bihar who defeated the Mughals and built the Grand Trunk Road, connecting East to West." }
+                ],
+
+                init() {
+                    // Auto-rotate carousel
+                    setInterval(() => {
+                        this.currentFact = (this.currentFact + 1) % this.facts.length;
+                    }, 6000);
+                },
+
+                switchTab(tabName) {
+                    this.activeTab = tabName;
+                    document.getElementById('authError').classList.add('hidden');
+                    // Reset states
+                    this.showPass = false;
+                    this.passwordStrength = 0;
+                    this.phoneStep = 1;
+                },
+
+                handleSuccessEvent(detail) {
+                    this.showSuccessModal = detail.show;
+                    this.successTitle = detail.title;
+                    this.successMessage = detail.message;
+                },
+
+                checkStrength(val) {
+                    let score = 0;
+                    if (val.length > 5) score++;
+                    if (val.length > 8) score++;
+                    if (/[A-Z]/.test(val)) score++;
+                    if (/[0-9]/.test(val)) score++;
+                    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+                    // Clamp score 0-4
+                    if (val.length < 1) score = 0;
+                    else if (score > 4) score = 4;
+
+                    this.passwordStrength = score;
+
+                    const texts = ['Too short', 'Weak', 'Fair', 'Good', 'Strong'];
+                    this.strengthText = texts[score];
+                }
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAO1bKiSsTHCsGlgFXm_-D2gbFBqXdWQuE",
+            authDomain: "biharyaatra-t.firebaseapp.com",
+            projectId: "biharyaatra-t",
+            storageBucket: "biharyaatra-t.firebasestorage.app",
+            messagingSenderId: "101220485604",
+            appId: "1:101220485604:web:e96c3230ee36de85ba1ff1",
+            measurementId: "G-B83LETRN9L"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        auth.useDeviceLanguage();
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Auto-redirect if already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("User already logged in, redirecting...");
+                window.location.href = '../pannel/users/index.html';
+            }
+        });
+
+        // Global variables
+        window.confirmationResult = null;
+        window.recaptchaVerifier = null;
+
+        // --- Helper Functions ---
+        function setSuccessModal(show, title, message) {
+            window.dispatchEvent(new CustomEvent('auth-success', {
+                detail: { show: show, title: title, message: message }
+            }));
+        }
+
+        function showError(message) {
+            const errDiv = document.getElementById('authError');
+            const errText = document.getElementById('authErrorText');
+            errText.textContent = message;
+            errDiv.classList.remove('hidden');
+        }
+
+        function setLoading(btnId, isLoading, defaultText) {
+            const btn = document.getElementById(btnId);
+            if (!btn) return;
+
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
+                btn.classList.add('opacity-75', 'cursor-not-allowed');
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = `<span>${defaultText}</span>`;
+                // Restore specific icons based on ID
+                if (btnId === 'login-btn') btn.innerHTML += ' <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>';
+                if (btnId === 'signup-btn') btn.innerHTML += ' <i class="fas fa-user-plus group-hover:scale-110 transition-transform"></i>';
+                if (btnId === 'get-otp-btn') btn.innerHTML += ' <i class="fas fa-paper-plane group-hover:translate-x-1 transition-transform"></i>';
+                if (btnId === 'verify-otp-btn') btn.innerHTML += ' <i class="fas fa-check-circle"></i>';
+
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        }
+
+        // --- Phone Auth Logic (FIXED) ---
+
+        // Initialize Recaptcha only once
+        window.initRecaptcha = () => {
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'invisible', // Will fallback to v2 visible challenge if risk is detected
+                    'callback': (response) => {
+                        // reCAPTCHA solved, allow signInWithPhoneNumber.
+                        // If you handle the button click manually, you can leave this empty
+                    },
+                    'expired-callback': () => {
+                        // Response expired. Ask user to solve reCAPTCHA again.
+                        showError("Captcha expired. Please try again.");
+                        setLoading('get-otp-btn', false, 'Get OTP');
+                    }
+                });
+            }
+        };
+
+        window.handlePhoneAuth = async (e) => {
+            e.preventDefault();
+            const phoneNumber = "+91" + document.getElementById('phone-input').value;
+
+            // Basic Validation
+            if (!/^\+91[0-9]{10}$/.test(phoneNumber)) {
+                showError("Please enter a valid 10-digit mobile number.");
+                return;
+            }
+
+            setLoading('get-otp-btn', true, 'Sending OTP...');
+            document.getElementById('authError').classList.add('hidden');
+
+            // Ensure Recaptcha is initialized
+            try {
+                window.initRecaptcha();
+            } catch (err) {
+                console.error("Recaptcha Init Error:", err);
+                // If the container was removed/cleared, we might need to reset the variable
+                window.recaptchaVerifier = null;
+                window.initRecaptcha();
+            }
+
+            const appVerifier = window.recaptchaVerifier;
+
+            try {
+                // Check if user is already attempting
+                if (window.confirmationResult) {
+                    window.confirmationResult = null; // Reset previous attempt
+                }
+
+                const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+                window.confirmationResult = confirmationResult;
+
+                // Switch to OTP view via CUSTOM EVENT
+                window.dispatchEvent(new CustomEvent('otp-sent'));
+                setLoading('get-otp-btn', false, 'Get OTP');
+
+            } catch (error) {
+                console.error("SMS Error:", error);
+
+                // Handle specific Firebase errors
+                let msg = "Could not send SMS.";
+                if (error.code === 'auth/invalid-phone-number') msg = "Invalid phone number format.";
+                if (error.code === 'auth/quota-exceeded') msg = "SMS limit exceeded. Try again later.";
+                if (error.code === 'auth/captcha-check-failed') msg = "Captcha check failed. Please refresh.";
+                if (error.message.includes('reCAPTCHA')) msg = "Verification check failed. Please refresh and try again.";
+                // Specific check for billing error
+                if (error.code === 'auth/billing-not-enabled') msg = "Phone auth disabled. Use a Test Number (e.g. +91 9999999999) or upgrade plan.";
+
+                showError(msg);
+                setLoading('get-otp-btn', false, 'Get OTP');
+
+                // If recaptcha failed, we often need to reset the verifier
+                if (window.recaptchaVerifier) {
+                    try {
+                        window.recaptchaVerifier.clear();
+                        window.recaptchaVerifier = null;
+                    } catch (e) { console.log(e); }
+                }
+            }
+        };
+
+        window.handleVerifyOtp = async (e) => {
+            e.preventDefault();
+            const code = document.getElementById('otp-input').value;
+
+            if (code.length !== 6) {
+                showError("Please enter the 6-digit code.");
+                return;
+            }
+
+            setLoading('verify-otp-btn', true, 'Verifying...');
+            document.getElementById('authError').classList.add('hidden');
+
+            try {
+                if (!window.confirmationResult) {
+                    throw new Error("No verification session found.");
+                }
+
+                const result = await window.confirmationResult.confirm(code);
+                const user = result.user;
+
+                // Check if user profile exists, if not create basic profile
+                // Note: Phone auth users often don't have display names immediately
+                try {
+                    await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), {
+                        uid: user.uid,
+                        phoneNumber: user.phoneNumber,
+                        createdAt: new Date().toISOString(),
+                        role: 'user',
+                        authMethod: 'phone'
+                    }, { merge: true }); // merge to avoid overwriting if exists
+                } catch (dbError) {
+                    console.warn("Profile sync failed:", dbError);
+                }
+
+                setLoading('verify-otp-btn', false, 'Verify & Login');
+                setSuccessModal(true, "Phone Verified!", "Login successful.");
+                setTimeout(() => window.location.href = '../pannel/users/index.html', 2500);
+
+            } catch (error) {
+                console.error("OTP Error:", error);
+                let msg = "Invalid verification code.";
+                if (error.code === 'auth/code-expired') msg = "Code has expired. Request a new one.";
+                showError(msg);
+                setLoading('verify-otp-btn', false, 'Verify & Login');
+            }
+        };
+
+        // --- Existing Login/Signup Handlers (Kept for completeness) ---
+        window.handleLogin = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            setLoading('login-btn', true, 'Sign In');
+            document.getElementById('authError').classList.add('hidden');
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                setLoading('login-btn', false, 'Sign In');
+                setSuccessModal(true, "Welcome Back!", "We are preparing your dashboard.");
+                setTimeout(() => window.location.href = '../pannel/users/index.html', 2500);
+            } catch (error) {
+                let msg = "Failed to sign in.";
+                if (error.code === 'auth/invalid-credential') msg = "Invalid email or password.";
+                showError(msg);
+                setLoading('login-btn', false, 'Sign In');
+            }
+        };
+
+        window.handleSignUp = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const terms = document.getElementById('terms').checked;
+
+            if (!terms) { showError("You must agree to the Terms."); return; }
+            if (password.length < 6) { showError("Password too short."); return; }
+
+            setLoading('signup-btn', true, 'Create Account');
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                await updateProfile(user, { displayName: name });
+                await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), {
+                    uid: user.uid, displayName: name, email: email, createdAt: new Date().toISOString(), role: 'user'
+                });
+                setLoading('signup-btn', false, 'Create Account');
+                setSuccessModal(true, "Namaste!", "Account created successfully.");
+                setTimeout(() => window.location.href = '../index.html', 2500);
+            } catch (error) {
+                let msg = "Failed to create account.";
+                if (error.code === 'auth/email-already-in-use') msg = "Email already in use.";
+                showError(msg);
+                setLoading('signup-btn', false, 'Create Account');
+            }
+        };
+
+        window.handleGoogleLogin = async () => {
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(auth, provider);
+                setSuccessModal(true, "Welcome!", "Google login successful.");
+                setTimeout(() => window.location.href = '../pannel/users/index.html', 2500);
+            } catch (error) { showError("Google Sign-In failed."); }
+        }
+
+        window.handleResetPassword = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('reset-email').value;
+            const msgDiv = document.getElementById('resetMsg');
+            const btn = document.getElementById('reset-btn');
+            btn.disabled = true; btn.textContent = "Sending...";
+            try {
+                await sendPasswordResetEmail(auth, email);
+                msgDiv.textContent = "Reset link sent!";
+                msgDiv.classList.remove('hidden', 'text-red-600');
+                msgDiv.classList.add('text-green-600');
+                btn.textContent = "Sent";
+            } catch (error) {
+                msgDiv.textContent = "Error: " + error.message;
+                msgDiv.classList.remove('hidden', 'text-green-600');
+                msgDiv.classList.add('text-red-600');
+                btn.textContent = "Try Again";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>

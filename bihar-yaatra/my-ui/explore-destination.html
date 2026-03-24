@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Destinations - Bihar Yaatra</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .font-display {
+            font-family: 'Syne', sans-serif;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .text-gradient {
+            background: linear-gradient(90deg, #FF9933, #EC4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .bg-gradient {
+            background: linear-gradient(135deg, #FF9933, #EC4899);
+        }
+
+        .card-zoom-image {
+            transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .group:hover .card-zoom-image {
+            transform: scale(1.1);
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #FF9933;
+            transition: width 0.3s ease;
+        }
+
+        .nav-item:hover::after {
+            width: 100%;
+        }
+
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 12px);
+        }
+
+        @media (max-width: 768px) {
+            footer {
+                padding-bottom: 100px !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900" x-data="exploreApp()"
+    @auth-change.window="isLoggedIn = !!$event.detail; if($event.detail) { userName = $event.detail.displayName || 'Traveler'; userAvatar = $event.detail.photoURL || `https://ui-avatars.com/api/?name=${userName}&background=f97316&color=fff`; }">
+
+    <header x-data="{ isScrolled: false, userMenu: false }" @scroll.window="isScrolled = window.pageYOffset > 60"
+        :class="{'bg-white/90 backdrop-blur-lg shadow-md py-3': isScrolled, 'bg-transparent py-5': !isScrolled}"
+        class="fixed w-full top-0 z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between">
+                <a href="../index.html"
+                    class="font-display font-bold text-2xl tracking-tighter flex items-center gap-2">
+                    Bihar<span class="text-gradient">Yaatra</span>
+                </a>
+
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="./explore-destination.html" class="nav-item font-medium text-orange-600">Destinations</a>
+
+                    <div x-data="{ servicesOpen: false }" class="relative" @click.away="servicesOpen = false">
+                        <button @click="servicesOpen = !servicesOpen"
+                            class="nav-item font-medium flex items-center gap-1.5 transition-colors duration-200">
+                            Services <i class="fas fa-chevron-down text-xs ml-1 transition-transform"
+                                :class="servicesOpen ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="servicesOpen" x-cloak x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute left-1/2 -translate-x-1/2 mt-4 w-56 bg-white rounded-xl shadow-xl border border-gray-100 p-2 transform origin-top">
+                            <a href="./packages.html"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"><i
+                                    class="fas fa-calendar-alt w-4 mr-2 text-blue-500"></i> Tour Packages</a>
+                            <a href="./aiplanner.html"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"><i
+                                    class="fas fa-compass w-4 mr-2 text-purple-500"></i> AI Trip Planner</a>
+                            <a href="./homestay.html"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"><i
+                                    class="fas fa-heart w-4 mr-2 text-orange-500"></i> Homestays</a>
+                            <a href="./transport.html"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"><i
+                                    class="fas fa-bus-alt w-4 mr-2 text-green-500"></i> Transport</a>
+                            <div class="border-t border-gray-100 my-1"></div>
+                            <a href="./guide_support.html"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"><i
+                                    class="fas fa-user-tie w-4 mr-2 text-teal-500"></i> Expert Guides</a>
+                        </div>
+                    </div>
+                    <a href="./about.html" class="nav-item font-medium">About</a>
+                    <a href="./contact.html" class="nav-item font-medium">Contact</a>
+
+                    <template x-if="!isLoggedIn">
+                        <a href="./auth.html"
+                            class="px-6 py-2.5 rounded-full bg-gradient text-white font-medium transition-all shadow-md hover:shadow-lg hover:scale-105 hover:-translate-y-0.5">
+                            Login
+                        </a>
+                    </template>
+
+                    <template x-if="isLoggedIn">
+                        <div class="relative" @click.away="userMenu = false">
+                            <button @click="userMenu = !userMenu" class="flex items-center gap-2 focus:outline-none">
+                                <img :src="userAvatar"
+                                    class="w-10 h-10 rounded-full border-2 border-orange-100 object-cover"
+                                    alt="User Pic">
+                                <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform"
+                                    :class="userMenu ? 'rotate-180' : ''"></i>
+                            </button>
+
+                            <div x-show="userMenu" x-cloak x-transition
+                                class="absolute right-0 mt-4 w-48 bg-white rounded-xl shadow-xl border border-gray-100 p-2 overflow-hidden">
+                                <a href="../pannel/users/index.html"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 rounded-lg transition-colors">Dashboard</a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <button onclick="window.logout()"
+                                    class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors">Logout</button>
+                            </div>
+                        </div>
+                    </template>
+                </nav>
+
+                <button @click="mobileMenu = !mobileMenu" class="md:hidden focus:outline-none text-gray-800">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div x-show="mobileMenu" x-cloak class="fixed inset-0 z-50 flex justify-end">
+        <div @click="mobileMenu = false" x-show="mobileMenu" x-transition:enter="transition ease-out duration-300"
+            class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+        <div x-show="mobileMenu" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+            class="relative w-full max-w-xs bg-white shadow-2xl h-full flex flex-col">
+
+            <div class="px-6 py-6 flex items-center justify-between border-b border-gray-100">
+                <span class="font-display font-bold text-xl">Menu</span>
+                <button @click="mobileMenu = false" class="text-gray-500 hover:text-red-500 transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <template x-if="isLoggedIn">
+                <div class="px-6 py-6 bg-orange-50/50 border-b border-orange-100 flex items-center gap-4">
+                    <img :src="userAvatar" class="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover"
+                        alt="Profile">
+                    <div>
+                        <p class="text-xs text-gray-500 font-bold uppercase">Welcome back</p>
+                        <h3 class="font-display font-bold text-xl text-gray-900" x-text="userName"></h3>
+                    </div>
+                </div>
+            </template>
+
+            <div class="flex-1 px-6 py-6 overflow-y-auto">
+                <nav class="space-y-4">
+                    <template x-if="isLoggedIn">
+                        <div>
+                            <a href="../pannel/users/index.html"
+                                class="flex items-center gap-3 px-4 py-3 text-lg font-medium text-gray-900 bg-orange-50 rounded-xl transition">
+                                <i class="fas fa-th-large text-orange-500"></i> Dashboard
+                            </a>
+                            <div class="border-t border-gray-100 my-4"></div>
+                        </div>
+                    </template>
+
+
+                    <a href="./packages.html"
+                        class="flex items-center gap-4 text-lg font-medium hover:text-orange-600 transition">
+                        <div class="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+                            <i class="fas fa-suitcase-rolling"></i></div>
+                        Packages
+                    </a>
+
+                    <a href="./homestay.html"
+                        class="flex items-center gap-4 text-lg font-medium hover:text-orange-600 transition">
+                        <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-600"><i
+                                class="fas fa-home"></i></div>
+                        Homestays
+                    </a>
+                    <a href="./transport.html"
+                        class="flex items-center gap-4 text-lg font-medium hover:text-orange-600 transition">
+                        <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-600"><i
+                                class="fas fa-car"></i></div>
+                        Transports
+                    </a>
+                    <a href="./guide_support.html"
+                        class="flex items-center gap-4 text-lg font-medium hover:text-orange-600 transition">
+                        <div class="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-600"><i
+                                class="fas fa-user-tie"></i></div>
+                        Guides
+                    </a>
+                    <a href="./about.html"
+                        class="flex items-center gap-4 text-lg font-medium text-orange-600 transition">
+                        <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-600"><i
+                                class="fas fa-info-circle"></i></div>
+                        About
+                    </a>
+                    <a href="./contact.html"
+                        class="flex items-center gap-4 text-lg font-medium hover:text-orange-600 transition">
+                        <div class="w-8 h-8 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-600">
+                            <i class="fas fa-envelope"></i></div>
+                        Contact
+                    </a>
+                </nav>
+            </div>
+
+            <div class="p-6 pb-26 bg-gray-50">
+                <template x-if="!isLoggedIn">
+                    <a href="./auth.html"
+                        class="block w-full text-center py-4 rounded-xl bg-gradient text-white font-medium shadow-lg">
+                        Login / Sign Up
+                    </a>
+                </template>
+                <template x-if="isLoggedIn">
+                    <button onclick="window.logout()"
+                        class="block w-full text-center py-4 rounded-xl bg-white border border-gray-200 text-red-600 font-bold shadow-sm hover:bg-red-50">
+                        Sign Out
+                    </button>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <section class="relative pt-40 pb-16 bg-gray-50 overflow-hidden">
+        <div
+            class="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-orange-50 to-transparent pointer-events-none">
+        </div>
+        <div
+            class="absolute -left-24 top-24 w-64 h-64 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10 text-center">
+            <h1 class="font-display text-5xl md:text-6xl font-bold mb-6">
+                Explore the <span class="text-gradient">Hidden Gems</span>
+            </h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-10">
+                From ancient ruins to untouched forests, find your perfect getaway in the heart of India.
+            </p>
+
+            <div
+                class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-2 flex items-center border border-gray-100 transform transition-transform focus-within:scale-105">
+                <div class="pl-4 text-gray-400">
+                    <i class="fas fa-search text-xl"></i>
+                </div>
+                <input type="text" x-model="searchQuery" placeholder="Search by name (e.g., Rajgir, Falls, Stupa)..."
+                    class="w-full p-4 bg-transparent border-none outline-none text-lg placeholder-gray-400">
+            </div>
+        </div>
+    </section>
+
+    <section class="py-12 bg-white min-h-screen">
+        <div class="max-w-7xl mx-auto px-6">
+
+            <div class="flex flex-wrap justify-center gap-3 mb-16">
+                <template x-for="cat in ['All', 'Spiritual', 'Historical', 'Nature', 'Wildlife']">
+                    <button @click="activeCategory = cat"
+                        :class="activeCategory === cat ? 'bg-black text-white shadow-lg scale-105' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                        class="px-6 py-2.5 rounded-full font-medium transition-all duration-300 border border-transparent">
+                        <span x-text="cat"></span>
+                    </button>
+                </template>
+            </div>
+
+            <div x-show="loading" class="flex justify-center py-20 text-gray-400">
+                <i class="fas fa-circle-notch fa-spin text-3xl text-orange-500"></i>
+            </div>
+
+            <div x-show="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" x-cloak>
+                <template x-for="item in filteredDestinations" :key="item.id">
+                    <div class="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col h-full"
+                        x-transition:enter="transition ease-out duration-500"
+                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+
+                        <div class="relative h-64 overflow-hidden">
+                            <img :src="item.image" :alt="item.name" class="w-full h-full object-cover card-zoom-image">
+                            <div
+                                class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-gray-800 shadow-sm uppercase tracking-wide">
+                                <span x-text="item.category"></span>
+                            </div>
+                        </div>
+
+                        <div class="p-8 flex flex-col flex-1">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-2xl font-bold font-display group-hover:text-orange-600 transition-colors"
+                                        x-text="item.name"></h3>
+                                    <div class="flex items-center text-sm text-gray-500 mt-1">
+                                        <i class="fas fa-map-marker-alt text-orange-400 mr-2"></i>
+                                        <span x-text="item.location"></span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center bg-yellow-50 px-2 py-1 rounded-lg">
+                                    <i class="fas fa-star text-yellow-400 text-sm mr-1"></i>
+                                    <span class="font-bold text-sm" x-text="item.rating"></span>
+                                </div>
+                            </div>
+
+                            <p class="text-gray-600 text-sm leading-relaxed mb-6 line-clamp-2"
+                                x-text="item.description"></p>
+
+                            <div class="mt-auto pt-6 border-t border-gray-100">
+                                <a :href="'view_detail.html?id=' + item.id"
+                                    class="block w-full py-3 text-center bg-black text-white font-bold rounded-xl shadow-md hover:bg-orange-600 hover:scale-[1.02] transition-all duration-300">
+                                    View Detail
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div x-show="!loading && filteredDestinations.length === 0" class="text-center py-20" x-cloak>
+                <h3 class="text-xl font-bold text-gray-600">No destinations found</h3>
+                <button @click="searchQuery = ''; activeCategory = 'All'"
+                    class="mt-4 text-orange-600 font-bold hover:underline">Clear Filters</button>
+            </div>
+
+        </div>
+    </section>
+
+    <div
+        class="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-xl border-t border-gray-100 px-6 py-3 pb-safe shadow-[0_-10px_25px_rgba(0,0,0,0.05)]">
+        <nav class="flex items-center justify-between max-w-md mx-auto">
+            <a href="../index.html"
+                class="flex flex-col items-center gap-1 text-gray-400 hover:text-orange-500 transition-all duration-300">
+                <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-home text-lg"></i>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Home</span>
+            </a>
+
+            <a href="./explore-destination.html"
+                class="flex flex-col items-center gap-1 text-orange-600 transition-all duration-300">
+                <div class="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center">
+                    <i class="fas fa-map-marked-alt text-lg"></i>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Explore</span>
+            </a>
+
+            <a href="./aiplanner.html" class="flex flex-col items-center gap-1 -translate-y-6">
+                <div
+                    class="w-14 h-14 rounded-full bg-gradient text-white flex items-center justify-center shadow-lg shadow-orange-500/30 border-4 border-white animate-pulse-slow">
+                    <i class="fas fa-magic text-xl"></i>
+                </div>
+                <span class="text-[10px] font-bold text-gray-900 uppercase tracking-wider translate-y-2">Saarthi
+                    AI</span>
+            </a>
+
+            <a href="./homestay.html"
+                class="flex flex-col items-center gap-1 text-gray-400 hover:text-orange-500 transition-all duration-300">
+                <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-bed text-lg"></i>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Stay</span>
+            </a>
+
+            <a href="../pannel/users/index.html"
+                class="flex flex-col items-center gap-1 text-gray-400 hover:text-orange-500 transition-all duration-300">
+                <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-user text-lg"></i>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Profile</span>
+            </a>
+        </nav>
+    </div>
+
+    <footer class="bg-gray-900 text-white pt-20 pb-10 rounded-t-[3rem] mt-10">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                <div class="col-span-1 md:col-span-1">
+                    <a href="../index.html"
+                        class="font-display font-bold text-2xl tracking-tighter flex items-center gap-2 mb-6">
+                        Bihar<span class="text-orange-500">Yaatra</span>
+                    </a>
+                    <p class="text-gray-400 leading-relaxed mb-6">
+                        Rediscover the land of enlightenment. We are dedicated to showcasing the true beauty and history
+                        of Bihar to the world.
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="https://www.facebook.com/profile.php?id=61582069628622"
+                            class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-orange-600 transition"><i
+                                class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/biharyaatra?igsh=MXc5MGJneDhwNGJzNw=="
+                            class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-pink-600 transition"><i
+                                class="fab fa-instagram"></i></a>
+                        <a href="https://x.com/biharyaatra"
+                            class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-blue-400 transition"><i
+                                class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-bold mb-6 font-display">Destinations</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li><a href="#" class="hover:text-orange-400 transition">Bodh Gaya</a></li>
+                        <li><a href="#" class="hover:text-orange-400 transition">Nalanda University</a></li>
+                        <li><a href="#" class="hover:text-orange-400 transition">Rajgir Hills</a></li>
+                        <li><a href="#" class="hover:text-orange-400 transition">Valmiki Nagar</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-bold mb-6 font-display">Company</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li><a href="./about.html" class="hover:text-orange-400 transition">About</a></li>
+                        <li><a href="./contact.html" class="hover:text-orange-400 transition">Contact</a></li>
+                        <li><a href="./guide_support.html" class="hover:text-orange-400 transition">Become a Guide</a>
+                        </li>
+                        <li><a href="./privacy-policy.html" class="hover:text-orange-400 transition">Privacy Policy</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-bold mb-6 font-display">Newsletter</h4>
+                    <p class="text-gray-400 mb-4">Subscribe for seasonal offers and travel tips.</p>
+                    <form x-data="{ nlEmail: '', nlStatus: '' }" @submit.prevent="
+                        if(!nlEmail) return;
+                        nlStatus = 'sending';
+                        try {
+                            const ref = window.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'newsletter_subscribers');
+                            await window.addDoc(ref, { email: nlEmail, subscribedAt: window.serverTimestamp() });
+                            nlStatus = 'done'; nlEmail = '';
+                        } catch(e) { nlStatus = 'error'; console.error(e); }
+                    " class="flex flex-col gap-3">
+                        <input type="email" x-model="nlEmail" placeholder="Your email"
+                            class="px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-orange-500 transition" />
+                        <button type="submit" :disabled="nlStatus === 'sending'"
+                            class="px-4 py-3 bg-gradient text-white font-bold rounded-xl hover:opacity-90 transition">
+                            <span x-show="nlStatus === ''">Subscribe</span>
+                            <span x-show="nlStatus === 'sending'"><i class="fas fa-circle-notch fa-spin"></i></span>
+                            <span x-show="nlStatus === 'done'" class="text-green-300"><i class="fas fa-check mr-1"></i>Subscribed!</span>
+                            <span x-show="nlStatus === 'error'" class="text-red-300">Failed, try again</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+                &copy; 2025 Bihar Yaatra. Proudly Made in Bihar.
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAO1bKiSsTHCsGlgFXm_-D2gbFBqXdWQuE",
+            authDomain: "biharyaatra-t.firebaseapp.com",
+            projectId: "biharyaatra-t",
+            storageBucket: "biharyaatra-t.firebasestorage.app",
+            messagingSenderId: "101220485604",
+            appId: "1:101220485604:web:e96c3230ee36de85ba1ff1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Expose to Alpine
+        window.db = db;
+        window.auth = auth;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.addDoc = addDoc;
+        window.serverTimestamp = serverTimestamp;
+        window.appId = appId;
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.signInAnonymously = signInAnonymously;
+
+        // Monitor Auth State & Dispatch Global Event
+        onAuthStateChanged(auth, (user) => {
+            window.dispatchEvent(new CustomEvent('auth-change', { detail: user }));
+        });
+
+        // Global Logout
+        window.logout = async () => {
+            try {
+                await signOut(auth);
+                window.location.reload();
+            } catch (error) {
+                console.error("Logout failed", error);
+            }
+        }
+    </script>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('exploreApp', () => ({
+                mobileMenu: false,
+                isLoggedIn: false,
+                userName: 'User',
+                userAvatar: '',
+                searchQuery: '',
+                activeCategory: 'All',
+                loading: true,
+                destinations: [],
+
+                // Seed Data (CMS Ready)
+                seedData: [
+                    { id: 1, name: 'Bodh Gaya', category: 'Spiritual', location: 'Gaya District', image: 'https://images.unsplash.com/photo-1569485896349-49c0d9a6c65e?q=80&w=1200', rating: 4.9, reviews: 320, price: '₹1,500', description: 'The holiest of Buddhist pilgrimage centers, where Lord Buddha attained enlightenment under the Bodhi tree. A serene place filled with monasteries from various countries.' },
+                    { id: 2, name: 'Nalanda Ruins', category: 'Historical', location: 'Nalanda', image: 'https://images.unsplash.com/photo-1628063597843-085732c57569?q=80&w=1200', rating: 4.8, reviews: 215, price: '₹1,200', description: 'Explore the red brick ruins of one of the world\'s oldest universities, a UNESCO World Heritage site that once hosted 10,000 students.' },
+                    { id: 3, name: 'Rajgir Hills', category: 'Nature', location: 'Rajgir', image: 'https://images.unsplash.com/photo-1622303037987-2cb2a3364f76?q=80&w=1200', rating: 4.7, reviews: 180, price: '₹2,000', description: 'A scenic town set in a green valley, famous for its hot springs, ropeway, and the Vishwa Shanti Stupa atop the Ratnagiri Hill.' },
+                    { id: 4, name: 'Valmiki Reserve', category: 'Wildlife', location: 'West Champaran', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Valmiki_Nagar_Tiger_Reserve.jpg/800px-Valmiki_Nagar_Tiger_Reserve.jpg', rating: 4.6, reviews: 95, price: '₹3,500', description: 'The only tiger reserve in Bihar, offering thrilling jungle safaris and eco-friendly cottage stays amidst dense sal forests.' },
+                    { id: 5, name: 'Sher Shah Suri Tomb', category: 'Historical', location: 'Sasaram', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Sher_Shah_Suri_Tomb.jpg/800px-Sher_Shah_Suri_Tomb.jpg', rating: 4.5, reviews: 150, price: '₹800', description: 'An architectural masterpiece of Indo-Islamic style, this red sandstone mausoleum stands majestically in the middle of a man-made lake.' },
+                    { id: 6, name: 'Kakolat Falls', category: 'Nature', location: 'Nawada', image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiN3a9_M-6gqL8O733H_0wN2Q5w4z4-8z8z8z8z8z8z8z8z8z8z8z8z8z8z8z8/s1600/Kakolat-Waterfall-Nawada-Bihar.jpg', rating: 4.4, reviews: 210, price: '₹600', description: 'A stunning waterfall cascading down from a height of 160 feet, perfect for a refreshing summer dip and picnic.' },
+                    { id: 7, name: 'Vikramshila', category: 'Historical', location: 'Bhagalpur', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Vikramshila_Ruins.jpg/800px-Vikramshila_Ruins.jpg', rating: 4.3, reviews: 80, price: '₹1,000', description: 'The ruins of another great ancient university, known for Tantric Buddhism, located on the banks of the Ganges.' },
+                    { id: 8, name: 'Jal Mandir', category: 'Spiritual', location: 'Pawapuri', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Jal_Mandir%2C_Pawapuri.jpg/800px-Jal_Mandir%2C_Pawapuri.jpg', rating: 4.8, reviews: 130, price: '₹900', description: 'A beautiful white marble temple dedicated to Lord Mahavira, situated in the middle of a lotus-filled tank.' },
+                    { id: 9, name: 'Kesaria Stupa', category: 'Historical', location: 'East Champaran', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Kesariya_Stupa.jpg/800px-Kesariya_Stupa.jpg', rating: 4.6, reviews: 110, price: '₹700', description: 'One of the tallest Buddhist stupas in the world, dating back to the Gupta period.' }
+                ],
+
+                init() {
+                    const checkDeps = () => {
+                        if (window.db && window.onAuthStateChanged) {
+                            this.fetchData();
+                        } else {
+                            setTimeout(checkDeps, 50);
+                        }
+                    };
+                    checkDeps();
+                },
+
+                fetchData() {
+                    window.onAuthStateChanged(window.auth, async (user) => {
+                        // Update UI State
+                        this.isLoggedIn = !!user;
+                        if (user && !user.isAnonymous) {
+                            this.userName = user.displayName || 'Traveler';
+                            this.userAvatar = user.photoURL || `https://ui-avatars.com/api/?name=${this.userName}&background=f97316&color=fff`;
+                        }
+
+                        // Handle Anonymous Sign-In for Data Fetching
+                        /* if (!user) await window.signInAnonymously(window.auth); */
+
+                        try {
+                            const ref = window.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'destinations');
+                            const snap = await window.getDocs(ref);
+
+                            if (snap.empty) {
+                                console.log("Seeding destinations...");
+                                this.destinations = this.seedData;
+                            } else {
+                                this.destinations = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                            }
+                        } catch (e) {
+                            console.error("Error fetching destinations:", e);
+                            this.destinations = this.seedData; // Fallback
+                        } finally {
+                            this.loading = false;
+                        }
+                    });
+                },
+
+                get filteredDestinations() {
+                    return this.destinations.filter(item => {
+                        const matchesCategory = this.activeCategory === 'All' || item.category === this.activeCategory;
+                        const matchesSearch = item.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        return matchesCategory && matchesSearch;
+                    });
+                }
+            }));
+        });
+    </script>
+</body>
+
+</html>

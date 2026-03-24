@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide Hub | Bihar Yaatra Partner</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <!-- FIXED: Removed defer CDN Alpine tag — loaded as ESM module below to avoid race condition -->
+
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #f8fafc; }
+        .font-display { font-family: 'Syne', sans-serif; }
+        [x-cloak] { display: none !important; }
+        .text-gradient { background: linear-gradient(90deg, #3B82F6, #8B5CF6); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .bg-gradient-guide { background: linear-gradient(135deg, #3B82F6, #8B5CF6); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body x-data="guideDash()" x-init="init()">
+
+    <aside class="fixed left-0 top-0 h-screen w-20 lg:w-64 bg-white border-r border-gray-100 z-50 flex flex-col transition-all duration-300">
+        <div class="p-6 flex items-center gap-3">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shrink-0">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <span class="font-display font-bold text-xl hidden lg:block">Guide<span class="text-gradient">Portal</span></span>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-2 mt-4">
+            <template x-for="item in menu">
+                <button @click="activePage = item.id" 
+                    :class="activePage === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'text-gray-500 hover:bg-gray-50'"
+                    class="w-full flex items-center p-3 rounded-xl transition-all group text-left">
+                    <i :class="item.icon" class="w-6 text-center lg:mr-3"></i>
+                    <span class="hidden lg:block font-bold text-sm" x-text="item.label"></span>
+                </button>
+            </template>
+        </nav>
+
+        <div class="p-4 mt-auto">
+            <button @click="logout" class="w-full bg-gray-900 text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="hidden lg:block">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="ml-20 lg:ml-64 p-4 lg:p-8 min-h-screen">
+        
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div>
+                <h2 class="text-gray-400 text-xs font-black uppercase tracking-widest mb-1" x-text="greeting"></h2>
+                <h1 class="text-2xl lg:text-3xl font-display font-black">
+                    <span x-text="guideData.name || 'Certified Guide'"></span>
+                    <span class="text-blue-600 text-sm font-sans" x-text="'(' + (guideData.status || 'Verified') + ')'"></span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex flex-col items-end">
+                    <span class="text-[10px] font-bold text-blue-600 px-2 py-0.5 bg-blue-50 rounded-full uppercase" x-text="guideData.level || 'LEVEL 1'"></span>
+                    <div class="flex text-yellow-400 text-[10px] mt-1">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-gradient-guide flex items-center justify-center text-white font-bold" x-text="guideData.initials || 'G'"></div>
+            </div>
+        </header>
+
+        <div x-show="activePage === 'home'" x-cloak class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-6 rounded-[2rem] border border-gray-100 flex items-center gap-4 shadow-sm">
+                    <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-xl"><i class="fas fa-calendar-check"></i></div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase">Booked Today</p>
+                        <p class="text-2xl font-display font-bold" x-text="stats.todayTours + ' Tours'"></p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] border border-gray-100 flex items-center gap-4 shadow-sm">
+                    <div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 text-xl"><i class="fas fa-wallet"></i></div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase">Earnings (Month)</p>
+                        <p class="text-2xl font-display font-bold" x-text="'₹' + stats.earnings"></p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] border border-gray-100 flex items-center gap-4 shadow-sm">
+                    <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 text-xl"><i class="fas fa-users"></i></div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase">Happy Guests</p>
+                        <p class="text-2xl font-display font-bold" x-text="stats.guests + '+'"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl">
+                <div class="absolute right-0 top-0 opacity-10 p-4"><i class="fas fa-map-location-dot text-[10rem]"></i></div>
+                <div class="relative z-10">
+                    <template x-if="nextJob">
+                        <div>
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="px-3 py-1 bg-blue-500 rounded-full text-[10px] font-black uppercase">Next Job</span>
+                                <span class="text-gray-400 text-xs" x-text="'• ' + nextJob.location"></span>
+                            </div>
+                            <h2 class="text-3xl lg:text-4xl font-display font-bold mb-6" x-text="nextJob.circuitName || 'Expedition'"></h2>
+                            <div class="flex flex-wrap gap-6">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-user-friends text-blue-400"></i>
+                                    <div>
+                                        <p class="text-[10px] text-gray-400 uppercase">Guest</p>
+                                        <p class="text-sm font-bold" x-text="nextJob.guestName"></p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-clock text-blue-400"></i>
+                                    <div>
+                                        <p class="text-[10px] text-gray-400 uppercase">Start Time</p>
+                                        <p class="text-sm font-bold" x-text="nextJob.time"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-8 flex gap-4">
+                                <button class="px-6 py-3 bg-white text-black rounded-xl font-bold text-sm">View Full Itinerary</button>
+                                <button class="px-6 py-3 bg-white/10 text-white rounded-xl font-bold text-sm border border-white/20">Call Coordinator</button>
+                            </div>
+                        </div>
+                    </template>
+                    <template x-if="!nextJob">
+                        <p class="text-gray-400 font-bold italic">No upcoming tours scheduled for today.</p>
+                    </template>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm">
+                    <h3 class="font-display font-bold text-xl mb-4">New Inquiries</h3>
+                    <div class="space-y-4">
+                        <template x-for="inquiry in inquiries" :key="inquiry.id">
+                            <div class="p-4 bg-gray-50 rounded-2xl flex justify-between items-center border border-gray-100">
+                                <div>
+                                    <p class="font-bold text-sm" x-text="inquiry.tourName"></p>
+                                    <p class="text-xs text-gray-500" x-text="inquiry.date + ' • ' + inquiry.slot"></p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button @click="acceptJob(inquiry.id)" class="w-8 h-8 rounded-lg bg-green-500 text-white text-xs"><i class="fas fa-check"></i></button>
+                                    <button class="w-8 h-8 rounded-lg bg-gray-200 text-gray-600 text-xs"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm">
+                    <h3 class="font-display font-bold text-xl mb-2">Availability Settings</h3>
+                    <p class="text-xs text-gray-500 mb-6">Manage your public calendar status</p>
+                    <div class="grid grid-cols-4 gap-2">
+                        <template x-for="day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']">
+                            <button class="py-3 rounded-xl border border-gray-100 text-[10px] font-bold uppercase transition-all"
+                                :class="day === 'Sun' ? 'bg-red-50 text-red-500 border-red-100' : 'bg-blue-50 text-blue-600 border-blue-100'">
+                                <span x-text="day"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="activePage === 'revenue'" x-cloak class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-xl text-center">
+                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-6"><i class="fas fa-coins"></i></div>
+                <h2 class="text-3xl font-display font-bold">Earnings Center</h2>
+                <div class="grid grid-cols-2 gap-4 mt-8">
+                    <div class="p-6 bg-gray-50 rounded-3xl">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Uncleared Balance</p>
+                        <p class="text-3xl font-display font-bold mt-2" x-text="'₹' + stats.pendingPayout"></p>
+                    </div>
+                    <div class="p-6 bg-blue-600 text-white rounded-3xl">
+                        <p class="text-[10px] font-bold text-blue-100 uppercase">Available to Withdraw</p>
+                        <p class="text-3xl font-display font-bold mt-2" x-text="'₹' + stats.availablePayout"></p>
+                    </div>
+                </div>
+                <button class="w-full mt-6 py-4 bg-black text-white rounded-2xl font-bold">Request Instant Payout</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+    // FIXED: Import appId from central config for correct Firestore paths
+    import { auth, db, appId, onAuthStateChanged, signOut } from "../../assets/js/firebase-config.js";
+    import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/module.esm.js';
+    import { collection, onSnapshot, query, where, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // EXPOSE TO GLOBAL WINDOW: This is the key to solving "not defined" errors
+    window.fAuth = auth;
+    window.fDb = db;
+    window.fAppId = appId;  // FIXED: expose appId for correct Firestore paths
+    window.onAuthStateChanged = onAuthStateChanged;
+    window.signOut = signOut;
+    window.onSnapshot = onSnapshot;
+    window.collection = collection;
+    window.query = query;
+    window.where = where;
+    window.doc = doc;
+    window.getDoc = getDoc;
+    window.updateDoc = updateDoc;
+
+    // Signal to Alpine that Firebase is ready
+    window.dispatchEvent(new CustomEvent('firebase-ready'));
+
+    // FIXED: Start Alpine as ESM module (not defer CDN)
+    window.Alpine = Alpine;
+    Alpine.start();
+</script>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('guideDash', () => ({
+            activePage: 'home',
+            greeting: 'Namaste',
+            guideData: { name: 'Rajesh Kumar', initials: 'RK', level: 'LEVEL 4', status: 'Certified Guide' },
+            stats: { todayTours: 4, earnings: 42500, guests: 1240, pendingPayout: 12400, availablePayout: 8900 },
+            nextJob: { circuitName: 'Buddhist Circuit Expedition', location: 'Nalanda University Ruins', guestName: 'Dr. Sarah Miller + 4', time: 'In 2 Hours' },
+            inquiries: [],
+            menu: [
+                { id: 'home', label: 'My Schedule', icon: 'fas fa-calendar-day' },
+                { id: 'bookings', label: 'Booking Requests', icon: 'fas fa-hand-pointer' },
+                { id: 'itineraries', label: 'Tour Itineraries', icon: 'fas fa-route' },
+                { id: 'revenue', label: 'Wallet & Payouts', icon: 'fas fa-wallet' },
+                { id: 'profile', label: 'My Certificates', icon: 'fas fa-certificate' }
+            ],
+
+            init() {
+                this.setGreeting();
+                
+                // Wait for the Firebase Bridge to be ready
+                if (!window.fAuth) {
+                    window.addEventListener('firebase-ready', () => this.startAuthWatcher());
+                } else {
+                    this.startAuthWatcher();
+                }
+            },
+
+            startAuthWatcher() {
+                window.onAuthStateChanged(window.fAuth, async (user) => {
+                    if (!user) {
+                        window.location.href = '../../index.html';
+                        return;
+                    }
+                    await this.syncProfile(user.uid);
+                    this.syncLiveData(user.uid);
+                });
+            },
+
+            async syncProfile(uid) {
+                try {
+                    // FIXED: was root 'users' → correct path: artifacts/{appId}/users/{uid}
+                    const appId = window.fAppId;
+                    const snap = await window.getDoc(window.doc(window.fDb, "artifacts", appId, "users", uid));
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        this.guideData.name = data.name || this.guideData.name;
+                        this.guideData.initials = (data.name || 'G').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+                        this.guideData.level = data.guideLevel || this.guideData.level;
+                    }
+                } catch (e) { console.error("Profile sync failed", e); }
+            },
+
+            syncLiveData(uid) {
+                // FIXED: was root 'bookings' → correct path: artifacts/{appId}/public/data/all_bookings
+                const appId = window.fAppId;
+                const q = window.query(
+                    window.collection(window.fDb, "artifacts", appId, "public", "data", "all_bookings"),
+                    window.where("assignedGuide", "==", uid),
+                    window.where("status", "==", "Pending")
+                );
+                window.onSnapshot(q, (snap) => {
+                    this.inquiries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                });
+            },
+
+            async logout() {
+                await window.signOut(window.fAuth);
+                window.location.href = '../../index.html';
+            },
+
+            setGreeting() {
+                const hours = new Date().getHours();
+                this.greeting = hours < 12 ? 'Good Morning' : hours < 17 ? 'Good Afternoon' : 'Good Evening';
+            }
+        }));
+    });
+</script>
+</body>
+</html>

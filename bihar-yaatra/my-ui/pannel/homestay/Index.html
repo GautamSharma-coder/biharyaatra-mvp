@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homestay Partner Dashboard - Bihar Yaatra</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .font-display {
+            font-family: 'Syne', sans-serif;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Sidebar Links */
+        .sidebar-link {
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-link.active {
+            background-color: #FFF7ED;
+            /* orange-50 */
+            color: #EA580C;
+            /* orange-600 */
+            border-right: 3px solid #EA580C;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* Calendar Grid */
+        .calendar-day {
+            aspect-ratio: 1;
+        }
+    </style>
+</head>
+
+<body class="text-gray-800 h-screen flex overflow-hidden" x-data="homestayDashboard()">
+
+    <!-- Sidebar -->
+    <aside
+        class="w-72 bg-white border-r border-gray-100 flex flex-col z-20 shadow-xl lg:shadow-none transition-transform duration-300 absolute lg:relative h-full"
+        :class="mobileMenu ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
+
+        <!-- Logo -->
+        <div class="h-20 flex items-center px-8 border-b border-gray-50">
+            <a href="../../index.html" class="font-display font-bold text-xl tracking-tighter flex items-center gap-2">
+                <i class="fas fa-hand-holding-heart text-orange-500"></i>
+                Host<span class="text-orange-600">Panel</span>
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1 custom-scroll">
+            <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Overview</p>
+            <button @click="tab = 'dashboard'; mobileMenu = false"
+                :class="tab === 'dashboard' ? 'active' : 'text-gray-600 hover:bg-gray-50'"
+                class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-l-xl text-left font-medium">
+                <i class="fas fa-chart-pie w-5"></i> Dashboard
+            </button>
+
+            <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-6">Manage</p>
+            <button @click="tab = 'calendar'; mobileMenu = false"
+                :class="tab === 'calendar' ? 'active' : 'text-gray-600 hover:bg-gray-50'"
+                class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-l-xl text-left font-medium">
+                <i class="far fa-calendar-alt w-5"></i> Calendar &amp; Bookings
+            </button>
+            <button @click="tab = 'listing'; mobileMenu = false"
+                :class="tab === 'listing' ? 'active' : 'text-gray-600 hover:bg-gray-50'"
+                class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-l-xl text-left font-medium">
+                <i class="fas fa-home w-5"></i> My Listing
+            </button>
+            <button @click="tab = 'reviews'; mobileMenu = false"
+                :class="tab === 'reviews' ? 'active' : 'text-gray-600 hover:bg-gray-50'"
+                class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-l-xl text-left font-medium">
+                <i class="far fa-star w-5"></i> Guest Reviews
+            </button>
+
+            <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-6">Finance &amp; Account</p>
+            <button @click="tab = 'payments'; mobileMenu = false"
+                :class="tab === 'payments' ? 'active' : 'text-gray-600 hover:bg-gray-50'"
+                class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-l-xl text-left font-medium">
+                <i class="fas fa-rupee-sign w-5"></i> Payments
+            </button>
+            <button @click="tab = 'profile'; mobileMenu = false"
+                :class="tab === 'profile' ? 'active' : 'text-gray-600 hover:bg-gray-50'"
+                class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-l-xl text-left font-medium">
+                <i class="far fa-id-card w-5"></i> Profile &amp; Docs
+            </button>
+        </nav>
+
+        <!-- User Mini Profile (FIXED: wired to Alpine data + working logout) -->
+        <div class="p-4 border-t border-gray-50">
+            <div class="flex items-center gap-3 px-2">
+                <div class="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold"
+                    x-text="hostData.initials"></div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-gray-900 truncate" x-text="hostData.name"></p>
+                    <p class="text-xs text-gray-500 truncate" x-text="'ID: ' + hostData.id"></p>
+                </div>
+                <button @click="logout()" class="text-gray-400 hover:text-red-500 transition" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full bg-gray-50/50 w-full">
+
+        <!-- Mobile Header -->
+        <header class="lg:hidden h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6">
+            <span class="font-bold text-lg">My Dashboard</span>
+            <button @click="mobileMenu = !mobileMenu" class="text-gray-600"><i class="fas fa-bars text-xl"></i></button>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto p-6 lg:p-10 custom-scroll">
+
+            <!-- 1. DASHBOARD OVERVIEW -->
+            <div x-show="tab === 'dashboard'" x-transition.opacity>
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <!-- FIXED: dynamic host name -->
+                        <h1 class="text-2xl lg:text-3xl font-display font-bold">Welcome back, <span
+                                x-text="hostData.hostName"></span>! 👋</h1>
+                        <p class="text-gray-500">Here's what's happening at your property today.</p>
+                    </div>
+                    <button
+                        class="bg-black text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:bg-orange-600 transition hidden md:block">
+                        <i class="fas fa-plus mr-2"></i> Add Blocked Date
+                    </button>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between mb-4">
+                            <div
+                                class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 text-xl">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <span
+                                class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-lg h-fit">+12%</span>
+                        </div>
+                        <p class="text-gray-500 text-sm font-bold uppercase tracking-wider">Total Earnings</p>
+                        <!-- FIXED: dynamic earnings -->
+                        <h3 class="text-3xl font-bold mt-1">₹<span
+                                x-text="stats.earnings.toLocaleString('en-IN')"></span></h3>
+                        <p class="text-xs text-gray-400 mt-2">This month</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between mb-4">
+                            <div
+                                class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-xl">
+                                <i class="fas fa-door-open"></i>
+                            </div>
+                            <span
+                                class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-lg h-fit">Today</span>
+                        </div>
+                        <p class="text-gray-500 text-sm font-bold uppercase tracking-wider">Check-ins</p>
+                        <h3 class="text-3xl font-bold mt-1"><span x-text="stats.checkins"></span> Guests</h3>
+                        <p class="text-xs text-gray-400 mt-2">Room 101, 104</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between mb-4">
+                            <div
+                                class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 text-xl">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <span
+                                class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded-lg h-fit">High</span>
+                        </div>
+                        <p class="text-gray-500 text-sm font-bold uppercase tracking-wider">Occupancy Rate</p>
+                        <h3 class="text-3xl font-bold mt-1"><span x-text="stats.occupancy"></span>%</h3>
+                        <p class="text-xs text-gray-400 mt-2">Last 30 days</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Alerts -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 lg:col-span-1 h-fit">
+                        <h3 class="font-bold text-lg mb-4">Action Required</h3>
+                        <div class="space-y-3">
+                            <div class="p-4 bg-yellow-50 rounded-2xl border border-yellow-100 flex gap-3 items-start">
+                                <i class="fas fa-exclamation-circle text-yellow-600 mt-1"></i>
+                                <div>
+                                    <h4 class="font-bold text-sm text-yellow-800">Pending Review</h4>
+                                    <p class="text-xs text-yellow-700 mt-1">Guest Amit Kumar left a 4-star review. Reply
+                                        now.</p>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-red-50 rounded-2xl border border-red-100 flex gap-3 items-start">
+                                <i class="fas fa-file-invoice text-red-600 mt-1"></i>
+                                <div>
+                                    <h4 class="font-bold text-sm text-red-800">Incomplete Profile</h4>
+                                    <p class="text-xs text-red-700 mt-1">Upload PAN card to enable payouts.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart Mock -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 lg:col-span-2">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-lg">Occupancy Trend</h3>
+                            <select class="text-xs bg-gray-50 border-none rounded-lg p-2 font-bold text-gray-500">
+                                <option>Last 30 Days</option>
+                            </select>
+                        </div>
+                        <div class="h-48 flex items-end justify-between gap-2 px-2">
+                            <template x-for="h in [40, 60, 45, 80, 55, 90, 70, 85, 60, 75, 50, 95, 60, 80, 100]">
+                                <div class="w-full bg-orange-100 hover:bg-orange-500 transition-colors rounded-t-sm relative group"
+                                    :style="`height: ${h}%`"></div>
+                            </template>
+                        </div>
+                        <div class="flex justify-between mt-2 text-[10px] text-gray-400 font-bold uppercase">
+                            <span>1 Oct</span><span>15 Oct</span><span>30 Oct</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. CALENDAR & BOOKINGS -->
+            <div x-show="tab === 'calendar'" x-cloak x-transition.opacity>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                    <!-- Calendar Panel -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+
+                        <!-- Month nav header -->
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <button @click="calPrev()"
+                                    class="w-8 h-8 rounded-full bg-gray-50 hover:bg-orange-100 text-gray-500 hover:text-orange-600 flex items-center justify-center transition">
+                                    <i class="fas fa-chevron-left text-xs"></i>
+                                </button>
+                                <h3 class="font-bold text-lg font-display"
+                                    x-text="calMonthNames[calMonth] + ' ' + calYear"></h3>
+                                <button @click="calNext()"
+                                    class="w-8 h-8 rounded-full bg-gray-50 hover:bg-orange-100 text-gray-500 hover:text-orange-600 flex items-center justify-center transition">
+                                    <i class="fas fa-chevron-right text-xs"></i>
+                                </button>
+                            </div>
+                            <div class="flex gap-3 text-xs">
+                                <span class="flex items-center gap-1.5"><span
+                                        class="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block"></span>Today</span>
+                                <span class="flex items-center gap-1.5"><span
+                                        class="w-2.5 h-2.5 rounded-full bg-red-400 inline-block"></span>Booked</span>
+                                <span class="flex items-center gap-1.5"><span
+                                        class="w-2.5 h-2.5 rounded-full bg-gray-100 border border-gray-200 inline-block"></span>Available</span>
+                            </div>
+                        </div>
+
+                        <!-- Weekday header -->
+                        <div class="grid grid-cols-7 gap-1 mb-1 text-center">
+                            <template x-for="d in ['Su','Mo','Tu','We','Th','Fr','Sa']">
+                                <div class="text-[10px] font-bold text-gray-400 py-1" x-text="d"></div>
+                            </template>
+                        </div>
+
+                        <!-- Day cells -->
+                        <div class="grid grid-cols-7 gap-1">
+                            <!-- leading empty cells for the month's start weekday -->
+                            <template x-for="_ in calStartOffset()">
+                                <div class="aspect-square"></div>
+                            </template>
+                            <!-- actual day cells -->
+                            <template x-for="day in calDaysInMonth()" :key="day">
+                                <div class="aspect-square rounded-xl flex items-center justify-center text-sm font-bold cursor-pointer transition relative select-none"
+                                    :class="calDayClass(day)" :title="calDayTitle(day)">
+                                    <span x-text="day"></span>
+                                    <!-- booked dot -->
+                                    <span x-show="calIsBooked(day) && !calIsToday(day)"
+                                        class="absolute bottom-1 w-1 h-1 rounded-full bg-red-400"></span>
+                                </div>
+                            </template>
+                        </div>
+
+                        <p class="text-[10px] text-gray-300 text-right mt-3">
+                            Booked dates are computed from confirmed guest check-in / check-out periods.
+                        </p>
+                    </div>
+
+                    <!-- Bookings sidebar -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 h-fit">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-lg font-display">Upcoming Guests</h3>
+                            <span class="text-xs text-gray-400 font-bold"
+                                x-text="upcomingGuests.length + ' booking' + (upcomingGuests.length !== 1 ? 's' : '')"></span>
+                        </div>
+                        <div class="space-y-3">
+                            <template x-for="guest in upcomingGuests" :key="guest.id">
+                                <div class="p-3 rounded-2xl bg-gray-50 border border-gray-100">
+                                    <div class="flex gap-3 items-start">
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 text-white flex items-center justify-center font-bold text-sm shrink-0"
+                                            x-text="guest.initial"></div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex justify-between items-start">
+                                                <h4 class="font-bold text-sm truncate" x-text="guest.guestName"></h4>
+                                                <span class="text-[10px] font-bold ml-2 px-2 py-0.5 rounded shrink-0"
+                                                    :class="guest.status === 'Confirmed' || guest.status === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'"
+                                                    x-text="guest.status || 'Pending'"></span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-0.5"
+                                                x-text="guest.dateRange || 'Date TBD'"></p>
+                                            <p class="text-xs text-gray-400 truncate" x-show="guest.roomName"
+                                                x-text="'Room: ' + guest.roomName"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="upcomingGuests.length === 0">
+                                <div class="text-center py-8">
+                                    <i class="fas fa-calendar-check text-3xl text-gray-200 mb-2"></i>
+                                    <p class="text-xs text-gray-400">No upcoming bookings found.</p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. MY LISTING -->
+            <div x-show="tab === 'listing'" x-cloak x-transition.opacity>
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-8 border-b border-gray-100 flex justify-between items-center">
+                        <h2 class="text-xl font-bold font-display">Property Details</h2>
+                        <button @click="saveListingChanges()"
+                            class="text-orange-600 font-bold text-sm hover:text-orange-800 transition">
+                            <i class="fas fa-save mr-1"></i> Save & Submit for Review
+                        </button>
+                    </div>
+
+                    <!-- ── Approval Status Banner ── -->
+                    <div class="mx-8 mt-6 p-4 rounded-2xl border flex items-start gap-3" :class="{
+                            'bg-amber-50 border-amber-200':  listing.status === 'pending' || !listing.status,
+                            'bg-green-50  border-green-200': listing.status === 'approved',
+                            'bg-red-50    border-red-200':   listing.status === 'rejected'
+                        }">
+                        <i class="mt-0.5 text-base" :class="{
+                                'fas fa-clock text-amber-500':          listing.status === 'pending' || !listing.status,
+                                'fas fa-check-circle text-green-600':   listing.status === 'approved',
+                                'fas fa-times-circle text-red-500':     listing.status === 'rejected'
+                            }"></i>
+                        <div>
+                            <p class="font-bold text-sm" :class="{
+                                    'text-amber-700': listing.status === 'pending' || !listing.status,
+                                    'text-green-700': listing.status === 'approved',
+                                    'text-red-700':   listing.status === 'rejected'
+                                }" x-text="listing.status === 'approved' ? '✅ Your listing is LIVE on the public page!' :
+                                         listing.status === 'rejected' ? '❌ Listing Rejected by Admin' :
+                                         '⏳ Pending Admin Approval'"></p>
+                            <p class="text-xs mt-0.5" :class="{
+                                    'text-amber-600': listing.status === 'pending' || !listing.status,
+                                    'text-green-600': listing.status === 'approved',
+                                    'text-red-600':   listing.status === 'rejected'
+                                }"
+                                x-text="listing.status === 'approved' ? 'Guests can now find and book your homestay.' :
+                                         listing.status === 'rejected' ? (listing.rejectionReason ? 'Reason: ' + listing.rejectionReason : 'Please update your listing and re-submit.') :
+                                         'Fill in your details below and click Save. An admin will review your listing.'">
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- LEFT COLUMN — identity & pricing -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Property
+                                    Name</label>
+                                <input type="text" x-model="listing.propertyName"
+                                    class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Location</label>
+                                <input type="text" x-model="listing.location" placeholder="e.g. Bodh Gaya, Bihar"
+                                    class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Price / Night
+                                        (₹)</label>
+                                    <input type="number" x-model="listing.pricePerNight" min="0" placeholder="e.g. 2000"
+                                        class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Host
+                                        Name</label>
+                                    <input type="text" x-model="listing.hostName" placeholder="e.g. Ramesh Babu"
+                                        class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Badge</label>
+                                    <select x-model="listing.badge"
+                                        class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">
+                                        <option value="Verified">Verified</option>
+                                        <option value="Superhost">Superhost</option>
+                                        <option value="Cultural Choice">Cultural Choice</option>
+                                        <option value="Popular">Popular</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Rating
+                                        (1–5)</label>
+                                    <input type="number" x-model="listing.rating" min="1" max="5" step="0.1"
+                                        placeholder="4.8"
+                                        class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Description</label>
+                                <textarea x-model="listing.description"
+                                    class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm h-28"
+                                    placeholder="Describe the authentic experience, food, surroundings..."></textarea>
+                            </div>
+                            <!-- Amenities -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Amenities</label>
+                                <div class="flex gap-2 flex-wrap">
+                                    <template x-for="(amenity, index) in listing.amenities" :key="index">
+                                        <span
+                                            class="bg-gray-100 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                            <span x-text="amenity"></span>
+                                            <i class="fas fa-times ml-1 text-gray-400 cursor-pointer hover:text-red-500"
+                                                @click="listing.amenities.splice(index, 1)"></i>
+                                        </span>
+                                    </template>
+                                    <button @click="addAmenity()"
+                                        class="text-xs text-orange-600 font-bold border border-orange-200 px-3 py-1 rounded-full hover:bg-orange-50 transition">+
+                                        Add</button>
+                                </div>
+                                <p class="text-[10px] text-gray-400 mt-1">e.g. wifi, kitchen, ac, parking, garden,
+                                    river_view</p>
+                            </div>
+                        </div>
+
+                        <!-- Rooms Inventory (Dynamic) -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-3">Rooms Inventory</label>
+                            <div class="space-y-3">
+
+                                <!-- Dynamic room list from Alpine -->
+                                <template x-for="(room, idx) in rooms" :key="idx">
+                                    <div
+                                        class="border border-gray-200 p-4 rounded-xl flex justify-between items-center">
+                                        <div>
+                                            <h4 class="font-bold text-sm" x-text="room.name"></h4>
+                                            <p class="text-xs text-gray-500">
+                                                <span x-text="room.capacity"></span> Guests •
+                                                ₹<span x-text="Number(room.price).toLocaleString('en-IN')"></span>/night
+                                            </p>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button @click="openEditRoom(idx)"
+                                                class="text-gray-400 hover:text-blue-600 transition" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button @click="deleteRoom(idx)"
+                                                class="text-gray-400 hover:text-red-500 transition" title="Delete">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- Empty state -->
+                                <template x-if="rooms.length === 0">
+                                    <p class="text-xs text-gray-400 text-center py-2">No rooms added yet.</p>
+                                </template>
+
+                                <!-- Add Room Button -->
+                                <button @click="openAddRoom()"
+                                    class="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 font-bold text-sm hover:border-orange-300 hover:text-orange-500 transition">
+                                    <i class="fas fa-plus mr-1"></i> Add New Room Type
+                                </button>
+                            </div>
+                        </div>
+
+                    </div><!-- /p-8 grid -->
+
+                    <!-- Save Toast -->
+                    <div x-show="saveMsg" x-transition x-cloak
+                        class="mx-8 mb-6 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm font-bold flex items-center gap-2">
+                        <i class="fas fa-check-circle"></i>
+                        <span x-text="saveMsg"></span>
+                    </div>
+                </div><!-- /bg-white card -->
+
+                <!-- Room Add/Edit Modal — fixed overlay, lives outside the card -->
+                <div x-show="showRoomModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center"
+                    style="background:rgba(0,0,0,0.45);" @click.self="showRoomModal = false">
+                    <div class="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-xs mx-4"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+                        <h3 class="font-bold text-lg mb-5"
+                            x-text="editingRoomIndex >= 0 ? 'Edit Room' : 'Add Room Type'"></h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Room Name *</label>
+                                <input type="text" x-model="roomForm.name" placeholder="e.g. Deluxe Mud Room"
+                                    class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm"
+                                    @keydown.enter="saveRoom()">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Max
+                                        Guests</label>
+                                    <input type="number" x-model="roomForm.capacity" min="1" max="20"
+                                        class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Price/Night
+                                        (₹)</label>
+                                    <input type="number" x-model="roomForm.price" min="0" placeholder="1200"
+                                        class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 mt-6">
+                            <button @click="showRoomModal = false"
+                                class="flex-1 py-3 rounded-xl border border-gray-200 text-gray-500 font-bold text-sm hover:bg-gray-50 transition">Cancel</button>
+                            <button @click="saveRoom()" :disabled="!roomForm.name.trim()"
+                                class="flex-1 py-3 rounded-xl bg-black text-white font-bold text-sm hover:bg-orange-600 transition disabled:opacity-40">
+                                <span x-text="editingRoomIndex >= 0 ? 'Update' : 'Add Room'"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div><!-- /room modal -->
+            </div><!-- /listing tab -->
+
+
+
+            <!-- 4. PAYMENTS -->
+            <div x-show="tab === 'payments'" x-cloak x-transition.opacity>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Balance -->
+                    <div class="bg-black text-white p-8 rounded-3xl shadow-lg relative overflow-hidden">
+                        <div class="relative z-10">
+                            <p class="text-sm text-gray-400 font-bold uppercase mb-1">Available Payout</p>
+                            <h2 class="text-4xl font-display font-bold mb-6">₹12,450.00</h2>
+                            <button
+                                class="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200">Withdraw
+                                Funds</button>
+                        </div>
+                        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-gray-800 rounded-full opacity-50">
+                        </div>
+                    </div>
+
+                    <!-- Transaction History -->
+                    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-6 border-b border-gray-100">
+                            <h3 class="font-bold text-lg">Recent Transactions</h3>
+                        </div>
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="p-4 text-gray-500 font-bold">Booking ID</th>
+                                    <th class="p-4 text-gray-500 font-bold">Date</th>
+                                    <th class="p-4 text-gray-500 font-bold">Amount</th>
+                                    <th class="p-4 text-gray-500 font-bold text-right">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                                <tr>
+                                    <td class="p-4 font-mono text-gray-600">#BK-9921</td>
+                                    <td class="p-4">Oct 12, 2025</td>
+                                    <td class="p-4 font-bold text-green-600">+ ₹2,250</td>
+                                    <td class="p-4 text-right"><span
+                                            class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Paid</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4 font-mono text-gray-600">#Payout-01</td>
+                                    <td class="p-4">Oct 01, 2025</td>
+                                    <td class="p-4 font-bold text-gray-800">- ₹15,000</td>
+                                    <td class="p-4 text-right"><span
+                                            class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">Processed</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. REVIEWS -->
+            <div x-show="tab === 'reviews'" x-cloak x-transition.opacity>
+
+                <!-- Loading state -->
+                <div x-show="reviewsLoading" class="flex justify-center py-20">
+                    <i class="fas fa-circle-notch fa-spin text-3xl text-gray-300"></i>
+                </div>
+
+                <template x-if="!reviewsLoading">
+                    <div>
+                        <!-- Aggregate score bar -->
+                        <div
+                            class="bg-white p-6 rounded-2xl border border-gray-100 mb-6 flex flex-col sm:flex-row gap-6 items-center">
+                            <div class="text-center shrink-0">
+                                <h2 class="text-5xl font-bold font-display" x-text="avgRating.toFixed(1)">0.0</h2>
+                                <div class="flex justify-center gap-0.5 mt-1 text-yellow-400 text-sm">
+                                    <template x-for="s in 5">
+                                        <i :class="s <= Math.round(avgRating) ? 'fas fa-star' : 'far fa-star'"></i>
+                                    </template>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1"
+                                    x-text="reviews.length + ' review' + (reviews.length !== 1 ? 's' : '')"></p>
+                            </div>
+                            <!-- Star breakdown bars -->
+                            <div class="flex-1 w-full space-y-1.5" x-show="reviews.length > 0">
+                                <template x-for="star in [5,4,3,2,1]">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs w-3 text-gray-500 font-bold" x-text="star"></span>
+                                        <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                        <div class="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                                            <div class="h-full bg-yellow-400 rounded-full transition-all"
+                                                :style="'width:' + (reviews.filter(r => Math.round(r.rating) === star).length / reviews.length * 100) + '%'">
+                                            </div>
+                                        </div>
+                                        <span class="text-xs text-gray-400 w-5"
+                                            x-text="reviews.filter(r => Math.round(r.rating) === star).length"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Empty state -->
+                        <div x-show="reviews.length === 0"
+                            class="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
+                            <i class="fas fa-star text-4xl text-gray-200 mb-4"></i>
+                            <p class="text-gray-400 font-medium">No reviews yet</p>
+                            <p class="text-xs text-gray-300 mt-1">Guest reviews will appear here once your first booking
+                                is completed.</p>
+                        </div>
+
+                        <!-- Review cards -->
+                        <div class="space-y-4 max-w-3xl" x-show="reviews.length > 0">
+                            <template x-for="review in reviews" :key="review.id">
+                                <div class="bg-white p-6 rounded-2xl border border-gray-100">
+                                    <!-- Header -->
+                                    <div class="flex justify-between items-start mb-3">
+                                        <div class="flex gap-3">
+                                            <div class="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full flex items-center justify-center font-bold text-white text-sm"
+                                                x-text="(review.guestName || 'G').charAt(0).toUpperCase()"></div>
+                                            <div>
+                                                <h4 class="font-bold text-sm" x-text="review.guestName || 'Guest'"></h4>
+                                                <p class="text-xs text-gray-400"
+                                                    x-text="review.createdAt ? new Date(review.createdAt.seconds ? review.createdAt.seconds*1000 : review.createdAt).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : ''">
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-0.5 text-yellow-400 text-sm">
+                                            <template x-for="s in 5">
+                                                <i
+                                                    :class="s <= Math.round(review.rating) ? 'fas fa-star' : 'far fa-star'"></i>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <!-- Review text -->
+                                    <p class="text-gray-600 text-sm mb-4 leading-relaxed" x-text="review.comment"></p>
+
+                                    <!-- Existing host reply -->
+                                    <div x-show="review.reply"
+                                        class="bg-orange-50 border border-orange-100 rounded-xl p-4 mb-3 flex gap-3">
+                                        <i class="fas fa-reply text-orange-400 mt-0.5"></i>
+                                        <div>
+                                            <p class="text-xs font-bold text-orange-700 mb-1">Your Reply</p>
+                                            <p class="text-sm text-orange-900" x-text="review.reply"></p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Reply composer (shown only if no reply yet) -->
+                                    <div x-show="!review.reply" class="bg-gray-50 p-4 rounded-xl">
+                                        <textarea x-model="review._draft"
+                                            placeholder="Write a public reply to this review..."
+                                            class="w-full bg-transparent border-none outline-none text-sm resize-none"
+                                            rows="2"></textarea>
+                                        <div class="flex justify-between items-center mt-2">
+                                            <p class="text-[10px] text-gray-400">Replies are visible to all guests</p>
+                                            <button @click="saveReply(review)"
+                                                :disabled="!review._draft || !review._draft.trim() || review._sending"
+                                                class="text-xs bg-black text-white px-4 py-1.5 rounded-lg font-bold disabled:opacity-40 hover:bg-orange-600 transition">
+                                                <span x-show="!review._sending">Post Reply</span>
+                                                <span x-show="review._sending"><i
+                                                        class="fas fa-circle-notch fa-spin mr-1"></i>Posting...</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+
+            <!-- 6. PROFILE & DOCS (FIXED: Save button wired to saveProfileChanges()) -->
+            <div x-show="tab === 'profile'" x-cloak x-transition.opacity>
+                <div class="max-w-3xl bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold font-display mb-6">Verification Status</h2>
+
+                    <div class="space-y-4 mb-8">
+                        <div
+                            class="flex items-center justify-between p-4 bg-green-50 border border-green-100 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-id-card text-green-600 text-xl"></i>
+                                <div>
+                                    <h4 class="font-bold text-sm text-green-800">Aadhaar Card</h4>
+                                    <p class="text-xs text-green-600">Verified on Sep 20, 2025</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-check-circle text-green-600"></i>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-file-invoice text-gray-500 text-xl"></i>
+                                <div>
+                                    <h4 class="font-bold text-sm text-gray-800">Local Tourism Permit</h4>
+                                    <p class="text-xs text-gray-500">Not Uploaded</p>
+                                </div>
+                            </div>
+                            <button
+                                class="text-xs bg-black text-white px-3 py-1.5 rounded font-bold hover:bg-orange-600 transition">Upload</button>
+                        </div>
+                    </div>
+
+                    <h3 class="font-bold text-lg mb-4">Contact Details</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" x-model="profile.name"
+                            class="p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm" placeholder="Your Name">
+                        <input type="email" x-model="profile.email"
+                            class="p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm" placeholder="Email">
+                        <input type="tel" x-model="profile.phone"
+                            class="p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm" placeholder="Phone Number">
+                        <input type="text" x-model="profile.location"
+                            class="p-3 bg-gray-50 rounded-xl border border-gray-200 text-sm" placeholder="Location">
+                    </div>
+                    <button @click="saveProfileChanges()"
+                        class="mt-6 px-6 py-3 bg-black text-white rounded-xl font-bold text-sm hover:bg-orange-600 transition">
+                        <i class="fas fa-save mr-2"></i>Save Changes
+                    </button>
+
+                    <!-- Profile Save Toast -->
+                    <div x-show="profileSaveMsg" x-transition x-cloak
+                        class="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm font-bold flex items-center gap-2">
+                        <i class="fas fa-check-circle"></i>
+                        <span x-text="profileSaveMsg"></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Firebase Module Script -->
+    <script type="module">
+        import { auth, db, appId, onAuthStateChanged, signOut } from "../../assets/js/firebase-config.js";
+        import { collection, onSnapshot, query, where, doc, setDoc, updateDoc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // EXPOSE TO GLOBAL WINDOW: Essential for Alpine.js access
+        window.fAuth = auth;
+        window.fDb = db;
+        window.fAppId = appId;   // <-- CRITICAL: needed for correct Firestore paths
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.signOut = signOut;
+        window.onSnapshot = onSnapshot;
+        window.collection = collection;
+        window.query = query;
+        window.where = where;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.setDoc = setDoc;
+        window.updateDoc = updateDoc;
+        window.addDoc = addDoc;
+        window.serverTimestamp = serverTimestamp;
+
+        // Signal to Alpine that Firebase is ready
+        window.dispatchEvent(new CustomEvent('firebase-ready'));
+    </script>
+
+    <!-- Alpine.js Component -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('homestayDashboard', () => ({
+                tab: 'dashboard',
+                mobileMenu: false,
+                hostData: { name: 'Mithila Cottage', hostName: 'Suresh', initials: 'MC', id: 'HST-Loading' },
+                stats: { earnings: 45200, checkins: 2, occupancy: 78 },
+                upcomingGuests: [],
+                transactions: [],
+                saveMsg: '',
+                profileSaveMsg: '',
+                currentUid: null,
+
+                // Room management state
+                rooms: [],
+                showRoomModal: false,
+                editingRoomIndex: -1,
+                roomForm: { name: '', capacity: 2, price: '' },
+
+                // Reviews
+                reviews: [],
+                reviewsLoading: true,
+
+                // Calendar
+                calYear: new Date().getFullYear(),
+                calMonth: new Date().getMonth(), // 0-indexed
+                calMonthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+
+                // Listing form model
+                listing: {
+                    propertyName: 'Mithila Cultural Cottage',
+                    description: 'Experience authentic Madhubani art and culture...',
+                    amenities: ['Wifi', 'AC', 'Breakfast'],
+                    // CMS fields ported from admin panel
+                    location: '',
+                    pricePerNight: '',
+                    hostName: '',
+                    badge: 'Verified',
+                    rating: '',
+                    // Approval state (read from public doc)
+                    status: '',
+                    rejectionReason: ''
+                },
+
+                // Profile form model
+                profile: {
+                    name: 'Suresh Jha',
+                    email: 'suresh.homestay@gmail.com',
+                    phone: '+91 9876543210',
+                    location: 'Madhubani, Bihar'
+                },
+
+                async init() {
+                    // Wait for the Firebase Bridge
+                    if (!window.fAuth) {
+                        window.addEventListener('firebase-ready', () => this.startAuthWatcher());
+                    } else {
+                        this.startAuthWatcher();
+                    }
+                },
+
+                get avgRating() {
+                    if (!this.reviews.length) return 0;
+                    return this.reviews.reduce((s, r) => s + (Number(r.rating) || 0), 0) / this.reviews.length;
+                },
+
+                // ── Calendar helpers ──
+                calPrev() {
+                    if (this.calMonth === 0) { this.calMonth = 11; this.calYear--; }
+                    else this.calMonth--;
+                },
+                calNext() {
+                    if (this.calMonth === 11) { this.calMonth = 0; this.calYear++; }
+                    else this.calMonth++;
+                },
+                calStartOffset() {
+                    // Returns array of length = weekday of the 1st of the visible month
+                    const offset = new Date(this.calYear, this.calMonth, 1).getDay();
+                    return Array.from({ length: offset });
+                },
+                calDaysInMonth() {
+                    const count = new Date(this.calYear, this.calMonth + 1, 0).getDate();
+                    return Array.from({ length: count }, (_, i) => i + 1);
+                },
+                calIsToday(day) {
+                    const now = new Date();
+                    return now.getFullYear() === this.calYear &&
+                        now.getMonth() === this.calMonth &&
+                        now.getDate() === day;
+                },
+                calIsBooked(day) {
+                    const check = new Date(this.calYear, this.calMonth, day);
+                    return this.upcomingGuests.some(g => {
+                        if (!g.checkIn || !g.checkOut) return false;
+                        const ci = new Date(g.checkIn);
+                        const co = new Date(g.checkOut);
+                        // inclusive check-in, exclusive check-out
+                        return check >= ci && check < co;
+                    });
+                },
+                calDayClass(day) {
+                    if (this.calIsToday(day))
+                        return 'bg-orange-500 text-white shadow-md shadow-orange-200';
+                    if (this.calIsBooked(day))
+                        return 'bg-red-50 text-red-600 border border-red-100';
+                    return 'bg-gray-50 hover:bg-orange-50 text-gray-700 hover:text-orange-600';
+                },
+                calDayTitle(day) {
+                    if (this.calIsToday(day)) return 'Today';
+                    if (this.calIsBooked(day)) {
+                        const g = this.upcomingGuests.find(g => {
+                            if (!g.checkIn || !g.checkOut) return false;
+                            const check = new Date(this.calYear, this.calMonth, day);
+                            return check >= new Date(g.checkIn) && check < new Date(g.checkOut);
+                        });
+                        return g ? 'Booked — ' + g.guestName : 'Booked';
+                    }
+                    return '';
+                },
+
+                startAuthWatcher() {
+                    window.onAuthStateChanged(window.fAuth, async (user) => {
+                        if (!user) {
+                            window.location.href = '../../index.html';
+                            return;
+                        }
+                        this.currentUid = user.uid;
+                        await this.syncPropertyProfile(user.uid);
+                        this.syncLiveData(user.uid);
+                        this.syncReviews(user.uid);
+                    });
+                },
+
+                async syncPropertyProfile(uid) {
+                    try {
+                        const appId = window.fAppId;
+
+                        // STEP 1: Try to read the full profile from profile/data subcollection
+                        const profileRef = window.doc(window.fDb, "artifacts", appId, "users", uid, "profile", "data");
+                        const snap = await window.getDoc(profileRef);
+
+                        if (snap.exists()) {
+                            const data = snap.data();
+                            this.hostData.name = data.propertyName || data.businessName || 'My Property';
+                            this.hostData.hostName = data.name || 'Host';
+                            this.hostData.initials = (data.name || data.propertyName || 'H').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+                            this.hostData.id = 'HST-' + uid.substring(0, 5).toUpperCase();
+
+                            this.listing.propertyName = data.propertyName || this.listing.propertyName;
+                            this.listing.description = data.description || this.listing.description;
+                            this.listing.amenities = data.amenities || this.listing.amenities;
+                            this.listing.location = data.location || this.listing.location;
+                            this.listing.pricePerNight = data.pricePerNight || this.listing.pricePerNight;
+                            this.listing.hostName = data.hostName || this.listing.hostName;
+                            this.listing.badge = data.badge || this.listing.badge;
+                            this.listing.rating = data.rating || this.listing.rating;
+                            this.rooms = data.rooms || [];
+
+                            this.profile.name = data.name || this.profile.name;
+                            this.profile.email = data.email || this.profile.email;
+                            this.profile.phone = data.phone || this.profile.phone;
+                            this.profile.location = data.location || this.profile.location;
+
+                        } else {
+                            // STEP 2: fall back to root user document
+                            const userRef = window.doc(window.fDb, "artifacts", appId, "users", uid);
+                            const userSnap = await window.getDoc(userRef);
+                            const u = userSnap.exists() ? userSnap.data() : {};
+
+                            this.hostData.id = 'HST-' + uid.substring(0, 5).toUpperCase();
+                            this.hostData.hostName = u.name || 'Host';
+                            this.hostData.initials = (u.name || 'H').charAt(0).toUpperCase();
+
+                            this.profile.email = u.email || this.profile.email;
+                            this.profile.name = u.name || this.profile.name;
+                            this.profile.phone = u.phone || this.profile.phone;
+
+                            console.info('No profile/data doc yet — loaded from root user doc.');
+                        }
+
+                        // STEP 3: Also read the public doc to get live approval status
+                        const publicRef = window.doc(window.fDb, "artifacts", appId, "public", "data", "homestays", uid);
+                        const pubSnap = await window.getDoc(publicRef);
+                        if (pubSnap.exists()) {
+                            this.listing.status = pubSnap.data().status || '';
+                            this.listing.rejectionReason = pubSnap.data().rejectionReason || '';
+                        }
+
+                    } catch (e) { console.error("Profile sync failed", e); }
+                },
+
+
+                syncLiveData(uid) {
+                    // FIXED PATH: bookings are stored at artifacts/{appId}/public/data/all_bookings
+                    // This matches db-service.js createBooking() public path
+                    const appId = window.fAppId;
+                    const bookingsRef = window.collection(
+                        window.fDb, "artifacts", appId, "public", "data", "all_bookings"
+                    );
+                    const q = window.query(
+                        bookingsRef,
+                        window.where("propertyOwnerId", "==", uid)
+                    );
+
+                    window.onSnapshot(q, (snap) => {
+                        this.upcomingGuests = snap.docs
+                            .filter(d => ["Confirmed", "Paid", "pending"].includes(d.data().status))
+                            .map(d => ({
+                                id: d.id,
+                                ...d.data(),
+                                initial: (d.data().guestName || 'G').charAt(0)
+                            }));
+
+                        // Update stats based on real data
+                        if (this.upcomingGuests.length > 0) {
+                            this.stats.earnings = this.upcomingGuests.reduce((sum, g) => sum + (parseInt(g.totalAmount) || 0), 0);
+                            this.stats.checkins = this.upcomingGuests.length;
+                        }
+                    });
+                },
+
+                // Save Listing to Firestore
+                async saveListingChanges() {
+                    if (!this.currentUid) return;
+                    const appId = window.fAppId;
+                    try {
+                        // Private profile doc (full data)
+                        const profileRef = window.doc(window.fDb, "artifacts", appId, "users", this.currentUid, "profile", "data");
+                        await window.setDoc(profileRef, {
+                            propertyName: this.listing.propertyName,
+                            description: this.listing.description,
+                            amenities: this.listing.amenities,
+                            rooms: this.rooms,
+                            location: this.listing.location,
+                            pricePerNight: this.listing.pricePerNight ? Number(this.listing.pricePerNight) : 0,
+                            hostName: this.listing.hostName,
+                            badge: this.listing.badge,
+                            rating: this.listing.rating ? Number(this.listing.rating) : null,
+                        }, { merge: true });
+
+                        // Public listing doc (shown on public page after admin approval)
+                        const publicRef = window.doc(
+                            window.fDb, "artifacts", appId,
+                            "public", "data", "homestays", this.currentUid
+                        );
+                        const minPrice = this.rooms.length > 0
+                            ? Math.min(...this.rooms.map(r => Number(r.price) || 0))
+                            : (this.listing.pricePerNight ? Number(this.listing.pricePerNight) : 0);
+
+                        await window.setDoc(publicRef, {
+                            hostId: this.currentUid,
+                            name: this.listing.propertyName,
+                            description: this.listing.description,
+                            location: this.listing.location || this.profile.location || 'Bihar',
+                            amenities: this.listing.amenities,
+                            rooms: this.rooms,
+                            price: minPrice,
+                            hostName: this.listing.hostName,
+                            badge: this.listing.badge || 'Verified',
+                            rating: this.listing.rating ? Number(this.listing.rating) : null,
+                            status: 'pending',
+                            submittedAt: new Date().toISOString(),
+                        }, { merge: true });
+
+                        // Refresh banner immediately
+                        this.listing.status = 'pending';
+                        this.listing.rejectionReason = '';
+
+                        this.saveMsg = 'Submitted for admin review!';
+                        setTimeout(() => this.saveMsg = '', 3000);
+                    } catch (e) {
+                        this.saveMsg = 'Failed to save. Please try again.';
+                        console.error("Save listing failed", e);
+                        setTimeout(() => this.saveMsg = '', 3000);
+                    }
+                },
+
+                // FIXED: Save Profile to correct Firestore path
+                async saveProfileChanges() {
+                    if (!this.currentUid) return;
+                    const appId = window.fAppId;
+                    try {
+                        // Save to private user profile: artifacts/{appId}/users/{uid}/profile/data
+                        const profileRef = window.doc(window.fDb, "artifacts", appId, "users", this.currentUid, "profile", "data");
+                        await window.setDoc(profileRef, {
+                            name: this.profile.name,
+                            email: this.profile.email,
+                            phone: this.profile.phone,
+                            location: this.profile.location
+                        }, { merge: true });
+                        this.profileSaveMsg = 'Profile updated successfully!';
+                        setTimeout(() => this.profileSaveMsg = '', 3000);
+                    } catch (e) {
+                        this.profileSaveMsg = 'Failed to save. Please try again.';
+                        console.error("Save profile failed", e);
+                        setTimeout(() => this.profileSaveMsg = '', 3000);
+                    }
+                },
+
+                // Room Management
+                openAddRoom() {
+                    this.roomForm = { name: '', capacity: 2, price: '' };
+                    this.editingRoomIndex = -1;
+                    this.showRoomModal = true;
+                },
+
+                openEditRoom(index) {
+                    this.roomForm = { ...this.rooms[index] };
+                    this.editingRoomIndex = index;
+                    this.showRoomModal = true;
+                },
+
+                saveRoom() {
+                    if (!this.roomForm.name.trim()) return;
+                    const room = {
+                        name: this.roomForm.name.trim(),
+                        capacity: parseInt(this.roomForm.capacity) || 2,
+                        price: parseInt(this.roomForm.price) || 0
+                    };
+                    if (this.editingRoomIndex >= 0) {
+                        this.rooms[this.editingRoomIndex] = room;
+                        // Trigger Alpine reactivity on array mutation
+                        this.rooms = [...this.rooms];
+                    } else {
+                        this.rooms = [...this.rooms, room];
+                    }
+                    this.showRoomModal = false;
+                },
+
+                deleteRoom(index) {
+                    if (!confirm('Remove this room type?')) return;
+                    this.rooms = this.rooms.filter((_, i) => i !== index);
+                },
+
+                // FIXED: Functional Add Amenity
+                addAmenity() {
+                    const name = prompt('Enter amenity name (e.g. Pool, Parking):');
+                    if (name && name.trim()) {
+                        this.listing.amenities.push(name.trim());
+                    }
+                },
+
+                // Reviews — real-time Firestore listener
+                syncReviews(uid) {
+                    const appId = window.fAppId;
+                    const q = window.query(
+                        window.collection(window.fDb, 'artifacts', appId, 'public', 'data', 'reviews'),
+                        window.where('homestayId', '==', uid)
+                    );
+                    window.onSnapshot(q, (snap) => {
+                        this.reviews = snap.docs
+                            .map(d => ({ id: d.id, _draft: '', _sending: false, ...d.data() }))
+                            .sort((a, b) => {
+                                const ta = a.createdAt?.seconds ?? 0;
+                                const tb = b.createdAt?.seconds ?? 0;
+                                return tb - ta; // newest first
+                            });
+                        this.reviewsLoading = false;
+                    }, () => { this.reviewsLoading = false; });
+                },
+
+                // Save host reply back to Firestore
+                async saveReply(review) {
+                    if (!review._draft || !review._draft.trim()) return;
+                    review._sending = true;
+                    try {
+                        await window.updateDoc(
+                            window.doc(window.fDb, 'artifacts', window.fAppId, 'public', 'data', 'reviews', review.id),
+                            { reply: review._draft.trim(), repliedAt: window.serverTimestamp() }
+                        );
+                        // Optimistically update local state so the reply box hides immediately
+                        review.reply = review._draft.trim();
+                        review._draft = '';
+                    } catch (e) {
+                        console.error('Reply failed', e);
+                        alert('Failed to post reply. Try again.');
+                    } finally {
+                        review._sending = false;
+                    }
+                },
+
+                async logout() {
+                    try {
+                        await window.signOut(window.fAuth);
+                        window.location.href = '../../index.html';
+                    } catch (e) { console.error("Logout failed", e); }
+                }
+            }));
+        });
+    </script>
+
+</body>
+
+</html>
