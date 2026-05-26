@@ -20,6 +20,14 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## AI Setup (Saarthi)
+
+The AI planner and chat use Gemini through a server action.
+
+1. Copy `.env.local.example` to `.env.local`
+2. Set `GEMINI_API_KEY` to a valid Gemini API key
+3. Restart the dev server after updating env values
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

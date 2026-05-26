@@ -84,7 +84,12 @@ export default function AIPlannerPage() {
             `;
 
             // Call Saarthi AI Server Action using the Gemini API
-            const jsonText = await askSaarthi(prompt);
+            const aiResponse = await askSaarthi(prompt);
+            if (!aiResponse.ok) {
+                throw new Error(aiResponse.error);
+            }
+
+            const jsonText = aiResponse.text;
             let cleanedText = jsonText.trim();
             if (cleanedText.startsWith('```json')) {
                 cleanedText = cleanedText.substring(7);

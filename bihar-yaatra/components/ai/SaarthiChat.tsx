@@ -3,10 +3,14 @@ import React, { useState, useRef, useEffect } from "react";
 // Assuming you have an action that returns text.
 import { askSaarthi } from "@/app/actions";
 
+type UserMessage = { role: "user"; text: string };
+type AssistantMessage = { role: "assistant"; text?: string; displayedText: string };
+type ChatMessage = UserMessage | AssistantMessage;
+
 export default function SaarthiChat() {
     const [saarthiSidebar, setSaarthiSidebar] = useState(false);
     const [userInput, setUserInput] = useState("");
-    const [chatHistory, setChatHistory] = useState<any[]>([]);
+    const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
     const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -51,22 +55,25 @@ export default function SaarthiChat() {
 
         try {
             // Wait for response via fetch/action
-            const response = await askSaarthi(textToUse);
-            
+            const aiResponse = await askSaarthi(textToUse);
+            if (!aiResponse.ok) {
+                throw new Error(aiResponse.error);
+            }
+            const response = aiResponse.text;
+
             // Push empty assistant message
             setChatHistory(prev => {
-                const newIndex = prev.length;
                 return [...prev, { role: 'assistant', text: response, displayedText: '' }];
             });
 
             setIsLoading(false);
-            
+
             // Wait for React to render the new state item before typing effect
             setTimeout(() => {
                 typeMessage(response, chatHistory.length + 1); // +1 because we just pushed 'user' and 'assistant' simultaneously
             }, 50);
 
-        } catch (error) {
+        } catch {
             setIsLoading(false);
             setChatHistory(prev => [...prev, { role: 'assistant', displayedText: 'I apologize, I am having trouble connecting. Please try again.' }]);
         }
@@ -81,9 +88,9 @@ export default function SaarthiChat() {
     return (
         <>
             {/* Sidebar toggle button (Fixed separately so it doesn't take flex space for the drawer) */}
-            <div className={`fixed inset-y-0 right-0 z-[100] flex items-center pointer-events-none transition-opacity duration-300 ${saarthiSidebar ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
-                <button 
-                    onClick={() => setSaarthiSidebar(true)} 
+            <div className={`fixed inset-y-0 right-0 z-[9997] flex items-center pointer-events-none transition-opacity duration-300 ${saarthiSidebar ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
+                <button
+                    onClick={() => setSaarthiSidebar(true)}
                     className="pointer-events-auto bg-gray-900 text-white py-6 px-2 rounded-l-2xl shadow-2xl flex flex-col items-center gap-4 transition-all hover:pr-4 group border-y border-l border-white/10"
                 >
                     <i className="fas fa-robot text-orange-500 group-hover:scale-110 transition-transform"></i>
@@ -92,14 +99,14 @@ export default function SaarthiChat() {
             </div>
 
             {/* Overlay for clicking outside */}
-            <div 
-                onClick={() => setSaarthiSidebar(false)} 
-                className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[105] transition-opacity duration-500 ${saarthiSidebar ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+            <div
+                onClick={() => setSaarthiSidebar(false)}
+                className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998] transition-opacity duration-500 ${saarthiSidebar ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
             ></div>
 
             {/* Sidebar window */}
-            <div 
-                className={`fixed top-0 bottom-0 right-0 z-[110] w-full md:w-[400px] bg-white shadow-2xl flex flex-col transform transition-transform duration-500 will-change-transform ${saarthiSidebar ? 'translate-x-0' : 'translate-x-full'}`}
+            <div
+                className={`fixed top-0 bottom-0 right-0 z-[9999] w-full md:w-[400px] bg-white shadow-2xl flex flex-col transform transition-transform duration-500 will-change-transform ${saarthiSidebar ? 'translate-x-0' : 'translate-x-full'}`}
             >
                 <div className="p-6 md:p-8 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
                     <div>
@@ -135,7 +142,7 @@ export default function SaarthiChat() {
 
                     {chatHistory.map((msg, index) => (
                         <div key={index} className={msg.role === 'user' ? 'text-right' : 'text-left'}>
-                            <div 
+                            <div
                                 className={`inline-block p-4 max-w-[90%] text-sm shadow-sm leading-relaxed text-left ${msg.role === 'user' ? 'bg-orange-500 text-white rounded-l-2xl rounded-tr-2xl' : 'bg-gray-100 text-gray-800 rounded-r-2xl rounded-tl-2xl border border-gray-200'}`}
                                 dangerouslySetInnerHTML={{ __html: msg.role === 'user' ? formatMessage(msg.text) : (msg.displayedText || '') }}
                             ></div>
@@ -153,7 +160,7 @@ export default function SaarthiChat() {
 
                 <div className="p-4 md:p-8 bg-white border-t border-gray-100">
                     <div className="relative">
-                        <textarea 
+                        <textarea
                             value={userInput}
                             onChange={(e) => setUserInput(e.target.value)}
                             onKeyDown={(e) => {
@@ -162,7 +169,7 @@ export default function SaarthiChat() {
                                     sendMessage();
                                 }
                             }}
-                            placeholder="Ask Saarthi anything..." 
+                            placeholder="Ask Saarthi anything..."
                             className="w-full p-4 pr-12 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-orange-500/20 outline-none resize-none text-gray-900"
                             rows={1}
                         ></textarea>
