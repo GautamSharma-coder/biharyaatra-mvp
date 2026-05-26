@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
@@ -58,7 +59,7 @@ const DESTINATIONS: Destination[] = [
   },
 ];
 
-export default function ViewDetailPage() {
+function ViewDetailPageContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const item = DESTINATIONS.find((d) => d.id === id) ?? null;
@@ -100,5 +101,13 @@ export default function ViewDetailPage() {
 
       <MobileBottomNav />
     </main>
+  );
+}
+
+export default function ViewDetailPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><i className="fas fa-spinner fa-spin text-2xl text-orange-500"></i></div>}>
+      <ViewDetailPageContent />
+    </Suspense>
   );
 }

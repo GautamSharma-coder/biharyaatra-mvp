@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
@@ -51,7 +52,7 @@ const HOMESTAYS: Homestay[] = [
   },
 ];
 
-export default function ViewHomestayDetailPage() {
+function ViewHomestayDetailPageContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const item = HOMESTAYS.find((h) => h.id === id) ?? null;
@@ -92,5 +93,13 @@ export default function ViewHomestayDetailPage() {
 
       <MobileBottomNav />
     </main>
+  );
+}
+
+export default function ViewHomestayDetailPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><i className="fas fa-spinner fa-spin text-2xl text-orange-500"></i></div>}>
+      <ViewHomestayDetailPageContent />
+    </Suspense>
   );
 }
