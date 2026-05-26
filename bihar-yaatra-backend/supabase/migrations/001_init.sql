@@ -19,8 +19,14 @@ CREATE TABLE IF NOT EXISTS public.users (
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.users (id, name, email)
-  VALUES (new.id, new.raw_user_meta_data->>'name', new.email);
+  INSERT INTO public.users (id, name, email, phone, role)
+  VALUES (
+    new.id, 
+    COALESCE(new.raw_user_meta_data->>'name', ''), 
+    new.email, 
+    new.raw_user_meta_data->>'phone',
+    COALESCE(new.raw_user_meta_data->>'role', 'traveller')
+  );
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

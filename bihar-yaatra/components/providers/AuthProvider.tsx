@@ -10,6 +10,7 @@ interface User {
   email: string;
   role: string;
   avatar_url?: string;
+  phone?: string;
 }
 
 interface AuthContextType {
@@ -48,8 +49,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       const res = await apiClient.post('/auth/login', data);
-      setUser(res.data.user);
-      router.push('/dashboard/user');
+      const userObj = res.data.user;
+      setUser(userObj);
+      if (userObj && (userObj.role === 'admin' || userObj.role === 'superadmin')) {
+        router.push('/dashboard/admin');
+      } else {
+        router.push('/dashboard/user');
+      }
     } catch (err: any) {
       throw err.response?.data?.error || 'Login failed';
     } finally {

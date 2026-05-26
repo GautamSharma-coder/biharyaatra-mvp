@@ -1,17 +1,25 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function Navbar() {
+    const { user, loading, logout } = useAuth();
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenu, setMobileMenu] = useState(false);
     const [servicesOpen, setServicesOpen] = useState(false);
     const [userMenu, setUserMenu] = useState(false);
 
-    // Using dummy auth to match HTML for now, until Firebase auth is fully plugged in globally
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userName, setUserName] = useState('User');
-    const [userAvatar, setUserAvatar] = useState('');
+    // Derived dynamic auth state
+    const isLoggedIn = !!user;
+    const userName = user?.name || 'Traveler';
+    const userAvatar = user?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=f97316&color=fff`;
+
+    const getDashboardUrl = () => {
+        if (!user) return '/auth/login';
+        if (user.role === 'admin' || user.role === 'superadmin') return '/dashboard/admin';
+        return '/dashboard/user';
+    };
 
     const servicesRef = useRef<HTMLDivElement>(null);
     const userMenuRef = useRef<HTMLDivElement>(null);
@@ -37,19 +45,6 @@ export default function Navbar() {
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    // Monitor global auth changes (similar to how index.html managed auth via event dispatches)
-    useEffect(() => {
-        const handleAuthChange = (e: any) => {
-            setIsLoggedIn(!!e.detail);
-            if(e.detail) {
-                setUserName(e.detail.displayName || 'Traveler');
-                setUserAvatar(e.detail.photoURL || `https://ui-avatars.com/api/?name=${e.detail.displayName || 'Traveler'}&background=f97316&color=fff`);
-            }
-        };
-        window.addEventListener('auth-change', handleAuthChange);
-        return () => window.removeEventListener('auth-change', handleAuthChange);
     }, []);
 
 
@@ -102,13 +97,15 @@ export default function Navbar() {
                             <Link href="/about" className="nav-item font-medium">About</Link>
                             <Link href="/contact" className="nav-item font-medium">Contact</Link>
 
-                            {!isLoggedIn && (
-                                <Link href="/auth" className="px-6 py-2.5 rounded-full bg-gradient text-white font-medium transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5" style={{ display: 'inline-block' }}>
+                            {loading ? (
+                                <div className="w-10 h-10 flex items-center justify-center">
+                                    <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            ) : !isLoggedIn ? (
+                                <Link href="/auth/login" className="px-6 py-2.5 rounded-full bg-gradient text-white font-medium transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5" style={{ display: 'inline-block' }}>
                                     Login
                                 </Link>
-                            )}
-
-                            {isLoggedIn && (
+                            ) : (
                                 <div className="relative" ref={userMenuRef}>
                                     <button onClick={() => setUserMenu(!userMenu)} className="flex items-center gap-2 focus:outline-none">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -118,9 +115,9 @@ export default function Navbar() {
 
                                     {userMenu && (
                                         <div className="absolute right-0 mt-4 w-48 bg-white rounded-xl shadow-xl border border-gray-100 p-2 overflow-hidden animate-fade-in-down">
-                                            <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 rounded-lg transition-colors">Dashboard</Link>
+                                            <Link href={getDashboardUrl()} className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 rounded-lg transition-colors">Dashboard</Link>
                                             <div className="border-t border-gray-100 my-1"></div>
-                                            <button onClick={() => { /* window.logout() */ }} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors">Logout</button>
+                                            <button onClick={logout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors">Logout</button>
                                         </div>
                                     )}
                                 </div>
@@ -162,7 +159,7 @@ export default function Navbar() {
                             <nav className="space-y-4">
                                 {isLoggedIn && (
                                     <div>
-                                        <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 text-lg font-medium text-gray-900 bg-orange-50 rounded-xl transition">
+                                        <Link href={getDashboardUrl()} className="flex items-center gap-3 px-4 py-3 text-lg font-medium text-gray-900 bg-orange-50 rounded-xl transition">
                                             <i className="fas fa-th-large text-orange-500"></i> Dashboard
                                         </Link>
                                         <div className="border-t border-gray-100 my-4"></div>
@@ -198,12 +195,16 @@ export default function Navbar() {
                         </div>
 
                         <div className="p-6 bg-gray-50">
-                            {!isLoggedIn ? (
-                                <Link href="/auth" className="block w-full text-center py-4 rounded-xl bg-gradient text-white font-medium shadow-lg hover:shadow-xl transition-all">
+                            {loading ? (
+                                <div className="w-full flex justify-center py-4">
+                                    <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            ) : !isLoggedIn ? (
+                                <Link href="/auth/login" className="block w-full text-center py-4 rounded-xl bg-gradient text-white font-medium shadow-lg hover:shadow-xl transition-all">
                                     Login / Sign Up
                                 </Link>
                             ) : (
-                                <button onClick={() => { /* window.logout() */ }} className="block w-full text-center py-4 rounded-xl bg-white border border-gray-200 text-red-600 font-bold shadow-sm hover:bg-red-50">
+                                <button onClick={logout} className="block w-full text-center py-4 rounded-xl bg-white border border-gray-200 text-red-600 font-bold shadow-sm hover:bg-red-50">
                                     Sign Out
                                 </button>
                             )}

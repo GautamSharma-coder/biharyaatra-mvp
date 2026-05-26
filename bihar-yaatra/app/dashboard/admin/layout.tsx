@@ -1,12 +1,22 @@
 "use client";
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const adminEmail = "admin@biharyaatra.com";
-    const adminRole = "SUPER ADMIN";
+    const router = useRouter();
+    const { user, logout, loading } = useAuth();
+
+    useEffect(() => {
+        if (!loading && (!user || (user.role !== 'admin' && user.role !== 'superadmin'))) {
+            router.push('/auth/login');
+        }
+    }, [user, loading, router]);
+
+    const adminEmail = user?.email || "admin@biharyaatra.com";
+    const adminRole = user?.role ? user.role.toUpperCase() : "SUPER ADMIN";
 
     const navLinks = [
         { href: '/dashboard/admin', label: 'Dashboard', icon: 'fa-th-large', category: 'Overview', exact: true },
@@ -14,7 +24,9 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
         { href: '/dashboard/admin/tourists', label: 'System Users', icon: 'fa-users', category: 'Management' },
         { href: '/dashboard/admin/homestays', label: 'Homestays', icon: 'fa-home', category: 'Management' },
         { href: '/dashboard/admin/transport', label: 'Transport', icon: 'fa-bus', category: 'Management' },
-        { href: '/dashboard/admin/cms', label: 'CMS', icon: 'fa-edit', category: 'Root Admin' }
+        { href: '/dashboard/admin/partner-approvals', label: 'Partner Approvals', icon: 'fa-handshake', category: 'Management' },
+        { href: '/dashboard/admin/cms', label: 'CMS', icon: 'fa-edit', category: 'Root Admin' },
+        { href: '/dashboard/admin/create', label: 'Create Identity', icon: 'fa-user-plus', category: 'Root Admin' }
     ];
 
     return (
@@ -70,7 +82,7 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
                             <p className="text-[10px] text-orange-500 font-bold uppercase">{adminRole}</p>
                         </div>
                     </div>
-                    <button className="w-full flex items-center gap-2 text-red-500 font-bold px-4 hover:bg-red-50 py-2 rounded-lg transition text-sm">
+                    <button onClick={logout} className="w-full flex items-center gap-2 text-red-500 font-bold px-4 hover:bg-red-50 py-2 rounded-lg transition text-sm">
                         <i className="fas fa-sign-out-alt"></i> Logout
                     </button>
                 </div>

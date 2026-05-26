@@ -1,9 +1,12 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import { askSaarthi } from '@/app/actions';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { useRouter } from 'next/navigation';
+import { apiClient } from '@/lib/api-client';
 
 interface Activity {
     day: number;
@@ -19,6 +22,8 @@ interface ItineraryResult {
 }
 
 export default function AIPlannerPage() {
+    const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
     const [duration, setDuration] = useState<number>(3);
     const [travelers, setTravelers] = useState('Couple');
     const [budget, setBudget] = useState('Standard');
@@ -30,11 +35,28 @@ export default function AIPlannerPage() {
     const [loadingMessage, setLoadingMessage] = useState('Analyzing your preferences...');
     const [isSaved, setIsSaved] = useState(false);
 
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.push('/auth/login');
+        }
+    }, [user, authLoading, router]);
+
     const availableInterests = ['Heritage', 'Spiritual', 'Nature', 'Wildlife', 'Food', 'Adventure', 'Rural Life', 'Photography'];
 
     const toggleInterest = (i: string) => {
         setInterests(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]);
     };
+
+    if (authLoading || !user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
+                <div className="flex flex-col items-center">
+                    <i className="fas fa-spinner fa-spin text-4xl text-orange-500 mb-4"></i>
+                    <p className="text-gray-500 font-medium">Checking authentication...</p>
+                </div>
+            </div>
+        );
+    }
 
     const handleGenerate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -110,6 +132,26 @@ export default function AIPlannerPage() {
         } finally {
             clearInterval(msgInterval);
             setLoading(false);
+        }
+    };
+
+    const handleSaveTrip = async () => {
+        if (!result) return;
+        try {
+            await apiClient.post('/ai/save-itinerary', {
+                title: result.trip_title,
+                preferences: {
+                    duration,
+                    travelers,
+                    budget,
+                    interests
+                },
+                itinerary: result
+            });
+            setIsSaved(true);
+        } catch (err) {
+            console.error('Error saving trip:', err);
+            alert('Failed to save trip. Please try again.');
         }
     };
 
@@ -224,7 +266,7 @@ export default function AIPlannerPage() {
                                 <i className="fas fa-arrow-left"></i> Plan Another
                             </button>
                             <div className="flex gap-3">
-                                <button onClick={() => setIsSaved(true)}
+                                <button onClick={handleSaveTrip}
                                     className="px-5 py-2 rounded-xl bg-black text-white font-bold flex items-center gap-2 hover:bg-green-600 transition shadow-lg">
                                     <i className="fas fa-save"></i> <span>{isSaved ? 'Saved!' : 'Save Trip'}</span>
                                 </button>

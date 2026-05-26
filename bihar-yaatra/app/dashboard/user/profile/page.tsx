@@ -1,35 +1,55 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { apiClient } from '@/lib/api-client';
 
 export default function UserProfilePage() {
+    const { user, refreshUser } = useAuth();
     const [saving, setSaving] = useState(false);
     
-    // Mock user data
-    const [user, setUser] = useState({
-        name: 'Traveler',
-        email: 'traveler@biharyaatra.com',
-        avatar: 'https://ui-avatars.com/api/?name=Traveler&background=FF7D29&color=fff',
-        location: 'Patna, Bihar',
-        phone: '+91 9876543210',
-        bio: 'Explorer of history and culture.',
-        preferences: ['Heritage', 'Food']
-    });
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [location, setLocation] = useState('Bihar, India');
+    const [bio, setBio] = useState('Explorer of history and culture.');
+    const [avatar, setAvatar] = useState('');
+    const [preferences, setPreferences] = useState<string[]>(['Heritage', 'Food']);
+
+    useEffect(() => {
+        if (user) {
+            setName(user.name || '');
+            setEmail(user.email || '');
+            setPhone(user.phone || '');
+            setAvatar(user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'Traveler')}&background=FF7D29&color=fff`);
+        }
+    }, [user]);
 
     const tripsCount = 4;
     const bookingsCount = 2;
 
     const togglePref = (pref: string) => {
-        setUser(prev => ({
-            ...prev,
-            preferences: prev.preferences.includes(pref)
-                ? prev.preferences.filter(p => p !== pref)
-                : [...prev.preferences, pref]
-        }));
+        setPreferences(prev => prev.includes(pref)
+            ? prev.filter(p => p !== pref)
+            : [...prev, pref]
+        );
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setSaving(true);
-        setTimeout(() => setSaving(false), 1000);
+        try {
+            await apiClient.put('/auth/me', {
+                name,
+                phone,
+                avatar_url: avatar
+            });
+            await refreshUser();
+            alert('Profile updated successfully!');
+        } catch (err) {
+            console.error('Error updating profile:', err);
+            alert('Failed to save profile details.');
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
@@ -42,13 +62,13 @@ export default function UserProfilePage() {
                      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-orange-400 to-pink-500"></div>
                      <div className="relative w-32 h-32 mx-auto mt-4 mb-4 group/avatar cursor-pointer">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={user.avatar} alt="Avatar" className="w-full h-full rounded-full border-4 border-white shadow-xl object-cover bg-white" />
+                        <img src={avatar} alt="Avatar" className="w-full h-full rounded-full border-4 border-white shadow-xl object-cover bg-white" />
                         <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300 flex items-center justify-center text-white">
                             <i className="fas fa-camera text-2xl"></i>
                         </div>
                     </div>
-                    <h3 className="font-black font-display text-2xl text-gray-900 mt-2">{user.name}</h3>
-                    <p className="text-gray-500 font-medium mb-8">{user.email}</p>
+                    <h3 className="font-black font-display text-2xl text-gray-900 mt-2">{name}</h3>
+                    <p className="text-gray-500 font-medium mb-8">{email}</p>
                     
                     <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-8">
                         <div>
@@ -87,8 +107,8 @@ export default function UserProfilePage() {
                             <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Full Name</label>
                             <input 
                                 type="text" 
-                                value={user.name} 
-                                onChange={e => setUser({...user, name: e.target.value})}
+                                value={name} 
+                                onChange={e => setName(e.target.value)}
                                 className="w-full bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5 font-bold text-gray-900 focus:outline-none focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/10 transition-all" 
                             />
                         </div>
@@ -96,8 +116,8 @@ export default function UserProfilePage() {
                             <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Location</label>
                             <input 
                                 type="text" 
-                                value={user.location}
-                                onChange={e => setUser({...user, location: e.target.value})}
+                                value={location}
+                                onChange={e => setLocation(e.target.value)}
                                 className="w-full bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5 font-bold text-gray-900 focus:outline-none focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/10 transition-all" 
                             />
                         </div>
@@ -106,8 +126,8 @@ export default function UserProfilePage() {
                             <input 
                                 type="text" 
                                 placeholder="+91" 
-                                value={user.phone}
-                                onChange={e => setUser({...user, phone: e.target.value})}
+                                value={phone}
+                                onChange={e => setPhone(e.target.value)}
                                 className="w-full bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5 font-bold text-gray-900 focus:outline-none focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/10 transition-all" 
                             />
                         </div>
@@ -116,8 +136,8 @@ export default function UserProfilePage() {
                             <input 
                                 type="text" 
                                 placeholder="Digital Nomad..." 
-                                value={user.bio}
-                                onChange={e => setUser({...user, bio: e.target.value})}
+                                value={bio}
+                                onChange={e => setBio(e.target.value)}
                                 className="w-full bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5 font-bold text-gray-900 focus:outline-none focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/10 transition-all" 
                             />
                         </div>
@@ -126,7 +146,7 @@ export default function UserProfilePage() {
                     <h3 className="font-display font-black text-xl text-gray-900 mb-4">Travel Preferences</h3>
                     <div className="flex flex-wrap gap-3">
                         {['Spiritual', 'Nature', 'Heritage', 'Food', 'Luxury', 'Adventure'].map(pref => {
-                            const isSelected = user.preferences.includes(pref);
+                            const isSelected = preferences.includes(pref);
                             return (
                                 <button 
                                     key={pref}
