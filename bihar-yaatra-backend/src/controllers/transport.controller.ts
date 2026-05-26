@@ -72,9 +72,22 @@ export const updateTransport = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
+    // ── CRIT-2 FIX: Whitelist allowed fields to prevent mass assignment ──
+    const { vehicle_type, model, location, price_per_km, price_per_day, capacity, ac_available, images, is_available } = req.body;
+    const allowedUpdate: Record<string, any> = {};
+    if (vehicle_type !== undefined) allowedUpdate.vehicle_type = vehicle_type;
+    if (model !== undefined) allowedUpdate.model = model;
+    if (location !== undefined) allowedUpdate.location = location;
+    if (price_per_km !== undefined) allowedUpdate.price_per_km = price_per_km;
+    if (price_per_day !== undefined) allowedUpdate.price_per_day = price_per_day;
+    if (capacity !== undefined) allowedUpdate.capacity = capacity;
+    if (ac_available !== undefined) allowedUpdate.ac_available = ac_available;
+    if (images !== undefined) allowedUpdate.images = images;
+    if (is_available !== undefined) allowedUpdate.is_available = is_available;
+
     const { data, error } = await supabase
       .from('transports')
-      .update(req.body)
+      .update(allowedUpdate)
       .eq('id', id)
       .select()
       .single();

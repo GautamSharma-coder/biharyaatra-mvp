@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
+import DOMPurify from "isomorphic-dompurify";
 // Assuming you have an action that returns text.
 import { askSaarthi } from "@/app/actions";
 
@@ -19,7 +20,9 @@ export default function SaarthiChat() {
         if (!text) return '';
         let formatted = text.replace(/\*\*(.*?)\*\*/g, "<strong class='font-bold text-gray-900'>$1</strong>");
         formatted = formatted.replace(/^\* (.*)/gm, "<div class='flex gap-2 ml-1 my-1'><span>•</span><span>$1</span></div>");
-        return `<div class="prose prose-sm prose-gray max-w-none break-words">${formatted.replace(/\n/g, '<br/>')}</div>`;
+        const html = `<div class="prose prose-sm prose-gray max-w-none break-words">${formatted.replace(/\n/g, '<br/>')}</div>`;
+        // ── HIGH-2 FIX: Sanitize HTML to prevent XSS from AI responses or user input ──
+        return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['div', 'span', 'strong', 'br', 'p', 'em', 'ul', 'li', 'ol', 'h1', 'h2', 'h3', 'h4', 'a'], ALLOWED_ATTR: ['class', 'href', 'target'] });
     };
 
     const typeMessage = async (fullText: string, indexToUpdate: number) => {

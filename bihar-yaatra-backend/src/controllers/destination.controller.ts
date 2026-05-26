@@ -57,9 +57,27 @@ export const createDestination = async (req: Request, res: Response) => {
 export const updateDestination = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    // ── CRIT-2 FIX: Whitelist allowed fields to prevent mass assignment ──
+    const { name, slug, tagline, category, location, hero_image_url, sections, highlights, best_time, lat, lng, tags, is_published } = req.body;
+    const allowedUpdate: Record<string, any> = {};
+    if (name !== undefined) allowedUpdate.name = name;
+    if (slug !== undefined) allowedUpdate.slug = slug;
+    if (tagline !== undefined) allowedUpdate.tagline = tagline;
+    if (category !== undefined) allowedUpdate.category = category;
+    if (location !== undefined) allowedUpdate.location = location;
+    if (hero_image_url !== undefined) allowedUpdate.hero_image_url = hero_image_url;
+    if (sections !== undefined) allowedUpdate.sections = sections;
+    if (highlights !== undefined) allowedUpdate.highlights = highlights;
+    if (best_time !== undefined) allowedUpdate.best_time = best_time;
+    if (lat !== undefined) allowedUpdate.lat = lat;
+    if (lng !== undefined) allowedUpdate.lng = lng;
+    if (tags !== undefined) allowedUpdate.tags = tags;
+    // Admins can toggle publish status
+    if (is_published !== undefined) allowedUpdate.is_published = is_published;
+
     const { data, error } = await supabase
       .from('destinations')
-      .update(req.body)
+      .update(allowedUpdate)
       .eq('id', id)
       .select()
       .single();

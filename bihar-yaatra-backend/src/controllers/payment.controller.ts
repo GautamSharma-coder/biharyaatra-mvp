@@ -37,42 +37,59 @@ export const createOrder = async (req: Request, res: Response) => {
 // POST /api/v1/payments/webhook
 export const webhook = async (req: Request, res: Response) => {
   try {
-    // Razorpay webhook payload is raw body. We need to verify signature.
+    // ── CRIT-1 FIX: Razorpay webhook HMAC verification using raw body buffer ──
+    // The raw body is preserved because server.ts registers express.raw() on this path
+    // BEFORE express.json(), so req.body is a Buffer here.
     const signature = req.headers['x-razorpay-signature'] as string;
+
+    if (!signature) {
+      return res.status(400).json({ error: 'Missing x-razorpay-signature header' });
+    }
+
+    // req.body is a raw Buffer here (not parsed JSON) thanks to express.raw()
+    const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body));
     
-    // In Express, calculating HMAC from req.body requires the raw string. 
-    // Assuming express.json() is used, req.rawBody or similar might be needed.
-    // For simplicity assuming req.body is accessible as string via JSON.stringify 
-    // (In production, use a raw body parser middleware for the webhook endpoint).
-    // The architecture requested we implement the webhook:
-    
-    const bodyString = JSON.stringify(req.body);
     const expectedSignature = crypto
       .createHmac('sha256', RAZORPAY_WEBHOOK_SECRET)
-      .update(bodyString)
+      .update(rawBody)
       .digest('hex');
 
     if (expectedSignature !== signature) {
+      console.warn('Razorpay webhook: Invalid HMAC signature rejected.');
       return res.status(400).json({ error: 'Invalid signature' });
     }
 
-    const { event, payload } = req.body;
+    // Parse the verified raw body
+    const payload = JSON.parse(rawBody.toString());
+    const { event } = payload;
 
     if (event === 'payment.captured') {
-      const payment = payload.payment.entity;
+      const payment = payload.payload.payment.entity;
       const orderId = payment.order_id;
-      // You could fetch from Razorpay to get the receipt ID to map to booking ID, 
-      // or save the order_id to the booking table at creation time.
+      const bookingId = payment.notes?.booking_id;
 
-      // For this simplified architecture, assuming we extract booking ID from notes or custom lookup.
-      // E.g., const bookingId = payment.notes.booking_id;
-      
-      console.log(`Payment captured for order: ${orderId}`);
-      // await supabase.from('bookings').update({ payment_status: 'paid', status: 'confirmed' }).eq('id', bookingId);
+      console.log(`Payment captured for order: ${orderId}, booking: ${bookingId}`);
+
+      if (bookingId) {
+        // Actually update booking status in the database
+        const { error: updateError } = await supabase
+          .from('bookings')
+          .update({ payment_status: 'paid', status: 'confirmed', razorpay_payment_id: payment.id, razorpay_order_id: orderId })
+          .eq('id', bookingId);
+        
+        if (updateError) {
+          console.error('Failed to update booking after payment capture:', updateError);
+        } else {
+          console.log(`Booking ${bookingId} marked as paid and confirmed.`);
+        }
+      } else {
+        console.warn('Payment captured but no booking_id found in payment notes.');
+      }
     }
 
     return res.status(200).json({ status: 'ok' });
   } catch (error: any) {
+    console.error('Webhook processing error:', error);
     return res.status(500).json({ error: error.message });
   }
 };

@@ -72,9 +72,22 @@ export const updateGuide = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
+    // ── CRIT-2 FIX: Whitelist allowed fields to prevent mass assignment ──
+    const { name, slug, bio, location, languages, skills, price_per_day, profile_image_url, is_available } = req.body;
+    const allowedUpdate: Record<string, any> = {};
+    if (name !== undefined) allowedUpdate.name = name;
+    if (slug !== undefined) allowedUpdate.slug = slug;
+    if (bio !== undefined) allowedUpdate.bio = bio;
+    if (location !== undefined) allowedUpdate.location = location;
+    if (languages !== undefined) allowedUpdate.languages = languages;
+    if (skills !== undefined) allowedUpdate.skills = skills;
+    if (price_per_day !== undefined) allowedUpdate.price_per_day = price_per_day;
+    if (profile_image_url !== undefined) allowedUpdate.profile_image_url = profile_image_url;
+    if (is_available !== undefined) allowedUpdate.is_available = is_available;
+
     const { data, error } = await supabase
       .from('guides')
-      .update(req.body)
+      .update(allowedUpdate)
       .eq('id', id)
       .select()
       .single();

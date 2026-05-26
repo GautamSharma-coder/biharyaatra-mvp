@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 
 const faqs = [
     {
@@ -60,7 +61,7 @@ export default function FAQ() {
                                     className={`transition-all duration-300 overflow-hidden ${activeAccordion === faq.id ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
                                 >
                                     <div className="px-6 pb-6 pt-0">
-                                        <p className="text-gray-600 leading-relaxed border-t border-gray-100 pt-4" dangerouslySetInnerHTML={{ __html: faq.answer.replace(/(October and March|verified guides|AI Trip Planner|historical, spiritual, or nature)/gi, '<span class="font-semibold text-gray-900">$&</span>') }}></p>
+                                        <p className="text-gray-600 leading-relaxed border-t border-gray-100 pt-4" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(faq.answer.replace(/(October and March|verified guides|AI Trip Planner|historical, spiritual, or nature)/gi, '<span class="font-semibold text-gray-900">$&</span>')) }}></p>
                                     </div>
                                 </div>
                             </div>

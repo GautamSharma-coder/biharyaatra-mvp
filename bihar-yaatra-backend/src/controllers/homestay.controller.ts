@@ -77,9 +77,22 @@ export const updateHomestay = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
+    // ── CRIT-2 FIX: Whitelist allowed fields to prevent mass assignment ──
+    const { name, location, address, lat, lng, price_per_night, max_guests, amenities, images } = req.body;
+    const allowedUpdate: Record<string, any> = {};
+    if (name !== undefined) allowedUpdate.name = name;
+    if (location !== undefined) allowedUpdate.location = location;
+    if (address !== undefined) allowedUpdate.address = address;
+    if (lat !== undefined) allowedUpdate.lat = lat;
+    if (lng !== undefined) allowedUpdate.lng = lng;
+    if (price_per_night !== undefined) allowedUpdate.price_per_night = price_per_night;
+    if (max_guests !== undefined) allowedUpdate.max_guests = max_guests;
+    if (amenities !== undefined) allowedUpdate.amenities = amenities;
+    if (images !== undefined) allowedUpdate.images = images;
+
     const { data, error } = await supabase
       .from('homestays')
-      .update(req.body)
+      .update(allowedUpdate)
       .eq('id', id)
       .select()
       .single();

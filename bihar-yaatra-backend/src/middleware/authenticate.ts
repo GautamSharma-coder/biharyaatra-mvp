@@ -33,12 +33,25 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       return res.status(401).json({ error: 'Invalid or expired session.' });
     }
 
+    // ── HIGH-5 FIX: Read role from the database, NOT from user-writable metadata ──
+    // user_metadata is writable by the user themselves via Supabase client.
+    // Always use the authoritative public.users table for role determination.
+    let role = 'traveller';
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    
+    if (profile?.role) {
+      role = profile.role;
+    }
+
     // Attach user to request
-    // Role is stored in user metadata (set during register/sign-up)
     req.user = {
       user_id: user.id,
       email: user.email || '',
-      role: (user.app_metadata?.role as string) || (user.user_metadata?.role as string) || 'traveller'
+      role
     };
 
     next();

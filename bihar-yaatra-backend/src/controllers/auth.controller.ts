@@ -226,14 +226,24 @@ export const updateMe = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // ── MED-4 FIX: Read existing role from DB, never allow user to change it ──
+    const { data: existingProfile } = await supabase
+      .from('users')
+      .select('role, email')
+      .eq('id', userId)
+      .single();
+
+    const existingRole = existingProfile?.role || 'traveller';
+    const existingEmail = existingProfile?.email || req.user?.email || '';
+
     const { data: updatedUser, error: updateError } = await supabase
       .from('users')
       .upsert({
         id: userId,
         name,
-        email: req.user?.email || '',
+        email: existingEmail,
         phone: phone || null,
-        role: req.user?.role || 'traveller',
+        role: existingRole,  // Always use DB role, never client-provided
         avatar_url: avatar_url || null,
         updated_at: new Date().toISOString()
       })
@@ -244,7 +254,7 @@ export const updateMe = async (req: Request, res: Response) => {
       throw updateError;
     }
 
-    // Also synchronize user_metadata in Supabase Auth
+    // Also synchronize user_metadata in Supabase Auth (never sync role here)
     await supabase.auth.admin.updateUserById(userId, {
       user_metadata: { name, phone }
     });

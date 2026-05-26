@@ -3,11 +3,15 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const supabaseUrl = process.env.SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder_key';
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  console.warn('Missing Supabase environment variables. Please set them in .env');
+// ── MED-2 FIX: Fail-fast if critical environment variables are missing ──
+if (!supabaseUrl || !supabaseServiceRoleKey) {
+  throw new Error(
+    'FATAL: Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables. ' +
+    'The server cannot start without database credentials. Please set them in .env'
+  );
 }
 
 export const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
