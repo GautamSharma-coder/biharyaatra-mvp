@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,7 +22,7 @@ const FACTS = [
     { title: "Sher Shah Suri", desc: "The ruler from Bihar who defeated the Mughals and built the Grand Trunk Road, connecting East to West." }
 ];
 
-export default function LoginPage() {
+function LoginPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { login } = useAuth();
@@ -299,3 +299,10 @@ export default function LoginPage() {
     );
 }
 
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-screen"><i className="fas fa-spinner fa-spin text-2xl text-orange-500"></i></div>}>
+            <LoginPageContent />
+        </Suspense>
+    );
+}

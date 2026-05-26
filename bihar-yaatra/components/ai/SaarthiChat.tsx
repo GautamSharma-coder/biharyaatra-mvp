@@ -29,8 +29,9 @@ export default function SaarthiChat() {
             currentText += words[i] + ' ';
             setChatHistory(prev => {
                 const newHistory = [...prev];
-                if (newHistory[indexToUpdate]) {
-                    newHistory[indexToUpdate].displayedText = formatMessage(currentText);
+                const msg = newHistory[indexToUpdate];
+                if (msg && msg.role === 'assistant') {
+                    msg.displayedText = formatMessage(currentText);
                 }
                 return newHistory;
             });

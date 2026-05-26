@@ -14,7 +14,7 @@ const roles = [
 ] as const;
 
 const onboardingSchema = z.object({
-  role: z.enum(['traveller', 'homestay', 'guide', 'transport'], { required_error: 'Please select a profile type' }),
+  role: z.enum(['traveller', 'homestay', 'guide', 'transport'], { message: 'Please select a profile type' }),
   location: z.string().min(2, 'City/Location is required')
 });
 
