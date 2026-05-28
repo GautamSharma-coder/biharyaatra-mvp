@@ -47,11 +47,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (data: Record<string, unknown>) => {
-    setLoading(true);
     try {
       const res = await apiClient.post('/auth/login', data);
       const userObj = res.data.user;
       setUser(userObj);
+      // Small delay to ensure the cookie is set before navigating
+      await new Promise(resolve => setTimeout(resolve, 100));
       if (userObj && (userObj.role === 'admin' || userObj.role === 'superadmin')) {
         router.push('/dashboard/admin');
       } else if (userObj && userObj.role === 'provider') {
@@ -62,23 +63,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
       throw error.response?.data?.error || 'Login failed';
-    } finally {
-      setLoading(false);
     }
   };
 
   const register = async (data: Record<string, unknown>) => {
-    setLoading(true);
     try {
       await apiClient.post('/auth/register', data);
-      // After register, the user still needs to login or we log them in automatically 
-      // depends on backend. My backend doesn't set cookies on register, so we redirect to login.
       router.push('/auth/login?registered=true');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
       throw error.response?.data?.error || 'Registration failed';
-    } finally {
-      setLoading(false);
     }
   };
 
