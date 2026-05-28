@@ -4,9 +4,19 @@ import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
 
+interface Booking {
+    id: string;
+    status: string;
+    check_in?: string;
+    created_at: string;
+    service_name?: string;
+    service_type: string;
+    total_amount?: number | string;
+}
+
 export default function UserDashboardPage() {
     const { user } = useAuth();
-    const [bookings, setBookings] = useState<Record<string, any>[]>([]);
+    const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

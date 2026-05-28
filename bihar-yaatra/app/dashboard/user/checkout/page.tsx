@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { apiClient } from '@/lib/api-client';
 
 type BookingItem = {
     title: string;
@@ -10,6 +11,9 @@ type BookingItem = {
     price: number;
     guests?: number;
     image?: string;
+    service_id: string;
+    service_type: string;
+    service_name: string;
 };
 
 export default function CheckoutPage() {
@@ -46,15 +50,31 @@ export default function CheckoutPage() {
             alert('Please fill in all details.');
             return;
         }
+        if (!bookingItem) return;
 
         setProcessing(true);
 
-        // Simulate payment processing
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+            // Create the booking via the backend API
+            await apiClient.post('/bookings', {
+                service_type: bookingItem.service_type,
+                service_id: bookingItem.service_id,
+                service_name: bookingItem.service_name || bookingItem.title,
+                guests: form.guests,
+            });
 
-        // Clear draft and redirect
-        localStorage.removeItem('bookingDraft');
-        router.push('/dashboard/user');
+            // Success — clear draft and redirect to bookings list
+            localStorage.removeItem('bookingDraft');
+            router.push('/dashboard/user/bookings');
+        } catch (err: unknown) {
+            const error = err as { response?: { data?: { error?: string | { message?: string }[] } } };
+            const message = typeof error.response?.data?.error === 'string'
+                ? error.response.data.error
+                : 'Failed to create booking. Please try again.';
+            alert(message);
+        } finally {
+            setProcessing(false);
+        }
     };
 
     if (loading) {

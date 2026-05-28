@@ -52,7 +52,7 @@ export default function UserWalletPage() {
                     
                     <div className="flex-1 overflow-y-auto space-y-3 custom-scroll pr-2 -mr-2 max-h-60">
                         {transactions.map(tx => (
-                            <div key={tx.id} className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-[1.25rem] transition-colors border border-transparent hover:border-gray-100 group cursor-default">
+                            <div key={tx.id} className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-[1.25rem] transition-colors border hover:border-gray-100 group cursor-default">
                                 <div className="flex items-center gap-4">
                                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105 duration-300 ${tx.type === 'debit' ? 'bg-red-500' : 'bg-green-500'}`}>
                                         <i className={tx.type === 'debit' ? 'fas fa-arrow-up' : 'fas fa-arrow-down'}></i>

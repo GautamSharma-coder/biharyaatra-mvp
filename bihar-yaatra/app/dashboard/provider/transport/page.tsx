@@ -112,7 +112,7 @@ export default function TransportDashboardPage() {
                                 </div>
                             ) : (
                                 transportBookings.slice(0, 3).map((b, i) => (
-                                    <div key={i} className={`flex gap-4 p-4 rounded-2xl transition cursor-pointer border border-transparent group ${
+                                    <div key={i} className={`flex gap-4 p-4 rounded-2xl transition cursor-pointer border group ${
                                         b.status === 'pending' ? 'bg-red-50/80 hover:bg-red-50 hover:border-red-100' : 
                                         b.status === 'confirmed' ? 'bg-green-50/80 hover:bg-green-50 hover:border-green-100' : 
                                         'bg-gray-50/80 hover:bg-gray-50 hover:border-gray-100'

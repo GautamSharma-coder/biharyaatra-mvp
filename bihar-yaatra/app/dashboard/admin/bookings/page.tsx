@@ -2,8 +2,19 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 
+interface AdminBooking {
+    id: string;
+    service_name?: string;
+    service_type: string;
+    status: string;
+    check_in?: string;
+    check_out?: string;
+    created_at: string;
+    total_amount?: number | string;
+}
+
 export default function AdminBookingsPage() {
-    const [bookings, setBookings] = useState<Record<string, unknown>[]>([]);
+    const [bookings, setBookings] = useState<AdminBooking[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
@@ -155,28 +166,28 @@ export default function AdminBookingsPage() {
                                 <tbody>
                                     {filtered.map(booking => (
                                         <tr key={booking.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
-                                            <td className="px-6 py-4 font-mono text-xs text-gray-500">{String(booking.id || '').substring(0, 8)}...</td>
+                                            <td className="px-6 py-4 font-mono text-xs text-gray-500">{booking.id.substring(0, 8)}...</td>
                                             <td className="px-6 py-4">
-                                                <p className="font-bold text-gray-800 truncate max-w-[180px]">{String(booking.service_name || '—')}</p>
+                                                <p className="font-bold text-gray-800 truncate max-w-[180px]">{booking.service_name || '—'}</p>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className="bg-gray-100 text-gray-600 text-xs font-bold px-2.5 py-1 rounded-lg capitalize">{String(booking.service_type)}</span>
+                                                <span className="bg-gray-100 text-gray-600 text-xs font-bold px-2.5 py-1 rounded-lg capitalize">{booking.service_type}</span>
                                             </td>
                                             <td className="px-6 py-4 text-xs text-gray-500">
                                                 {booking.check_in ? (
-                                                    <>{new Date(booking.check_in).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} → {new Date(booking.check_out).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</>
+                                                    <>{new Date(booking.check_in).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} → {new Date(booking.check_out || '').toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</>
                                                 ) : (
                                                     new Date(booking.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 font-bold text-gray-900">₹{Number(booking.total_amount).toLocaleString('en-IN')}</td>
                                             <td className="px-6 py-4">
-                                                <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg border ${statusColors[String(booking.status)] || 'bg-gray-100 text-gray-600'}`}>
-                                                    {String(booking.status)}
+                                                <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg border ${statusColors[booking.status] || 'bg-gray-100 text-gray-600'}`}>
+                                                    {booking.status}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <select defaultValue={String(booking.status)} onChange={e => handleStatusChange(String(booking.id), e.target.value)}
+                                                <select defaultValue={booking.status} onChange={e => handleStatusChange(booking.id, e.target.value)}
                                                     className="text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:border-orange-500 cursor-pointer">
                                                     <option value="pending">Pending</option>
                                                     <option value="confirmed">Confirmed</option>

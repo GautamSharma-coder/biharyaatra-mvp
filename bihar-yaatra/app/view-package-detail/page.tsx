@@ -80,7 +80,18 @@ function PackageDetailPageContent() {
       router.push("/auth/login?redirect=view-package-detail?id=" + id);
       return;
     }
-    alert(`Proceeding to checkout for ${item?.title}! Connecting to payments gateway...`);
+    // Save booking draft to localStorage so the checkout page can read it
+    const draft = {
+      service_id: item?.id,
+      service_type: 'package',
+      service_name: item?.title,
+      title: item?.title,
+      type: 'Package',
+      price: parseFloat(String(item?.price).replace(/[^0-9.]/g, '')) || 0,
+      image: item?.image,
+    };
+    localStorage.setItem('bookingDraft', JSON.stringify(draft));
+    router.push('/dashboard/user/checkout');
   };
 
   if (!item) {
