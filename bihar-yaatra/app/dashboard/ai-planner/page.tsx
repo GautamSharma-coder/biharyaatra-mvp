@@ -182,7 +182,7 @@ export default function AIPlannerPage() {
 
                 {!result && !loading && (
                     <div className="max-w-3xl mx-auto bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 p-8 md:p-12 border border-gray-100 relative overflow-hidden transition-all duration-500 transform translate-y-0 opacity-100">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-orange-50 to-transparent rounded-bl-[10rem] -z-10 pointer-events-none"></div>
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-linear-to-bl from-orange-50 to-transparent rounded-bl-[10rem] -z-10 pointer-events-none"></div>
 
                         <form onSubmit={handleGenerate}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -233,7 +233,7 @@ export default function AIPlannerPage() {
                                     {availableInterests.map((interest) => (
                                         <label key={interest} className="cursor-pointer">
                                             <input type="checkbox" checked={interests.includes(interest)} onChange={() => toggleInterest(interest)} className="custom-checkbox sr-only peer" />
-                                            <div className="px-5 py-2.5 rounded-full bg-gray-50 border border-gray-100 text-gray-500 font-bold text-sm transition-all hover:bg-white hover:shadow-md select-none border-transparent peer-checked:bg-orange-500 peer-checked:text-white peer-checked:scale-105 peer-checked:border-orange-500">
+                                            <div className="px-5 py-2.5 rounded-full bg-gray-50 border border-gray-100 text-gray-500 font-bold text-sm transition-all hover:bg-white hover:shadow-md select-none peer-checked:bg-orange-500 peer-checked:text-white peer-checked:scale-105 peer-checked:border-orange-500">
                                                 <span>{interest}</span>
                                             </div>
                                         </label>
@@ -277,7 +277,7 @@ export default function AIPlannerPage() {
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl mb-12 relative overflow-hidden">
+                        <div className="bg-linear-to-br from-gray-900 to-gray-800 text-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl mb-12 relative overflow-hidden">
                             <div className="absolute right-0 top-0 w-64 h-full bg-white/5 skew-x-12"></div>
                             <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-orange-500/20 rounded-full blur-3xl"></div>
 
@@ -326,7 +326,7 @@ export default function AIPlannerPage() {
                                         {day.day}
                                     </div>
 
-                                    <div className="bg-white rounded-[2rem] p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100">
+                                    <div className="bg-white rounded-4xl p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100">
                                         <h3 className="text-xl font-bold font-display mb-4 text-gray-900 group-hover:text-orange-600 transition-colors">
                                             {day.title}
                                         </h3>
@@ -356,7 +356,7 @@ export default function AIPlannerPage() {
                             ))}
                         </div>
 
-                        <div className="mt-16 text-center bg-white rounded-[2rem] p-10 border border-gray-100 shadow-xl shadow-gray-200/50">
+                        <div className="mt-16 text-center bg-white rounded-4xl p-10 border border-gray-100 shadow-xl shadow-gray-200/50">
                             <h3 className="text-2xl font-bold font-display mb-2 text-gray-900">Ready to make this real?</h3>
                             <p className="text-gray-500 mb-8 font-medium">Our local experts can book this exact itinerary for you.</p>
                             <a href="/contact"

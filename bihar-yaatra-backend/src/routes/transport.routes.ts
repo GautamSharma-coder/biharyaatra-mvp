@@ -4,7 +4,8 @@ import {
   getTransportById, 
   createTransport, 
   updateTransport, 
-  deleteTransport 
+  deleteTransport,
+  getMyTransports
 } from '../controllers/transport.controller';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
@@ -20,6 +21,7 @@ router.get('/:id', getTransportById);
 // Protected routes
 router.use(authenticate);
 
+router.get('/my/listings', authorize('provider', 'admin', 'superadmin'), getMyTransports);
 router.post('/', authorize('provider', 'admin', 'superadmin'), validate(createTransportSchema), createTransport);
 router.put('/:id', authorize('provider', 'admin', 'superadmin'), validate(updateTransportSchema), updateTransport);
 router.delete('/:id', authorize('provider', 'admin', 'superadmin'), deleteTransport);

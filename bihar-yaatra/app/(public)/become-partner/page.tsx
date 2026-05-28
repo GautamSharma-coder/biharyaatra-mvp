@@ -95,7 +95,7 @@ export default function BecomePartnerPage() {
                     </span>
                     <h1 className="font-display text-4xl md:text-5xl font-black mb-4 leading-tight">
                         Grow Your Business<br />
-                        <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                        <span className="bg-linear-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
                             With Bihar Yaatra
                         </span>
                     </h1>
@@ -150,15 +150,15 @@ export default function BecomePartnerPage() {
                                 <h3 className="font-bold text-sm text-white mb-3">What happens next?</h3>
                                 <div className="space-y-3 text-sm text-slate-400">
                                     <div className="flex gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">1</div>
+                                        <div className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs shrink-0 mt-0.5">1</div>
                                         <p>Our team reviews your application within <strong className="text-white">24–48 hours</strong>.</p>
                                     </div>
                                     <div className="flex gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">2</div>
+                                        <div className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs shrink-0 mt-0.5">2</div>
                                         <p>If approved, you&apos;ll receive your <strong className="text-white">login credentials</strong> on your provided contact.</p>
                                     </div>
                                     <div className="flex gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">3</div>
+                                        <div className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs shrink-0 mt-0.5">3</div>
                                         <p>Log in and <strong className="text-white">complete your profile</strong> to start receiving bookings.</p>
                                     </div>
                                 </div>

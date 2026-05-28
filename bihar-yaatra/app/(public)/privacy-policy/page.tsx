@@ -25,7 +25,7 @@ export default function PrivacyPolicyPage() {
     return (
         <div className="bg-[#FAFAFA] text-gray-900 font-sans overflow-x-hidden min-h-screen flex flex-col">
             {/* Header */}
-            <header className={`fixed w-full top-0 z-[999] transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-lg shadow-md py-3' : 'bg-transparent py-5'}`}>
+            <header className={`fixed w-full top-0 z-999 transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-lg shadow-md py-3' : 'bg-transparent py-5'}`}>
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex items-center justify-between">
                         <Link href="/" className="font-display font-bold text-2xl tracking-tighter flex items-center gap-2">
@@ -56,7 +56,7 @@ export default function PrivacyPolicyPage() {
                             <Link href="/contact" className="nav-item font-medium">Contact</Link>
 
                             {!isLoggedIn ? (
-                                <Link href="/auth" className="px-6 py-2.5 rounded-full bg-gradient-to-r from-orange-400 to-pink-500 text-white font-medium transition-all shadow-md hover:shadow-lg hover:scale-105 hover:-translate-y-0.5">
+                                <Link href="/auth" className="px-6 py-2.5 rounded-full bg-linear-to-r from-orange-400 to-pink-500 text-white font-medium transition-all shadow-md hover:shadow-lg hover:scale-105 hover:-translate-y-0.5">
                                     Login
                                 </Link>
                             ) : (
@@ -85,7 +85,7 @@ export default function PrivacyPolicyPage() {
 
             {/* Mobile Menu Overlay */}
             {mobileMenu && (
-                <div className="fixed inset-0 z-[1000] flex justify-end">
+                <div className="fixed inset-0 z-1000 flex justify-end">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileMenu(false)}></div>
                     <div className="relative w-full max-w-xs bg-white shadow-2xl h-full flex flex-col pt-0 animate-slide-in-right">
                         <div className="px-6 py-6 flex items-center justify-between border-b border-gray-100">
@@ -109,7 +109,7 @@ export default function PrivacyPolicyPage() {
             <main className="flex-1 pt-32 pb-20">
                 <div className="max-w-4xl mx-auto px-6">
                     <div className="text-center mb-16">
-                        <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">Privacy <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">Policy</span></h1>
+                        <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">Privacy <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-pink-500">Policy</span></h1>
                         <p className="text-gray-500 text-lg">Last updated: October 12, 2025</p>
                     </div>
 

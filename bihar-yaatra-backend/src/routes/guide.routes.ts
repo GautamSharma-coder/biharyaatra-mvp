@@ -4,7 +4,8 @@ import {
   getGuideBySlug, 
   createGuide, 
   updateGuide, 
-  deleteGuide 
+  deleteGuide,
+  getMyGuides
 } from '../controllers/guide.controller';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
@@ -20,6 +21,7 @@ router.get('/:slug', getGuideBySlug);
 // Protected routes
 router.use(authenticate);
 
+router.get('/my/listings', authorize('provider', 'admin', 'superadmin'), getMyGuides);
 router.post('/', authorize('provider', 'admin', 'superadmin'), validate(createGuideSchema), createGuide);
 router.put('/:id', authorize('provider', 'admin', 'superadmin'), validate(updateGuideSchema), updateGuide);
 router.delete('/:id', authorize('provider', 'admin', 'superadmin'), deleteGuide);

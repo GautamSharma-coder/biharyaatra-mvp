@@ -6,11 +6,12 @@ import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function UserDashboardPage() {
     const { user } = useAuth();
-    const [bookings, setBookings] = useState<any[]>([]);
+    const [bookings, setBookings] = useState<Record<string, any>[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchBookings = async () => {
+            if (!user) return;
             try {
                 const res = await apiClient.get('/bookings/my');
                 setBookings(res.data || []);
@@ -20,17 +21,20 @@ export default function UserDashboardPage() {
                 setLoading(false);
             }
         };
-        fetchBookings();
-    }, []);
+
+        if (user) {
+            fetchBookings();
+        }
+    }, [user]);
 
     // Derived values
     const balance = "4,500"; // Mock wallet balance for MVP
-    
+
     // Sort confirmed/pending bookings by date to find the next upcoming one
     const activeBookings = bookings.filter(b => b.status === 'confirmed' || b.status === 'pending');
-    const completedBookings = bookings.filter(b => b.status === 'completed');
-    
-    const nextBooking = activeBookings.length > 0 
+
+
+    const nextBooking = activeBookings.length > 0
         ? [...activeBookings].sort((a, b) => new Date(a.check_in || a.created_at).getTime() - new Date(b.check_in || b.created_at).getTime())[0]
         : null;
 
@@ -64,8 +68,8 @@ export default function UserDashboardPage() {
                         <div className="absolute inset-0 z-0">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={nextTrip.image} alt="Destination" className="w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-40 transition-all duration-700 ease-out" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10"></div>
-                            <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent"></div>
+                            <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-black/10"></div>
+                            <div className="absolute inset-0 bg-linear-to-r from-black/80 to-transparent"></div>
                         </div>
 
                         <div className="relative z-10 flex justify-between items-start">
@@ -112,11 +116,11 @@ export default function UserDashboardPage() {
                         <Link href="/dashboard/user/wallet" className="mt-6 text-sm font-bold text-blue-600 hover:text-white px-5 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/20 transition-all">Top Up Wallet</Link>
                     </div>
 
-                    <div className="bg-gradient-to-br from-orange-500 to-pink-500 rounded-[2.5rem] p-8 shadow-lg shadow-orange-500/20 text-white flex-1 flex flex-col justify-center relative overflow-hidden group cursor-pointer hover:shadow-orange-500/40 transition-all duration-300 hover:-translate-y-1">
+                    <div className="bg-linear-to-br from-orange-500 to-pink-500 rounded-[2.5rem] p-8 shadow-lg shadow-orange-500/20 text-white flex-1 flex flex-col justify-center relative overflow-hidden group cursor-pointer hover:shadow-orange-500/40 transition-all duration-300 hover:-translate-y-1">
                         <Link href="/dashboard/ai-planner" className="absolute inset-0 z-0"></Link>
                         <div className="absolute -right-4 -bottom-4 text-white/10 text-8xl group-hover:scale-125 transition-transform duration-500 origin-bottom-right"><i className="fas fa-map-marked-alt"></i></div>
                         <h3 className="font-display font-black text-3xl relative z-10 tracking-tight mb-2">Plan New Trip</h3>
-                        <p className="text-orange-50 text-sm relative z-10 mb-8 font-medium leading-relaxed max-w-[80%]">Explore Bihar's hidden gems and craft an itinerary instantly.</p>
+                        <p className="text-orange-50 text-sm relative z-10 mb-8 font-medium leading-relaxed max-w-[80%]">Explore Bihar&apos;s hidden gems and craft an itinerary instantly.</p>
                         <button className="bg-white/20 backdrop-blur-md border border-white/30 px-6 py-3 rounded-xl font-bold text-sm w-fit hover:bg-white hover:text-orange-600 transition-colors duration-300 flex items-center gap-3 group-hover:pr-4 shadow-lg relative z-10">
                             Start Now <i className="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform"></i>
                         </button>
@@ -136,7 +140,7 @@ export default function UserDashboardPage() {
                         { icon: 'fas fa-home', label: 'Homestays', text: 'Local stay', color: 'text-green-600', bg: 'bg-green-50', link: '/homestays' },
                         { icon: 'fas fa-headset', label: 'Support', text: 'Get help', color: 'text-red-600', bg: 'bg-red-50', link: '/dashboard/user/support' }
                     ].map((action, i) => (
-                        <Link key={i} href={action.link} className="flex flex-col items-center justify-center p-8 rounded-[2rem] bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:shadow-gray-200/50 hover:border-gray-200 transition-all group hover:-translate-y-1.5">
+                        <Link key={i} href={action.link} className="flex flex-col items-center justify-center p-8 rounded-4xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:shadow-gray-200/50 hover:border-gray-200 transition-all group hover:-translate-y-1.5">
                             <div className={`w-16 h-16 ${action.bg} ${action.color} rounded-[1.25rem] flex items-center justify-center text-2xl group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shadow-sm mb-4`}>
                                 <i className={action.icon}></i>
                             </div>
@@ -155,13 +159,13 @@ export default function UserDashboardPage() {
                         <h3 className="font-display font-black text-xl md:text-2xl text-gray-900 border-l-[5px] border-orange-500 pl-4 rounded-sm">Active Bookings</h3>
                         <Link href="/dashboard/user/bookings" className="text-orange-600 font-bold text-sm hover:underline hover:text-orange-700 transition">View All Bookings <i className="fas fa-arrow-right ml-1 text-xs"></i></Link>
                     </div>
-                    
+
                     {loading ? (
-                        <div className="bg-white rounded-[2rem] p-8 border border-gray-100 flex items-center justify-center min-h-[12rem]">
+                        <div className="bg-white rounded-4xl p-8 border border-gray-100 flex items-center justify-center min-h-48">
                             <i className="fas fa-spinner fa-spin text-2xl text-orange-500"></i>
                         </div>
                     ) : activeBookings.length === 0 ? (
-                        <div className="bg-white rounded-[2rem] p-8 border border-gray-100 text-center flex flex-col justify-center items-center min-h-[12rem] text-gray-400">
+                        <div className="bg-white rounded-4xl p-8 border border-gray-100 text-center flex flex-col justify-center items-center min-h-48 text-gray-400">
                             <i className="fas fa-calendar-times text-3xl mb-3"></i>
                             <p className="text-sm font-medium">No active bookings yet.</p>
                             <Link href="/homestays" className="mt-4 text-xs font-bold text-orange-500 hover:underline">Explore stays now</Link>
@@ -169,7 +173,7 @@ export default function UserDashboardPage() {
                     ) : (
                         <div className="space-y-4">
                             {activeBookings.slice(0, 3).map((b, i) => (
-                                <div key={i} className="bg-white rounded-[1.5rem] p-5 md:p-6 shadow-sm border border-gray-100 flex items-center justify-between group hover:border-orange-200 hover:shadow-md transition-all cursor-pointer">
+                                <div key={i} className="bg-white rounded-3xl p-5 md:p-6 shadow-sm border border-gray-100 flex items-center justify-between group hover:border-orange-200 hover:shadow-md transition-all cursor-pointer">
                                     <div className="flex items-center gap-4 md:gap-5">
                                         <div className="w-14 h-14 md:w-16 md:h-16 rounded-[1.25rem] bg-gray-50 flex items-center justify-center text-gray-400 text-xl md:text-2xl border border-gray-100 shadow-sm group-hover:bg-orange-50 group-hover:text-orange-500 transition-colors">
                                             <i className={getBookingIcon(b.service_type)}></i>
@@ -201,7 +205,7 @@ export default function UserDashboardPage() {
                         <h3 className="font-display font-black text-xl md:text-2xl text-gray-900 border-l-[5px] border-gray-900 pl-4 rounded-sm">Recent Activity</h3>
                         <button className="w-10 h-10 rounded-full hover:bg-gray-100 text-gray-400 flex items-center justify-center transition border border-gray-100 shadow-sm"><i className="fas fa-ellipsis-h"></i></button>
                     </div>
-                    <div className="bg-white rounded-[2rem] p-4 md:p-5 shadow-sm border border-gray-100 min-h-[16rem]">
+                    <div className="bg-white rounded-4xl p-4 md:p-5 shadow-sm border border-gray-100 min-h-64">
                         <div className="flex flex-col gap-2">
                             {[
                                 { title: 'Welcome to Bihar Yaatra!', desc: 'Explore Buddhist & Heritage sites', time: 'Just now', icon: 'fas fa-smile', bg: 'bg-green-50 text-green-600' },

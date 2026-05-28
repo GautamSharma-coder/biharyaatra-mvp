@@ -112,7 +112,7 @@ export default function GuideSupportPage() {
     return (
         <div className="bg-gray-50 text-gray-900 font-sans overflow-x-hidden min-h-screen flex flex-col">
             {/* Header */}
-            <header className={`fixed w-full top-0 z-[999] transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-lg shadow-md py-3' : 'bg-transparent py-5'}`}>
+            <header className={`fixed w-full top-0 z-999 transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-lg shadow-md py-3' : 'bg-transparent py-5'}`}>
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex items-center justify-between">
                         <Link href="/" className="font-display font-bold text-2xl tracking-tighter flex items-center gap-2">
@@ -143,7 +143,7 @@ export default function GuideSupportPage() {
                             <Link href="/contact" className="nav-item font-medium">Contact</Link>
 
                             {!isLoggedIn ? (
-                                <Link href="/auth" className="px-6 py-2.5 rounded-full bg-gradient-to-r from-orange-400 to-pink-500 text-white font-medium transition-all shadow-md hover:shadow-lg hover:scale-105 hover:-translate-y-0.5">
+                                <Link href="/auth" className="px-6 py-2.5 rounded-full bg-linear-to-r from-orange-400 to-pink-500 text-white font-medium transition-all shadow-md hover:shadow-lg hover:scale-105 hover:-translate-y-0.5">
                                     Login
                                 </Link>
                             ) : (
@@ -172,7 +172,7 @@ export default function GuideSupportPage() {
 
             {/* Mobile Menu Overlay */}
             {mobileMenu && (
-                <div className="fixed inset-0 z-[1000] flex justify-end">
+                <div className="fixed inset-0 z-1000 flex justify-end">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileMenu(false)}></div>
                     <div className="relative w-full max-w-xs bg-white shadow-2xl h-full flex flex-col animate-slide-in-right">
                         <div className="px-6 py-6 flex items-center justify-between border-b border-gray-100">
@@ -297,7 +297,7 @@ export default function GuideSupportPage() {
                         ) : filteredGuides.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {filteredGuides.map(guide => (
-                                    <div key={guide.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden hover:shadow-xl transition group animate-fade-in-up">
+                                    <div key={guide.id} className="bg-white rounded-4xl border border-gray-100 overflow-hidden hover:shadow-xl transition group animate-fade-in-up">
                                         <div className="relative h-48 overflow-hidden">
                                             <img src={guide.image} alt={guide.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
 

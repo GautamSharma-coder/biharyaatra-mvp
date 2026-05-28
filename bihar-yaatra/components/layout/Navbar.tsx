@@ -50,7 +50,7 @@ export default function Navbar() {
 
     return (
         <>
-            <header className={`fixed w-full top-0 z-[999] transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-lg shadow-md py-3' : 'bg-transparent py-5'}`}>
+            <header className={`fixed w-full top-0 z-999 transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-lg shadow-md py-3' : 'bg-transparent py-5'}`}>
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex items-center justify-between">
                         <Link href="/" className="font-display font-bold text-2xl tracking-tighter flex items-center gap-2">
@@ -133,7 +133,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Overlay */}
             {mobileMenu && (
-                <div className="fixed inset-0 z-[1000] flex justify-end">
+                <div className="fixed inset-0 z-1000 flex justify-end">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileMenu(false)}></div>
 
                     <div className="relative w-full max-w-xs bg-white shadow-2xl h-full flex flex-col animate-slide-in-right">

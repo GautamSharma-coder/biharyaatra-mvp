@@ -83,7 +83,7 @@ export default function ComingSoonPage() {
 
                     <div className="flex flex-wrap justify-center gap-4 md:gap-8 mb-16">
                         <div className="flex flex-col items-center">
-                            <div className="w-20 h-20 md:w-28 md:h-28 bg-white border border-gray-100 rounded-[2rem] shadow-xl flex items-center justify-center mb-3">
+                            <div className="w-20 h-20 md:w-28 md:h-28 bg-white border border-gray-100 rounded-4xl shadow-xl flex items-center justify-center mb-3">
                                 <span className="text-4xl md:text-5xl font-display font-bold text-gray-900">{timeLeft.days}</span>
                             </div>
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Days</span>
@@ -92,7 +92,7 @@ export default function ComingSoonPage() {
                             <span className="text-4xl text-gray-200 font-bold">:</span>
                         </div>
                         <div className="flex flex-col items-center">
-                            <div className="w-20 h-20 md:w-28 md:h-28 bg-white border border-gray-100 rounded-[2rem] shadow-xl flex items-center justify-center mb-3">
+                            <div className="w-20 h-20 md:w-28 md:h-28 bg-white border border-gray-100 rounded-4xl shadow-xl flex items-center justify-center mb-3">
                                 <span className="text-4xl md:text-5xl font-display font-bold text-gray-900">{timeLeft.hours}</span>
                             </div>
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Hours</span>
@@ -101,7 +101,7 @@ export default function ComingSoonPage() {
                             <span className="text-4xl text-gray-200 font-bold">:</span>
                         </div>
                         <div className="flex flex-col items-center">
-                            <div className="w-20 h-20 md:w-28 md:h-28 bg-white border border-gray-100 rounded-[2rem] shadow-xl flex items-center justify-center mb-3">
+                            <div className="w-20 h-20 md:w-28 md:h-28 bg-white border border-gray-100 rounded-4xl shadow-xl flex items-center justify-center mb-3">
                                 <span className="text-4xl md:text-5xl font-display font-bold text-gray-900">{timeLeft.minutes}</span>
                             </div>
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Minutes</span>
@@ -110,7 +110,7 @@ export default function ComingSoonPage() {
                             <span className="text-4xl text-gray-200 font-bold">:</span>
                         </div>
                         <div className="flex flex-col items-center">
-                            <div className="w-20 h-20 md:w-28 md:h-28 bg-white border border-gray-100 rounded-[2rem] shadow-xl flex items-center justify-center mb-3 relative overflow-hidden group">
+                            <div className="w-20 h-20 md:w-28 md:h-28 bg-white border border-gray-100 rounded-4xl shadow-xl flex items-center justify-center mb-3 relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-orange-500 translate-y-full transition-transform"></div>
                                 <span className="text-4xl md:text-5xl font-display font-bold text-orange-500 relative z-10">{timeLeft.seconds}</span>
                             </div>
@@ -119,7 +119,7 @@ export default function ComingSoonPage() {
                     </div>
 
                     <div className="max-w-md mx-auto relative group">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                        <div className="absolute -inset-1 bg-linear-to-r from-orange-400 to-orange-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
                         <form onSubmit={handleNotify} className="relative flex items-center bg-white p-2 rounded-full shadow-2xl border border-gray-100">
                             <div className="pl-4 text-gray-400"><i className="fas fa-envelope"></i></div>
                             <input type="email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full py-4 px-4 bg-transparent outline-none text-gray-700 font-medium placeholder-gray-400" placeholder="Enter your email address" />

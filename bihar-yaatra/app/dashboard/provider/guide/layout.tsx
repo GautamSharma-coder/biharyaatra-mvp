@@ -2,9 +2,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function GuideDashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const { logout } = useAuth();
 
     const menu = [
         { id: 'home', href: '/dashboard/provider/guide', label: 'My Schedule', icon: 'fas fa-calendar-day', exact: true },
@@ -22,7 +24,7 @@ export default function GuideDashboardLayout({ children }: { children: React.Rea
                         <i className="fas fa-map-marked-alt"></i>
                     </div>
                     <span className="font-display font-bold text-xl hidden lg:block">
-                        Guide<span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">Portal</span>
+                        Guide<span className="bg-linear-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">Portal</span>
                     </span>
                 </div>
 
@@ -41,7 +43,7 @@ export default function GuideDashboardLayout({ children }: { children: React.Rea
                 </nav>
 
                 <div className="p-4 mt-auto border-t border-gray-50 shrink-0">
-                    <button className="w-full bg-gray-900 text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-black transition shadow-lg">
+                    <button onClick={logout} className="w-full bg-gray-900 text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-black transition shadow-lg">
                         <i className="fas fa-sign-out-alt"></i>
                         <span className="hidden lg:block">Logout</span>
                     </button>

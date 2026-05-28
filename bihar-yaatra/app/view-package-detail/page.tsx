@@ -108,7 +108,7 @@ function PackageDetailPageContent() {
         {/* Hero Section */}
         <section className="relative h-[450px] overflow-hidden">
           <img src={item.image} className="w-full h-full object-cover" alt={item.title} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+          <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent"></div>
           <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 text-white">
             <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
@@ -149,13 +149,13 @@ function PackageDetailPageContent() {
               </Link>
 
               {/* Description */}
-              <div className="bg-white rounded-[2rem] p-8 md:p-10 border border-gray-100 shadow-sm space-y-4">
+              <div className="bg-white rounded-4xl p-8 md:p-10 border border-gray-100 shadow-sm space-y-4">
                 <h2 className="text-2xl font-bold font-display">About the Experience</h2>
                 <p className="text-gray-600 leading-relaxed text-base font-medium">{item.description}</p>
               </div>
 
               {/* Day-by-Day Interactive Timeline */}
-              <div className="bg-white rounded-[2rem] p-8 md:p-10 border border-gray-100 shadow-sm">
+              <div className="bg-white rounded-4xl p-8 md:p-10 border border-gray-100 shadow-sm">
                 <h2 className="text-2xl font-bold font-display mb-8 flex items-center gap-3">
                   <span className="w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm shadow-md shadow-orange-100"><i className="fas fa-route"></i></span>
                   Detailed Itinerary
@@ -193,7 +193,7 @@ function PackageDetailPageContent() {
 
             {/* Right Booking Sidebar Column */}
             <div className="space-y-8">
-              <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-xl shadow-gray-200/40 sticky top-28 space-y-6">
+              <div className="bg-white rounded-4xl p-8 border border-gray-100 shadow-xl shadow-gray-200/40 sticky top-28 space-y-6">
                 <div>
                   <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Starting From</p>
                   <p className="text-4xl font-display font-bold text-gray-900">{item.price} <span className="text-xs text-gray-400 font-bold uppercase font-sans">/ Person</span></p>

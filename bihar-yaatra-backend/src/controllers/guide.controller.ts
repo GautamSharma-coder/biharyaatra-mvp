@@ -128,3 +128,19 @@ export const deleteGuide = async (req: Request, res: Response) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+// GET /api/v1/guides/my/listings (Provider's own guide profiles)
+export const getMyGuides = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.user_id;
+    const { data, error } = await supabase
+      .from('guides')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return res.status(200).json(data || []);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};

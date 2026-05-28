@@ -9,7 +9,7 @@ export default function TransportPricingPage() {
                 
                 <div className="relative z-10">
                     <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-12">
-                        <div className="w-24 h-24 bg-blue-50 text-blue-600 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner border border-blue-100 shrink-0 shadow-blue-100 rotate-3 transition-transform hover:rotate-0 duration-300">
+                        <div className="w-24 h-24 bg-blue-50 text-blue-600 rounded-4xl flex items-center justify-center text-4xl shadow-inner border border-blue-100 shrink-0 shadow-blue-100 rotate-3 transition-transform hover:rotate-0 duration-300">
                             <i className="fas fa-bolt"></i>
                         </div>
                         <div>
@@ -41,7 +41,7 @@ export default function TransportPricingPage() {
                             </div>
                         </div>
 
-                        <div className="bg-orange-50 rounded-[2rem] p-6 lg:p-8 flex gap-5 items-start border border-orange-200 shadow-sm mt-4">
+                        <div className="bg-orange-50 rounded-4xl p-6 lg:p-8 flex gap-5 items-start border border-orange-200 shadow-sm mt-4">
                             <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shrink-0 text-xl shadow-inner mt-1">
                                 <i className="fas fa-info-circle"></i>
                             </div>

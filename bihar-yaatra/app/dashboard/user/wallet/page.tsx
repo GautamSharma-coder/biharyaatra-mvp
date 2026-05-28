@@ -19,7 +19,7 @@ export default function UserWalletPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Visual Credit Card */}
-                <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden h-64 flex flex-col justify-between hover:shadow-gray-900/40 transition-shadow duration-300 transform hover:-translate-y-1">
+                <div className="bg-linear-to-br from-gray-900 via-gray-800 to-black text-white rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden h-64 flex flex-col justify-between hover:shadow-gray-900/40 transition-shadow duration-300 transform hover:-translate-y-1">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
                     <div className="relative z-10 flex justify-between items-start">
                         <div>
@@ -54,7 +54,7 @@ export default function UserWalletPage() {
                         {transactions.map(tx => (
                             <div key={tx.id} className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-[1.25rem] transition-colors border border-transparent hover:border-gray-100 group cursor-default">
                                 <div className="flex items-center gap-4">
-                                    <div className={`w-12 h-12 rounded-[1rem] flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105 duration-300 ${tx.type === 'debit' ? 'bg-red-500' : 'bg-green-500'}`}>
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105 duration-300 ${tx.type === 'debit' ? 'bg-red-500' : 'bg-green-500'}`}>
                                         <i className={tx.type === 'debit' ? 'fas fa-arrow-up' : 'fas fa-arrow-down'}></i>
                                     </div>
                                     <div>

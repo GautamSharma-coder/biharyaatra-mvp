@@ -111,7 +111,7 @@ export default function HomestayPage() {
     return (
         <div className="bg-[#FAFAFA] text-gray-900 font-sans overflow-x-hidden min-h-screen flex flex-col">
             {/* Header */}
-            <header className={`fixed w-full top-0 z-[999] transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-lg shadow-md py-3' : 'bg-transparent py-5'}`}>
+            <header className={`fixed w-full top-0 z-999 transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-lg shadow-md py-3' : 'bg-transparent py-5'}`}>
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex items-center justify-between">
                         <Link href="/" className="font-display font-bold text-2xl tracking-tighter flex items-center gap-2">
@@ -171,7 +171,7 @@ export default function HomestayPage() {
 
             {/* Mobile Menu Overlay */}
             {mobileMenu && (
-                <div className="fixed inset-0 z-[1000] flex justify-end">
+                <div className="fixed inset-0 z-1000 flex justify-end">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileMenu(false)}></div>
                     <div className="relative w-full max-w-xs bg-white shadow-2xl h-full flex flex-col animate-slide-in-right">
                         <div className="px-6 py-6 flex items-center justify-between border-b border-gray-100">
@@ -219,14 +219,14 @@ export default function HomestayPage() {
                         <div className="text-center mb-12">
                             <span className="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold uppercase tracking-widest mb-4">Authentic Living</span>
                             <h1 className="font-display text-4xl md:text-6xl font-bold mb-6">
-                                Feel at Home, <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">Away from Home</span>
+                                Feel at Home, <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-pink-500">Away from Home</span>
                             </h1>
                             <p className="text-lg text-gray-500 max-w-2xl mx-auto font-medium">
                                 Experience authentic Bihari hospitality. Stay with local families, enjoy home-cooked Maithili or Magahi cuisines, and live the culture.
                             </p>
                         </div>
 
-                        <div className="max-w-5xl mx-auto bg-white rounded-[2rem] shadow-2xl shadow-gray-200/50 border border-gray-100 p-4">
+                        <div className="max-w-5xl mx-auto bg-white rounded-4xl shadow-2xl shadow-gray-200/50 border border-gray-100 p-4">
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                                 <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 hover:border-orange-200 transition relative focus-within:border-orange-500 focus-within:bg-white">
                                     <label className="block text-xs font-bold text-gray-400 uppercase ml-1 mb-1">Location</label>
@@ -320,12 +320,12 @@ export default function HomestayPage() {
                                 {filteredHomestays.map(stay => (
                                     <div 
                                         key={stay.id} 
-                                        className="group bg-white rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col h-full cursor-pointer animate-fade-in-up"
+                                        className="group bg-white rounded-4xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col h-full cursor-pointer animate-fade-in-up"
                                         onClick={() => router.push(`/view-homestay-detail?id=${stay.id}`)}
                                     >
                                         <div className="relative h-64 overflow-hidden">
                                             <img src={stay.imageUrl} alt={stay.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                                            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent"></div>
 
                                             <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-gray-800 shadow-sm">
                                                 <span>{stay.badge || 'Verified'}</span>
@@ -380,7 +380,7 @@ export default function HomestayPage() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-20 bg-gray-50 rounded-[2rem] border border-dashed border-gray-200">
+                            <div className="text-center py-20 bg-gray-50 rounded-4xl border border-dashed border-gray-200">
                                 <div className="inline-block p-6 rounded-full bg-white mb-4 shadow-sm">
                                     <i className="fas fa-home text-4xl text-gray-300"></i>
                                 </div>

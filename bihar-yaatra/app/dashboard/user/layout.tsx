@@ -86,7 +86,7 @@ export default function UserDashboardLayout({ children }: { children: React.Reac
             <aside className={`fixed inset-y-0 left-0 lg:static lg:translate-x-0 z-50 w-72 h-full bg-white lg:border-r border-gray-100 flex flex-col transition-transform duration-300 shadow-2xl lg:shadow-none shrink-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="p-8 pb-4 border-b border-gray-50 flex items-center justify-between lg:justify-start">
                     <Link href="/" className="font-display font-bold text-2xl tracking-tighter flex items-center gap-2 text-gray-900">
-                        Bihar<span className="bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">Yaatra</span>
+                        Bihar<span className="bg-linear-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">Yaatra</span>
                     </Link>
                     <button className="lg:hidden text-gray-500" onClick={() => setMobileMenuOpen(false)}>
                         <i className="fas fa-times text-xl"></i>

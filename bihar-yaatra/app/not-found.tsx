@@ -21,7 +21,7 @@ export default function NotFound() {
                 <div className="max-w-xl w-full text-center relative z-10 space-y-8 animate-fade-in-down">
                     {/* Massive Floating 404 Graphic */}
                     <div className="relative inline-block">
-                        <h1 className="font-display text-9xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-600 drop-shadow-md select-none animate-pulse">
+                        <h1 className="font-display text-9xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-orange-500 to-pink-600 drop-shadow-md select-none animate-pulse">
                             404
                         </h1>
                         <div className="absolute -top-4 -right-4 w-12 h-12 bg-yellow-400/20 rounded-full blur-xl animate-bounce"></div>

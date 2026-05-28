@@ -1,13 +1,18 @@
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function HomestayDashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const router = useRouter();
+    const { user, logout } = useAuth();
     const [mobileMenu, setMobileMenu] = useState(false);
 
-    const hostData = { name: 'Ramesh Babu', id: 'HS-4092', initials: 'RB' };
+    const hostName = user?.name || 'Host';
+    const hostInitials = hostName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+    const hostId = user?.id?.slice(0, 8) || 'N/A';
 
     const navLinks = [
         { label: 'Overview', isHeader: true },
@@ -49,12 +54,12 @@ export default function HomestayDashboardLayout({ children }: { children: React.
 
                 <div className="p-4 border-t border-gray-50 shrink-0">
                     <div className="flex items-center gap-3 px-2">
-                        <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">{hostData.initials}</div>
+                        <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">{hostInitials}</div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-gray-900 truncate">{hostData.name}</p>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase truncate">ID: {hostData.id}</p>
+                            <p className="text-sm font-bold text-gray-900 truncate">{hostName}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase truncate">ID: {hostId}</p>
                         </div>
-                        <button className="text-gray-400 hover:text-red-500 transition" title="Logout">
+                        <button onClick={logout} className="text-gray-400 hover:text-red-500 transition" title="Logout">
                             <i className="fas fa-sign-out-alt"></i>
                         </button>
                     </div>

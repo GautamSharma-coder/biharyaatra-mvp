@@ -181,3 +181,40 @@ export const updateBookingStatus = async (req: Request, res: Response) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+// --- Provider Endpoints ---
+
+// GET /api/v1/bookings/provider (Bookings for the provider's own services)
+export const getProviderBookings = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.user_id;
+
+    // Collect all service IDs owned by this provider across all service types
+    const serviceIds: string[] = [];
+
+    const [homestays, transports, guides] = await Promise.all([
+      supabase.from('homestays').select('id').eq('host_id', userId),
+      supabase.from('transports').select('id').eq('provider_id', userId),
+      supabase.from('guides').select('id').eq('user_id', userId),
+    ]);
+
+    if (homestays.data) serviceIds.push(...homestays.data.map((h: any) => h.id));
+    if (transports.data) serviceIds.push(...transports.data.map((t: any) => t.id));
+    if (guides.data) serviceIds.push(...guides.data.map((g: any) => g.id));
+
+    if (serviceIds.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .in('service_id', serviceIds)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return res.status(200).json(data || []);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};

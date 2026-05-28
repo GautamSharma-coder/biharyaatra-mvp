@@ -56,7 +56,7 @@ export default function ContactPage() {
     return (
         <div className="bg-gray-50 text-gray-900 font-sans overflow-x-hidden min-h-screen">
             {/* Header */}
-            <header className={`fixed w-full top-0 z-[999] transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-lg shadow-md py-3' : 'bg-transparent py-5'}`}>
+            <header className={`fixed w-full top-0 z-999 transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-lg shadow-md py-3' : 'bg-transparent py-5'}`}>
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex items-center justify-between">
                         <Link href="/" className="font-display font-bold text-2xl tracking-tighter flex items-center gap-2">
@@ -87,7 +87,7 @@ export default function ContactPage() {
                             <Link href="/contact" className="nav-item font-medium text-orange-600">Contact</Link>
 
                             {!isLoggedIn ? (
-                                <Link href="/auth" className="px-6 py-2.5 rounded-full bg-gradient-to-r from-orange-400 to-pink-500 text-white font-medium transition-all shadow-md hover:shadow-lg hover:scale-105 hover:-translate-y-0.5">
+                                <Link href="/auth" className="px-6 py-2.5 rounded-full bg-linear-to-r from-orange-400 to-pink-500 text-white font-medium transition-all shadow-md hover:shadow-lg hover:scale-105 hover:-translate-y-0.5">
                                     Login
                                 </Link>
                             ) : (
@@ -116,7 +116,7 @@ export default function ContactPage() {
 
             {/* Mobile Menu Overlay */}
             {mobileMenu && (
-                <div className="fixed inset-0 z-[1000] flex justify-end">
+                <div className="fixed inset-0 z-1000 flex justify-end">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileMenu(false)}></div>
                     <div className="relative w-full max-w-xs bg-white shadow-2xl h-full flex flex-col animate-slide-in-right">
                         <div className="px-6 py-6 flex items-center justify-between border-b border-gray-100">
@@ -157,7 +157,7 @@ export default function ContactPage() {
 
             <section className="pt-40 pb-12 bg-white text-center">
                 <h1 className="font-display text-5xl md:text-6xl font-bold mb-4">
-                    Get in <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">Touch</span>
+                    Get in <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-pink-500">Touch</span>
                 </h1>
                 <p className="text-lg text-gray-500 max-w-xl mx-auto px-6 font-medium">
                     Have a question about a tour? Need help planning your itinerary? We're here to help you 24/7.
@@ -168,7 +168,7 @@ export default function ContactPage() {
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                         <div className="space-y-8">
-                            <div className="bg-white p-8 rounded-[2rem] shadow-lg border border-gray-100">
+                            <div className="bg-white p-8 rounded-4xl shadow-lg border border-gray-100">
                                 <h2 className="text-2xl font-display font-bold mb-6 flex items-center gap-3">
                                     <i className="fas fa-building text-orange-500"></i> Service Center
                                 </h2>
@@ -212,7 +212,7 @@ export default function ContactPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-gray-200 rounded-[2rem] h-64 w-full overflow-hidden relative shadow-inner group">
+                            <div className="bg-gray-200 rounded-4xl h-64 w-full overflow-hidden relative shadow-inner group">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Map_of_Bihar.jpg" alt="Map Location" className="w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 transition duration-500" />
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <a href="https://maps.google.com/?q=Bihar" target="_blank" rel="noreferrer" className="px-6 py-3 bg-white text-black font-bold rounded-full shadow-lg hover:scale-105 transition transform flex items-center gap-2">

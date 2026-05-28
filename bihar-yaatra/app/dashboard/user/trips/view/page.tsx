@@ -89,7 +89,7 @@ function ViewTripContent() {
             <aside className={`fixed inset-y-0 right-0 lg:static lg:inset-auto z-50 w-72 h-full bg-white lg:border-r border-l lg:border-l-0 border-gray-100 flex flex-col transition-transform duration-300 shadow-2xl lg:shadow-none ${mobileMenu ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}>
                 <div className="p-8 pb-4">
                     <Link href="/" className="font-display font-extrabold text-2xl tracking-tight flex items-center gap-2 text-gray-900">
-                        Bihar<span className="bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">Yaatra</span>
+                        Bihar<span className="bg-linear-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">Yaatra</span>
                     </Link>
                 </div>
                 <nav className="flex-1 overflow-y-auto py-4 px-5 space-y-1.5">
@@ -138,7 +138,7 @@ function ViewTripContent() {
                             <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-lg border border-gray-100 relative group">
                                 <div className="h-64 overflow-hidden relative">
                                     <img src={trip.image || 'https://images.unsplash.com/photo-1628063597843-085732c57569?q=80&w=1200'} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt={trip.title} />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent"></div>
                                     <div className="absolute bottom-8 left-8 text-white">
                                         <span className="bg-orange-500 text-white px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider mb-3 inline-block shadow-md">{trip.status}</span>
                                         <h2 className="text-4xl md:text-5xl font-display font-bold mb-2">{trip.title}</h2>
@@ -199,7 +199,7 @@ function ViewTripContent() {
 
                                 {/* Right Column */}
                                 <div className="space-y-6">
-                                    <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+                                    <div className="bg-white p-6 rounded-4xl border border-gray-100 shadow-sm">
                                         <h3 className="font-bold text-lg mb-4">Trip Summary</h3>
                                         <p className="text-gray-500 text-sm mb-6 leading-relaxed">{trip.description}</p>
                                         <div className="space-y-3">
@@ -218,7 +218,7 @@ function ViewTripContent() {
                                         </div>
                                     </div>
 
-                                    <div className="bg-gradient-to-br from-gray-900 to-black text-white p-6 rounded-[2rem] shadow-xl relative overflow-hidden">
+                                    <div className="bg-linear-to-br from-gray-900 to-black text-white p-6 rounded-4xl shadow-xl relative overflow-hidden">
                                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
                                         <h3 className="font-bold text-lg mb-2 relative z-10">Need a Ride?</h3>
                                         <p className="text-gray-400 text-sm mb-6 relative z-10">Book verified cabs for your trip.</p>

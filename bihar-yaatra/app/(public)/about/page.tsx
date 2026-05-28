@@ -56,7 +56,7 @@ export default function AboutPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div className="bg-white p-8 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
+                        <div className="bg-white p-8 rounded-4xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
                             <div className="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 text-2xl mb-6 group-hover:scale-110 transition-transform">
                                 <i className="fas fa-heart"></i>
                             </div>
@@ -64,7 +64,7 @@ export default function AboutPage() {
                             <p className="text-gray-600 text-sm leading-relaxed">We promise real experiences. From local cuisine to
                                 village walks, we show you the Bihar that guidebooks often miss.</p>
                         </div>
-                        <div className="bg-white p-8 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
+                        <div className="bg-white p-8 rounded-4xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
                             <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 text-2xl mb-6 group-hover:scale-110 transition-transform">
                                 <i className="fas fa-shield-alt"></i>
                             </div>
@@ -72,7 +72,7 @@ export default function AboutPage() {
                             <p className="text-gray-600 text-sm leading-relaxed">Your safety is our priority. Our network of
                                 verified guides, drivers, and hotels ensures a worry-free journey.</p>
                         </div>
-                        <div className="bg-white p-8 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
+                        <div className="bg-white p-8 rounded-4xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
                             <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-2xl mb-6 group-hover:scale-110 transition-transform">
                                 <i className="fas fa-hand-holding-heart"></i>
                             </div>
@@ -124,7 +124,7 @@ export default function AboutPage() {
                         <div className="group relative h-[450px] rounded-[2.5rem] overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src="/assets/images/team/vishal.jpg" onError={(e) => { e.currentTarget.src = 'https://ui-avatars.com/api/?name=Vishal+Kumar&size=500'; }} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Vishal" />
-                            <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/90 to-transparent transition-opacity duration-500 group-hover:opacity-0 z-20">
+                            <div className="absolute bottom-0 left-0 w-full p-8 bg-linear-to-t from-black/90 to-transparent transition-opacity duration-500 group-hover:opacity-0 z-20">
                                 <h3 className="text-white text-3xl font-bold font-display mb-1">Vishal</h3>
                                 <p className="text-orange-400 font-bold text-sm uppercase tracking-wider">Founder • Tech Lead</p>
                             </div>
@@ -138,7 +138,7 @@ export default function AboutPage() {
                         <div className="group relative h-[450px] rounded-[2.5rem] overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Aditya" />
-                            <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/90 to-transparent transition-opacity duration-500 group-hover:opacity-0 z-20">
+                            <div className="absolute bottom-0 left-0 w-full p-8 bg-linear-to-t from-black/90 to-transparent transition-opacity duration-500 group-hover:opacity-0 z-20">
                                 <h3 className="text-white text-3xl font-bold font-display mb-1">Aditya</h3>
                                 <p className="text-orange-400 font-bold text-sm uppercase tracking-wider">Founder • Full Stack</p>
                             </div>
@@ -152,7 +152,7 @@ export default function AboutPage() {
                         <div className="group relative h-[450px] rounded-[2.5rem] overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Gautam" />
-                            <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/90 to-transparent transition-opacity duration-500 group-hover:opacity-0 z-20">
+                            <div className="absolute bottom-0 left-0 w-full p-8 bg-linear-to-t from-black/90 to-transparent transition-opacity duration-500 group-hover:opacity-0 z-20">
                                 <h3 className="text-white text-3xl font-bold font-display mb-1">Gautam</h3>
                                 <p className="text-orange-400 font-bold text-sm uppercase tracking-wider">Frontend Lead</p>
                             </div>
@@ -171,7 +171,7 @@ export default function AboutPage() {
                         <div className="group relative h-[450px] rounded-[2.5rem] overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=800" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Sonam" />
-                            <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/90 to-transparent transition-opacity duration-500 group-hover:opacity-0 z-20">
+                            <div className="absolute bottom-0 left-0 w-full p-8 bg-linear-to-t from-black/90 to-transparent transition-opacity duration-500 group-hover:opacity-0 z-20">
                                 <h3 className="text-white text-3xl font-bold font-display mb-1">Sonam</h3>
                                 <p className="text-orange-400 font-bold text-sm uppercase tracking-wider">Content & Growth</p>
                             </div>
@@ -185,7 +185,7 @@ export default function AboutPage() {
                         <div className="group relative h-[450px] rounded-[2.5rem] overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?q=80&w=800" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Nikhil" />
-                            <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/90 to-transparent transition-opacity duration-500 group-hover:opacity-0 z-20">
+                            <div className="absolute bottom-0 left-0 w-full p-8 bg-linear-to-t from-black/90 to-transparent transition-opacity duration-500 group-hover:opacity-0 z-20">
                                 <h3 className="text-white text-3xl font-bold font-display mb-1">Nikhil</h3>
                                 <p className="text-orange-400 font-bold text-sm uppercase tracking-wider">Marketing</p>
                             </div>
@@ -199,7 +199,7 @@ export default function AboutPage() {
                         <div className="group relative h-[450px] rounded-[2.5rem] overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=800" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Pawan" />
-                            <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/90 to-transparent transition-opacity duration-500 group-hover:opacity-0 z-20">
+                            <div className="absolute bottom-0 left-0 w-full p-8 bg-linear-to-t from-black/90 to-transparent transition-opacity duration-500 group-hover:opacity-0 z-20">
                                 <h3 className="text-white text-3xl font-bold font-display mb-1">Pawan</h3>
                                 <p className="text-orange-400 font-bold text-sm uppercase tracking-wider">Strategy</p>
                             </div>

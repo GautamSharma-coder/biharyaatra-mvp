@@ -101,7 +101,7 @@ function LoginPageContent() {
                              alt="Lumbini" />
                     </div>
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+                    <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent"></div>
 
                     <div className="relative z-10 min-h-[140px]">
                         {FACTS.map((fact, index) => (

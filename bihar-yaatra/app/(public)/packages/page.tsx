@@ -74,7 +74,7 @@ export default function PackagesPage() {
                     <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
                         <span className="inline-block px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-bold uppercase tracking-widest mb-4">Curated Journeys</span>
                         <h1 className="font-display text-5xl md:text-7xl font-bold mb-6">
-                            Packages Designed for <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">Memories</span>
+                            Packages Designed for <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-pink-500">Memories</span>
                         </h1>
                         <p className="text-lg text-gray-500 max-w-2xl mx-auto mb-10 font-medium">
                             Choose from our expertly crafted itineraries that blend culture, nature, and spirituality seamlessly.
@@ -120,11 +120,11 @@ export default function PackagesPage() {
                                     <Link 
                                         key={pkg.id} 
                                         href={`/view-package-detail?id=${pkg.id}`}
-                                        className="group bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 border border-gray-100 flex flex-col h-full cursor-pointer animate-fade-in-up"
+                                        className="group bg-white rounded-4xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 border border-gray-100 flex flex-col h-full cursor-pointer animate-fade-in-up"
                                     >
                                         <div className="relative h-64 overflow-hidden">
                                             <img src={pkg.image} alt={pkg.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                                            <div className="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-transparent"></div>
 
                                             <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-gray-800 shadow-sm flex items-center gap-2">
                                                 <i className="fas fa-clock text-orange-500"></i>
@@ -172,7 +172,7 @@ export default function PackagesPage() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-24 bg-white rounded-[2rem] border border-dashed border-gray-200">
+                            <div className="text-center py-24 bg-white rounded-4xl border border-dashed border-gray-200">
                                 <div className="inline-block p-6 rounded-full bg-gray-50 mb-4">
                                     <i className="fas fa-suitcase-rolling text-4xl text-gray-300"></i>
                                 </div>

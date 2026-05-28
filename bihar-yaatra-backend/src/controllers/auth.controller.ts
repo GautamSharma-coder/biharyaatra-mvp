@@ -56,7 +56,12 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { createClient } = require('@supabase/supabase-js');
+    const localSupabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+
+    const { data, error } = await localSupabase.auth.signInWithPassword({
       email,
       password
     });
@@ -126,7 +131,12 @@ export const refresh = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Refresh token is required' });
     }
 
-    const { data, error } = await supabase.auth.refreshSession({
+    const { createClient } = require('@supabase/supabase-js');
+    const localSupabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+
+    const { data, error } = await localSupabase.auth.refreshSession({
       refresh_token: refreshToken
     });
 
@@ -265,3 +275,167 @@ export const updateMe = async (req: Request, res: Response) => {
     return res.status(500).json({ error: error.message || 'Internal server error' });
   }
 };
+
+// ── Admin Endpoints ──
+
+// GET /api/v1/auth/users (List all users — admin/superadmin only)
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return res.status(200).json(data || []);
+  } catch (error: any) {
+    console.error('getAllUsers error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+// POST /api/v1/auth/admin/create (Create user with any role — superadmin only)
+export const adminCreateUser = async (req: Request, res: Response) => {
+  try {
+    const { name, email, password, phone, role = 'traveller' } = req.body;
+
+    if (!email || !password || !name) {
+      return res.status(400).json({ error: 'Name, email, and password are required' });
+    }
+
+    // Create user via Supabase Admin API
+    const { data, error } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { name, phone, role }
+    });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    // Also insert into public.users table
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .insert([{
+        id: data.user.id,
+        name,
+        email,
+        phone: phone || null,
+        role
+      }])
+      .select()
+      .single();
+
+    if (profileError) {
+      console.error('Profile insert error:', profileError);
+    }
+
+    return res.status(201).json({
+      message: `User "${name}" created with role "${role}"`,
+      user: profile || { id: data.user.id, name, email, role }
+    });
+  } catch (error: any) {
+    console.error('adminCreateUser error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// PATCH /api/v1/auth/users/:id/role (Change user role — superadmin only)
+export const updateUserRole = async (req: Request, res: Response) => {
+  try {
+    const { id: paramId } = req.params;
+    const id = Array.isArray(paramId) ? paramId[0] : paramId;
+    const { role } = req.body;
+
+    const validRoles = ['traveller', 'provider', 'admin', 'superadmin'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ error: `Invalid role. Must be one of: ${validRoles.join(', ')}` });
+    }
+
+    // Update in public.users
+    const { data, error } = await supabase
+      .from('users')
+      .update({ role, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Also sync to Supabase auth metadata
+    await supabase.auth.admin.updateUserById(id, {
+      user_metadata: { role }
+    });
+
+    return res.status(200).json({ message: `Role updated to "${role}"`, user: data });
+  } catch (error: any) {
+    console.error('updateUserRole error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+// DELETE /api/v1/auth/users/:id (Delete user — superadmin only)
+export const adminDeleteUser = async (req: Request, res: Response) => {
+  try {
+    const { id: paramId } = req.params;
+    const id = Array.isArray(paramId) ? paramId[0] : paramId;
+    const currentUserId = req.user?.user_id;
+
+    if (id === currentUserId) {
+      return res.status(400).json({ error: 'Cannot delete your own account' });
+    }
+
+    // Delete from public.users
+    const { error: dbError } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', id);
+
+    if (dbError) throw dbError;
+
+    // Delete from Supabase Auth
+    const { error: authError } = await supabase.auth.admin.deleteUser(id);
+    if (authError) {
+      console.error('Auth delete error (user already removed from DB):', authError);
+    }
+
+    return res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error: any) {
+    console.error('adminDeleteUser error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+// GET /api/v1/auth/admin/stats (Dashboard counts — admin/superadmin only)
+export const getAdminStats = async (req: Request, res: Response) => {
+  try {
+    const [users, bookings, homestays, transports, guides, packages] = await Promise.all([
+      supabase.from('users').select('id', { count: 'exact', head: true }),
+      supabase.from('bookings').select('id, total_amount, status'),
+      supabase.from('homestays').select('id', { count: 'exact', head: true }),
+      supabase.from('transports').select('id', { count: 'exact', head: true }),
+      supabase.from('guides').select('id', { count: 'exact', head: true }),
+      supabase.from('packages').select('id', { count: 'exact', head: true }),
+    ]);
+
+    const totalRevenue = (bookings.data || [])
+      .filter((b: any) => b.status === 'confirmed' || b.status === 'completed')
+      .reduce((sum: number, b: any) => sum + Number(b.total_amount || 0), 0);
+
+    return res.status(200).json({
+      totalUsers: users.count || 0,
+      totalBookings: bookings.data?.length || 0,
+      totalHomestays: homestays.count || 0,
+      totalTransports: transports.count || 0,
+      totalGuides: guides.count || 0,
+      totalPackages: packages.count || 0,
+      totalRevenue,
+    });
+  } catch (error: any) {
+    console.error('getAdminStats error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+

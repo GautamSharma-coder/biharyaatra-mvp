@@ -24,7 +24,7 @@ export default function TransportDashboardLayout({ children }: { children: React
                         <i className="fas fa-bus"></i>
                     </div>
                     <span className="font-display font-bold text-xl hidden lg:block">
-                        Bihar<span className="bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">Yaatra</span>
+                        Bihar<span className="bg-linear-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">Yaatra</span>
                     </span>
                 </div>
 

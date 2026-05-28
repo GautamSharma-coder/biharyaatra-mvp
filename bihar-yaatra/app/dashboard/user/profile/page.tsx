@@ -59,7 +59,7 @@ export default function UserProfilePage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Col - Avatar & Stats */}
                 <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100 h-fit text-center relative overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                     <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-orange-400 to-pink-500"></div>
+                     <div className="absolute top-0 left-0 w-full h-32 bg-linear-to-r from-orange-400 to-pink-500"></div>
                      <div className="relative w-32 h-32 mx-auto mt-4 mb-4 group/avatar cursor-pointer">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={avatar} alt="Avatar" className="w-full h-full rounded-full border-4 border-white shadow-xl object-cover bg-white" />
@@ -151,7 +151,7 @@ export default function UserProfilePage() {
                                 <button 
                                     key={pref}
                                     onClick={() => togglePref(pref)} 
-                                    className={`px-5 py-2.5 rounded-[1rem] border text-sm font-bold transition-all duration-300 shadow-sm ${
+                                    className={`px-5 py-2.5 rounded-2xl border text-sm font-bold transition-all duration-300 shadow-sm ${
                                         isSelected 
                                         ? 'bg-orange-50 border-orange-500 text-orange-600 shadow-orange-500/10' 
                                         : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'

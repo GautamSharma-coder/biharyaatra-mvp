@@ -20,7 +20,7 @@ export default function SaarthiChat() {
         if (!text) return '';
         let formatted = text.replace(/\*\*(.*?)\*\*/g, "<strong class='font-bold text-gray-900'>$1</strong>");
         formatted = formatted.replace(/^\* (.*)/gm, "<div class='flex gap-2 ml-1 my-1'><span>•</span><span>$1</span></div>");
-        const html = `<div class="prose prose-sm prose-gray max-w-none break-words">${formatted.replace(/\n/g, '<br/>')}</div>`;
+        const html = `<div class="prose prose-sm prose-gray max-w-none wrap-break-word">${formatted.replace(/\n/g, '<br/>')}</div>`;
         // ── HIGH-2 FIX: Sanitize HTML to prevent XSS from AI responses or user input ──
         return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['div', 'span', 'strong', 'br', 'p', 'em', 'ul', 'li', 'ol', 'h1', 'h2', 'h3', 'h4', 'a'], ALLOWED_ATTR: ['class', 'href', 'target'] });
     };
@@ -92,7 +92,7 @@ export default function SaarthiChat() {
     return (
         <>
             {/* Sidebar toggle button (Fixed separately so it doesn't take flex space for the drawer) */}
-            <div className={`fixed inset-y-0 right-0 z-[9997] flex items-center pointer-events-none transition-opacity duration-300 ${saarthiSidebar ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
+            <div className={`fixed inset-y-0 right-0 z-9997 flex items-center pointer-events-none transition-opacity duration-300 ${saarthiSidebar ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
                 <button
                     onClick={() => setSaarthiSidebar(true)}
                     className="pointer-events-auto bg-gray-900 text-white py-6 px-2 rounded-l-2xl shadow-2xl flex flex-col items-center gap-4 transition-all hover:pr-4 group border-y border-l border-white/10"
@@ -105,12 +105,12 @@ export default function SaarthiChat() {
             {/* Overlay for clicking outside */}
             <div
                 onClick={() => setSaarthiSidebar(false)}
-                className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998] transition-opacity duration-500 ${saarthiSidebar ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-9998 transition-opacity duration-500 ${saarthiSidebar ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
             ></div>
 
             {/* Sidebar window */}
             <div
-                className={`fixed top-0 bottom-0 right-0 z-[9999] w-full md:w-[400px] bg-white shadow-2xl flex flex-col transform transition-transform duration-500 will-change-transform ${saarthiSidebar ? 'translate-x-0' : 'translate-x-full'}`}
+                className={`fixed top-0 bottom-0 right-0 z-9999 w-full md:w-[400px] bg-white shadow-2xl flex flex-col transform transition-transform duration-500 will-change-transform ${saarthiSidebar ? 'translate-x-0' : 'translate-x-full'}`}
             >
                 <div className="p-6 md:p-8 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
                     <div>

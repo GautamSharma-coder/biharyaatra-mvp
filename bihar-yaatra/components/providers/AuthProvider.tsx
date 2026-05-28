@@ -16,8 +16,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (data: any) => Promise<void>;
-  register: (data: any) => Promise<void>;
+  login: (data: Record<string, unknown>) => Promise<void>;
+  register: (data: Record<string, unknown>) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -35,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await apiClient.get('/auth/me');
       setUser(res.data.user);
     } catch (err) {
+      console.error('Refresh user error:', err);
       setUser(null);
     } finally {
       setLoading(false);
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser();
   }, []);
 
-  const login = async (data: any) => {
+  const login = async (data: Record<string, unknown>) => {
     setLoading(true);
     try {
       const res = await apiClient.post('/auth/login', data);
@@ -53,25 +54,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userObj);
       if (userObj && (userObj.role === 'admin' || userObj.role === 'superadmin')) {
         router.push('/dashboard/admin');
+      } else if (userObj && userObj.role === 'provider') {
+        router.push('/dashboard/provider/homestay');
       } else {
         router.push('/dashboard/user');
       }
-    } catch (err: any) {
-      throw err.response?.data?.error || 'Login failed';
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      throw error.response?.data?.error || 'Login failed';
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (data: any) => {
+  const register = async (data: Record<string, unknown>) => {
     setLoading(true);
     try {
-      const res = await apiClient.post('/auth/register', data);
+      await apiClient.post('/auth/register', data);
       // After register, the user still needs to login or we log them in automatically 
       // depends on backend. My backend doesn't set cookies on register, so we redirect to login.
       router.push('/auth/login?registered=true');
-    } catch (err: any) {
-      throw err.response?.data?.error || 'Registration failed';
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      throw error.response?.data?.error || 'Registration failed';
     } finally {
       setLoading(false);
     }

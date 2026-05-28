@@ -45,7 +45,7 @@ export default function VerifyOtpPage() {
     return (
         <div className="flex w-full min-h-screen">
             <div className="w-full flex items-center justify-center p-8 bg-gray-50">
-                <div className="w-full max-w-md bg-white p-8 md:p-12 rounded-[2rem] shadow-xl border border-gray-100 text-center">
+                <div className="w-full max-w-md bg-white p-8 md:p-12 rounded-4xl shadow-xl border border-gray-100 text-center">
                     <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl">
                         <i className="fas fa-shield-alt"></i>
                     </div>

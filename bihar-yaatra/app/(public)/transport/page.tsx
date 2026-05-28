@@ -135,7 +135,7 @@ export default function TransportPage() {
             `}} />
 
             {/* Header */}
-            <header className={`fixed w-full top-0 z-[999] transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-lg shadow-md py-3' : 'bg-transparent py-5'}`}>
+            <header className={`fixed w-full top-0 z-999 transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-lg shadow-md py-3' : 'bg-transparent py-5'}`}>
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex items-center justify-between">
                         <Link href="/" className="font-display font-bold text-2xl tracking-tighter flex items-center gap-2">
@@ -166,7 +166,7 @@ export default function TransportPage() {
                             <Link href="/contact" className="nav-item font-medium">Contact</Link>
 
                             {!isLoggedIn ? (
-                                <Link href="/auth" className="px-6 py-2.5 rounded-full bg-gradient-to-r from-orange-400 to-pink-500 text-white font-medium transition-all shadow-md hover:shadow-lg hover:scale-105 hover:-translate-y-0.5">
+                                <Link href="/auth" className="px-6 py-2.5 rounded-full bg-linear-to-r from-orange-400 to-pink-500 text-white font-medium transition-all shadow-md hover:shadow-lg hover:scale-105 hover:-translate-y-0.5">
                                     Login
                                 </Link>
                             ) : (
@@ -195,7 +195,7 @@ export default function TransportPage() {
 
             {/* Mobile Menu Overlay */}
             {mobileMenu && (
-                <div className="fixed inset-0 z-[1000] flex justify-end">
+                <div className="fixed inset-0 z-1000 flex justify-end">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileMenu(false)}></div>
                     <div className="relative w-full max-w-xs bg-white shadow-2xl h-full flex flex-col pt-0 animate-slide-in-right">
                         <div className="px-6 py-6 flex items-center justify-between border-b border-gray-100">
@@ -223,7 +223,7 @@ export default function TransportPage() {
                         <div className="text-center mb-10">
                             <span className="inline-block px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-bold uppercase tracking-widest mb-4">Seamless Connectivity</span>
                             <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
-                                Book Your Ride & <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">Track in Real-Time</span>
+                                Book Your Ride & <br/><span className="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-pink-500">Track in Real-Time</span>
                             </h1>
                             <p className="text-gray-500 max-w-xl mx-auto font-medium">
                                 From luxury cabs to affordable buses, find the best way to travel across Bihar. Safe, verified, and trackable.
@@ -311,7 +311,7 @@ export default function TransportPage() {
                         ) : filteredTransports.length > 0 ? (
                             <div className="grid grid-cols-1 gap-6">
                                 {filteredTransports.map(transport => (
-                                    <div key={transport.id} className="bg-white rounded-[1.5rem] p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-6 items-center group">
+                                    <div key={transport.id} className="bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-6 items-center group">
                                         <div className="md:col-span-1 flex items-center gap-4">
                                             <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 bg-gray-100">
                                                 <img src={transport.image} className="w-full h-full object-cover" alt={transport.operator} />
@@ -369,7 +369,7 @@ export default function TransportPage() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-24 bg-white rounded-[2rem] border border-dashed border-gray-200">
+                            <div className="text-center py-24 bg-white rounded-4xl border border-dashed border-gray-200">
                                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <i className="fas fa-bus-alt text-2xl text-gray-300"></i>
                                 </div>
@@ -384,10 +384,10 @@ export default function TransportPage() {
 
             {/* Tracking Modal */}
             {showTrackingModal && trackingVehicle && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
                     <div onClick={() => setShowTrackingModal(false)} className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity"></div>
 
-                    <div className="bg-white rounded-[2rem] w-full max-w-4xl h-[80vh] relative z-10 overflow-hidden flex flex-col shadow-2xl animate-fade-in-up">
+                    <div className="bg-white rounded-4xl w-full max-w-4xl h-[80vh] relative z-10 overflow-hidden flex flex-col shadow-2xl animate-fade-in-up">
                         <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white z-20">
                             <div>
                                 <h3 className="font-bold text-lg flex items-center gap-2 text-gray-900">

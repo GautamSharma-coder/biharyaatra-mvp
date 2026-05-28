@@ -128,3 +128,19 @@ export const deleteTransport = async (req: Request, res: Response) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+// GET /api/v1/transports/my/listings (Provider's own fleet)
+export const getMyTransports = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.user_id;
+    const { data, error } = await supabase
+      .from('transports')
+      .select('*')
+      .eq('provider_id', userId);
+
+    if (error) throw error;
+    return res.status(200).json(data || []);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};

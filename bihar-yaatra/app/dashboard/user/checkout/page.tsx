@@ -155,7 +155,7 @@ export default function CheckoutPage() {
                         <div className="flex gap-4">
                             <button onClick={() => router.back()} className="flex-1 py-4 rounded-xl font-bold text-gray-500 hover:bg-gray-200 transition">Cancel</button>
                             <button onClick={handleConfirmBooking} disabled={processing}
-                                className="flex-[2] py-4 bg-black text-white rounded-xl font-bold shadow-xl hover:bg-green-600 hover:shadow-green-200 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                                className="flex-2 py-4 bg-black text-white rounded-xl font-bold shadow-xl hover:bg-green-600 hover:shadow-green-200 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
                                 {processing ? <><i className="fas fa-circle-notch fa-spin"></i> Processing...</> : <>Confirm & Pay <i className="fas fa-check ml-1"></i></>}
                             </button>
                         </div>

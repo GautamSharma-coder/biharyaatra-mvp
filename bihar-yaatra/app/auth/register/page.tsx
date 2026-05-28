@@ -32,6 +32,7 @@ export default function RegisterPage() {
     const [currentFact, setCurrentFact] = useState(0);
     const [showPass, setShowPass] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState(0);
+    const [selectedRole, setSelectedRole] = useState<'traveller' | 'provider'>('traveller');
 
     const { register, handleSubmit, formState: { errors }, watch } = useForm<RegisterFormValues>({
         resolver: zodResolver(registerSchema)
@@ -71,9 +72,9 @@ export default function RegisterPage() {
         setIsLoading(true);
         setError(null);
         try {
-            // Map fullName to name for backend
+            // Map fullName to name for backend, include selected role
             const { fullName, ...rest } = data;
-            await authRegister({ name: fullName, ...rest });
+            await authRegister({ name: fullName, ...rest, role: selectedRole });
         } catch (err: any) {
             setError(err);
         } finally {
@@ -127,7 +128,7 @@ export default function RegisterPage() {
                 {/* Right Form Column */}
                 <div className="p-8 md:p-12 flex flex-col justify-center relative bg-white overflow-y-auto custom-scroll max-h-[85vh] md:max-h-none">
                     
-                    <div className="flex justify-center mb-8 bg-gray-50 p-1 rounded-full w-fit mx-auto border border-gray-100 flex-shrink-0">
+                    <div className="flex justify-center mb-8 bg-gray-50 p-1 rounded-full w-fit mx-auto border border-gray-100 shrink-0">
                         <Link href="/auth/login"
                                 className="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 text-gray-400 hover:text-gray-600">
                             Login
@@ -141,10 +142,52 @@ export default function RegisterPage() {
                         </button>
                     </div>
 
-                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex-grow">
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 grow">
                         <div className="text-center mb-6">
                             <h3 className="font-display text-3xl font-bold mb-2">Create Account</h3>
-                            <p className="text-gray-500 text-sm">Join the community of travelers.</p>
+                            <p className="text-gray-500 text-sm">Join as a traveller or become a partner.</p>
+                        </div>
+
+                        {/* Role Selector */}
+                        <div className="grid grid-cols-2 gap-3 mb-6">
+                            <button type="button" onClick={() => setSelectedRole('traveller')}
+                                className={`relative p-4 rounded-2xl border-2 transition-all duration-300 text-left group ${
+                                    selectedRole === 'traveller'
+                                        ? 'border-orange-500 bg-orange-50 shadow-lg shadow-orange-500/10'
+                                        : 'border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-white'
+                                }`}>
+                                {selectedRole === 'traveller' && (
+                                    <div className="absolute top-3 right-3 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
+                                        <i className="fas fa-check text-white text-[10px]"></i>
+                                    </div>
+                                )}
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-2.5 transition-colors ${
+                                    selectedRole === 'traveller' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-gray-200'
+                                }`}>
+                                    <i className="fas fa-suitcase-rolling"></i>
+                                </div>
+                                <p className={`font-bold text-sm ${selectedRole === 'traveller' ? 'text-orange-800' : 'text-gray-700'}`}>Traveller</p>
+                                <p className={`text-[11px] mt-0.5 ${selectedRole === 'traveller' ? 'text-orange-600' : 'text-gray-400'}`}>Explore & book trips</p>
+                            </button>
+                            <button type="button" onClick={() => setSelectedRole('provider')}
+                                className={`relative p-4 rounded-2xl border-2 transition-all duration-300 text-left group ${
+                                    selectedRole === 'provider'
+                                        ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-500/10'
+                                        : 'border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-white'
+                                }`}>
+                                {selectedRole === 'provider' && (
+                                    <div className="absolute top-3 right-3 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                        <i className="fas fa-check text-white text-[10px]"></i>
+                                    </div>
+                                )}
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-2.5 transition-colors ${
+                                    selectedRole === 'provider' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-gray-200'
+                                }`}>
+                                    <i className="fas fa-handshake"></i>
+                                </div>
+                                <p className={`font-bold text-sm ${selectedRole === 'provider' ? 'text-blue-800' : 'text-gray-700'}`}>Partner</p>
+                                <p className={`text-[11px] mt-0.5 ${selectedRole === 'provider' ? 'text-blue-600' : 'text-gray-400'}`}>List homestays, transport & guides</p>
+                            </button>
                         </div>
 
                         {error && (
@@ -223,14 +266,14 @@ export default function RegisterPage() {
                         </form>
                     </div>
 
-                    <div className="relative my-6 flex-shrink-0">
+                    <div className="relative my-6 shrink-0">
                         <div className="absolute inset-0 flex items-center">
                             <div className="w-full border-t border-gray-100"></div>
                         </div>
                         <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-gray-400">Or continue with</span></div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 flex-shrink-0">
+                    <div className="grid grid-cols-2 gap-4 shrink-0">
                         <button type="button" className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-200 hover:bg-gray-50 transition font-medium text-sm">
                             <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
                             <span>Google</span>

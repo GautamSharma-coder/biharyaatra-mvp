@@ -11,7 +11,7 @@ export default function GuideRevenuePage() {
                 <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-green-50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 opacity-60"></div>
                 
                 <div className="relative z-10">
-                    <div className="w-24 h-24 bg-green-100 text-green-600 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-6 shadow-xl shadow-green-100 border border-green-200 shadow-inner rotate-3 hover:rotate-0 transition-transform duration-300">
+                    <div className="w-24 h-24 bg-green-100 text-green-600 rounded-4xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-xl shadow-green-100 border border-green-200 shadow-inner rotate-3 hover:rotate-0 transition-transform duration-300">
                         <i className="fas fa-coins"></i>
                     </div>
                     <h2 className="text-4xl font-display font-black text-gray-800 tracking-tight">Earnings Center</h2>
@@ -25,7 +25,7 @@ export default function GuideRevenuePage() {
                                 <i className="fas fa-clock"></i> Clears in 2-3 days
                             </p>
                         </div>
-                        <div className="p-8 md:p-10 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-[2.5rem] shadow-xl shadow-blue-600/20 hover:shadow-2xl hover:shadow-blue-600/30 transition-shadow">
+                        <div className="p-8 md:p-10 bg-linear-to-br from-blue-600 to-indigo-600 text-white rounded-[2.5rem] shadow-xl shadow-blue-600/20 hover:shadow-2xl hover:shadow-blue-600/30 transition-shadow">
                             <p className="text-[10px] md:text-xs font-bold text-blue-200 uppercase tracking-widest border-b border-blue-500/50 pb-2 inline-block">Available to Withdraw</p>
                             <p className="text-4xl md:text-5xl font-display font-black mt-4 tracking-tighter">₹{stats.availablePayout}</p>
                             <div className="mt-4 flex items-center justify-center gap-2 text-xs text-green-300 font-bold bg-white/10 py-1.5 px-3 w-fit mx-auto rounded-full backdrop-blur-sm">

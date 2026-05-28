@@ -5,7 +5,8 @@ import {
   getBookingById, 
   cancelBooking, 
   getAllBookings,
-  updateBookingStatus
+  updateBookingStatus,
+  getProviderBookings
 } from '../controllers/booking.controller';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
@@ -20,6 +21,10 @@ router.use(authenticate);
 // User endpoints
 router.post('/', validate(createBookingSchema), createBooking);
 router.get('/my', getMyBookings);
+
+// Provider endpoint (must be before /:id to avoid route conflict)
+router.get('/provider', authorize('provider', 'admin', 'superadmin'), getProviderBookings);
+
 router.get('/:id', getBookingById);
 router.patch('/:id/cancel', cancelBooking);
 

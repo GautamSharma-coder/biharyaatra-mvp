@@ -3,8 +3,18 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
 
+interface Booking {
+    id: string;
+    service_name?: string;
+    service_type: string;
+    status: string;
+    check_in?: string;
+    guests?: number | string;
+    total_amount?: number | string;
+}
+
 export default function UserBookingsPage() {
-    const [bookings, setBookings] = useState<any[]>([]);
+    const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -53,11 +63,11 @@ export default function UserBookingsPage() {
             </header>
 
             {loading ? (
-                <div className="flex items-center justify-center min-h-[16rem] bg-white border border-gray-100 rounded-[2.5rem]">
+                <div className="flex items-center justify-center min-h-64 bg-white border border-gray-100 rounded-[2.5rem]">
                     <i className="fas fa-spinner fa-spin text-3xl text-orange-500"></i>
                 </div>
             ) : bookings.length === 0 ? (
-                <div className="bg-white rounded-[2.5rem] p-12 border border-gray-100 text-center flex flex-col justify-center items-center min-h-[20rem] text-gray-400">
+                <div className="bg-white rounded-[2.5rem] p-12 border border-gray-100 text-center flex flex-col justify-center items-center min-h-80 text-gray-400">
                     <div className="w-20 h-20 rounded-full bg-orange-50 flex items-center justify-center mb-6">
                         <i className="fas fa-calendar-times text-orange-500 text-3xl"></i>
                     </div>
@@ -80,15 +90,14 @@ export default function UserBookingsPage() {
                                     <div className={`w-16 h-16 md:w-20 md:h-20 rounded-[1.25rem] flex items-center justify-center text-2xl md:text-3xl shrink-0 shadow-sm border border-white group-hover:scale-110 transition-transform duration-300 ${getIcon(booking.service_type)}`}>
                                         <i className={getIcon(booking.service_type).split(' ')[0] + ' ' + getIcon(booking.service_type).split(' ')[1]}></i>
                                     </div>
-                                    
+
                                     <div>
                                         <div className="flex flex-wrap items-center gap-3 mb-2 mt-1">
                                             <h3 className="font-display font-black text-xl md:text-2xl text-gray-900 leading-tight tracking-tight group-hover:text-orange-600 transition-colors">{booking.service_name}</h3>
-                                            <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border ${
-                                                booking.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-100' :
-                                                booking.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
-                                                'bg-red-50 text-red-700 border-red-100'
-                                            }`}>{booking.status}</span>
+                                            <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border ${booking.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-100' :
+                                                    booking.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
+                                                        'bg-red-50 text-red-700 border-red-100'
+                                                }`}>{booking.status}</span>
                                         </div>
                                         <p className="text-sm text-gray-500 font-medium mb-4 capitalize">{booking.service_type} reservation</p>
                                         <div className="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 font-bold uppercase tracking-widest bg-gray-50 px-3 py-2 rounded-xl border border-gray-100 w-fit">
@@ -103,9 +112,9 @@ export default function UserBookingsPage() {
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1.5">Total Paid</p>
                                         <span className="font-display font-black text-3xl md:text-4xl text-gray-900 tracking-tighter">₹{Number(booking.total_amount).toLocaleString('en-IN')}</span>
                                     </div>
-                                    
+
                                     <div className="flex gap-3 mt-6 w-full md:w-auto self-end">
-                                        <Link href={`/dashboard/user/ticket?id=${booking.id}`} className="flex-1 md:flex-none px-6 py-3 rounded-xl bg-black text-white text-xs font-bold hover:bg-orange-600 transition shadow-lg shadow-gray-200 hover:shadow-orange-200 md:w-auto text-center whitespace-nowrap shadow-[0_4px_10px_rgba(0,0,0,0.1)]">
+                                        <Link href={`/dashboard/user/ticket?id=${booking.id}`} className="flex-1 md:flex-none px-6 py-3 rounded-xl bg-black text-white text-xs font-bold hover:bg-orange-600 transition shadow-lg shadow-gray-200 hover:shadow-orange-200 md:w-auto text-center whitespace-nowrap">
                                             View Ticket
                                         </Link>
                                     </div>

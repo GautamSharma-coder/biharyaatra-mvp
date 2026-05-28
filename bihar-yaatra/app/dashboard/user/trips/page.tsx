@@ -42,7 +42,7 @@ export default function UserTripsPage() {
                         <div className="h-72 relative overflow-hidden bg-gray-200">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={trip.image} alt={trip.title} className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700 ease-out" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
+                            <div className="absolute inset-0 bg-linear-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
                             
                             <div className="absolute top-5 left-5 bg-white/90 backdrop-blur-sm px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-900 shadow-lg">
                                 {trip.days} Days
@@ -90,7 +90,7 @@ export default function UserTripsPage() {
             
             {filteredTrips.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-[3rem] border border-dashed border-gray-200/60 shadow-sm mt-4">
-                    <div className="w-24 h-24 bg-blue-50/80 rounded-[2rem] flex items-center justify-center mb-6 text-blue-500 text-4xl shadow-inner border border-blue-50">
+                    <div className="w-24 h-24 bg-blue-50/80 rounded-4xl flex items-center justify-center mb-6 text-blue-500 text-4xl shadow-inner border border-blue-50">
                         <i className="fas fa-map-location-dot"></i>
                     </div>
                     <h3 className="font-display font-black text-3xl text-gray-900 mb-3 tracking-tight">No trips found</h3>

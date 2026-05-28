@@ -55,7 +55,7 @@ export default function UserSupportPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1 min-h-[400px]">
                 {/* Contact Info Widget */}
                 <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100 text-center col-span-1 flex flex-col items-center justify-center hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-24 h-24 bg-green-50 text-green-600 rounded-[1.5rem] flex items-center justify-center text-4xl mx-auto mb-8 shadow-inner">
+                    <div className="w-24 h-24 bg-green-50 text-green-600 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-8 shadow-inner">
                         <i className="fas fa-headset"></i>
                     </div>
                     <h2 className="text-2xl font-black font-display text-gray-900 mb-3 tracking-tight">Need Help?</h2>
@@ -88,7 +88,7 @@ export default function UserSupportPage() {
                             <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
                                 <div className={`inline-block px-5 py-3.5 rounded-2xl text-sm max-w-[80%] md:max-w-[70%] font-medium shadow-sm 
                                      ${msg.sender === 'user' 
-                                        ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-br-sm' 
+                                        ? 'bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-br-sm' 
                                         : 'bg-white border border-gray-100 text-gray-700 rounded-bl-sm'}`}>
                                     {msg.text}
                                 </div>
