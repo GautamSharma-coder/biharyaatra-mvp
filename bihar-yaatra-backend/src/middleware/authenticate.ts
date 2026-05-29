@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 import { supabase } from '../config/supabase';
+
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'default_access_secret_change_me';
 
 declare global {
   namespace Express {
@@ -26,32 +29,41 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       return res.status(401).json({ error: 'Authentication required. No token provided.' });
     }
 
-    // Verify token with Supabase
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-
-    if (error || !user) {
-      return res.status(401).json({ error: 'Invalid or expired session.' });
+    // Verify our custom JWT
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, JWT_ACCESS_SECRET);
+    } catch (jwtError: any) {
+      // Auto-clear invalid/expired cookies to self-heal state
+      res.clearCookie('access_token');
+      res.clearCookie('refresh_token');
+      
+      if (jwtError.name === 'TokenExpiredError') {
+        return res.status(401).json({ error: 'Token expired. Please refresh.' });
+      }
+      return res.status(401).json({ error: 'Invalid token.' });
     }
 
-    // ── HIGH-5 FIX: Read role from the database, NOT from user-writable metadata ──
-    // user_metadata is writable by the user themselves via Supabase client.
-    // Always use the authoritative public.users table for role determination.
-    let role = 'traveller';
-    const { data: profile } = await supabase
+    // Fetch the latest role from the database (authoritative source)
+    const { data: profile, error } = await supabase
       .from('users')
-      .select('role')
-      .eq('id', user.id)
+      .select('role, is_verified')
+      .eq('id', decoded.user_id)
       .single();
-    
-    if (profile?.role) {
-      role = profile.role;
+
+    if (error || !profile) {
+      return res.status(401).json({ error: 'User not found.' });
+    }
+
+    if (!profile.is_verified) {
+      return res.status(403).json({ error: 'Email not verified. Please verify your email first.' });
     }
 
     // Attach user to request
     req.user = {
-      user_id: user.id,
-      email: user.email || '',
-      role
+      user_id: decoded.user_id,
+      email: decoded.email || '',
+      role: profile.role || 'traveller'
     };
 
     next();

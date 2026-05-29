@@ -25,24 +25,21 @@ const FACTS = [
 function LoginPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { login, sendOtp, verifyOtp } = useAuth();
+    const { login } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(() => {
+        if (searchParams.get('verified')) {
+            return 'Email verified successfully! You can now log in with your credentials.';
+        }
         if (searchParams.get('verify')) {
-            return 'Registration successful! A verification link has been sent to your email. Please verify your email before logging in.';
+            return 'Registration successful! Please check your email for the verification code.';
         }
         return searchParams.get('registered') ? 'Registration successful! Please login.' : null;
     });
 
-    const [activeTab, setActiveTab] = useState<'login' | 'phone'>('login');
     const [currentFact, setCurrentFact] = useState(0);
     const [showPass, setShowPass] = useState(false);
-    
-    // Phone Auth State
-    const [phoneStep, setPhoneStep] = useState(1);
-    const [phone, setPhone] = useState("");
-    const [otp, setOtp] = useState("");
 
     const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema)
@@ -63,45 +60,12 @@ function LoginPageContent() {
             await login(data);
             // Redirect is handled in AuthProvider context
         } catch (err: any) {
-            if (typeof err === 'string' && (err.includes('A new verification link') || err.includes('A verification link was recently sent'))) {
+            if (typeof err === 'string' && (err.includes('verification code') || err.includes('not verified'))) {
                 setSuccessMsg(err);
                 setError(null);
             } else {
                 setError(err);
             }
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handlePhoneSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (phone.length !== 10) return;
-        setIsLoading(true);
-        setError(null);
-        setSuccessMsg(null);
-        try {
-            await sendOtp(phone);
-            setPhoneStep(2);
-            setSuccessMsg('OTP sent successfully to your phone.');
-        } catch (err: any) {
-            setError(err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleOtpSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (otp.length !== 6) return;
-        setIsLoading(true);
-        setError(null);
-        setSuccessMsg(null);
-        try {
-            await verifyOtp(phone, otp);
-            // Redirect is handled in AuthProvider context
-        } catch (err: any) {
-            setError(err);
         } finally {
             setIsLoading(false);
         }
@@ -153,13 +117,8 @@ function LoginPageContent() {
                 <div className="p-8 md:p-12 flex flex-col justify-center relative bg-white">
                     
                     <div className="flex justify-center mb-8 bg-gray-50 p-1 rounded-full w-fit mx-auto border border-gray-100">
-                        <button onClick={() => { setActiveTab('login'); setPhoneStep(1); }}
-                                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${activeTab === 'login' ? 'bg-white shadow-md text-black' : 'text-gray-400 hover:text-gray-600'}`}>
+                        <button className="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 bg-white shadow-md text-black">
                             Login
-                        </button>
-                        <button onClick={() => setActiveTab('phone')}
-                                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${activeTab === 'phone' ? 'bg-white shadow-md text-black' : 'text-gray-400 hover:text-gray-600'}`}>
-                            Phone
                         </button>
                         <Link href="/auth/register"
                                 className="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 text-gray-400 hover:text-gray-600">
@@ -167,136 +126,69 @@ function LoginPageContent() {
                         </Link>
                     </div>
 
-                    {activeTab === 'login' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <div className="text-center mb-6">
-                                <h3 className="font-display text-3xl font-bold mb-2">Login to Account</h3>
-                                <p className="text-gray-500 text-sm">Welcome back! Please enter your details.</p>
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <div className="text-center mb-6">
+                            <h3 className="font-display text-3xl font-bold mb-2">Login to Account</h3>
+                            <p className="text-gray-500 text-sm">Welcome back! Please enter your details.</p>
+                        </div>
+
+                        {error && (
+                            <div className="mb-4 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm font-bold animate-in fade-in duration-300">
+                                <i className="fas fa-exclamation-circle mr-2"></i>
+                                {error}
+                            </div>
+                        )}
+
+                        {successMsg && (
+                            <div className="mb-4 p-4 bg-green-50 border border-green-100 text-green-600 rounded-2xl text-sm font-bold animate-in fade-in duration-300">
+                                <i className="fas fa-check-circle mr-2"></i>
+                                {successMsg}
+                            </div>
+                        )}
+
+                        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Email Address</label>
+                                <input type="email" 
+                                       {...register('email')}
+                                       className={`w-full p-4 bg-gray-50 rounded-2xl border ${errors.email ? 'border-red-500 focus:ring-red-500' : 'border-transparent focus:ring-orange-500'} focus:ring-2 outline-none transition`}
+                                       placeholder="name@example.com" />
+                                {errors.email && <p className="text-xs font-bold text-red-500 mt-1">{errors.email.message}</p>}
                             </div>
 
-                            {error && (
-                                <div className="mb-4 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm font-bold animate-in fade-in duration-300">
-                                    <i className="fas fa-exclamation-circle mr-2"></i>
-                                    {error}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Password</label>
+                                <div className="relative">
+                                    <input type={showPass ? 'text' : 'password'} 
+                                           {...register('password')}
+                                           className={`w-full p-4 bg-gray-50 rounded-2xl border ${errors.password ? 'border-red-500 focus:ring-red-500' : 'border-transparent focus:ring-orange-500'} focus:ring-2 outline-none transition`}
+                                           placeholder="••••••••" />
+                                    <button type="button" onClick={() => setShowPass(!showPass)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        <i className={`fas ${showPass ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                    </button>
                                 </div>
-                            )}
-
-                            {successMsg && (
-                                <div className="mb-4 p-4 bg-green-50 border border-green-100 text-green-600 rounded-2xl text-sm font-bold animate-in fade-in duration-300">
-                                    <i className="fas fa-check-circle mr-2"></i>
-                                    {successMsg}
+                                {errors.password && <p className="text-xs font-bold text-red-500 mt-1">{errors.password.message}</p>}
+                                <div className="flex justify-between items-center mt-2">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" className="accent-orange-500 h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
+                                        <span className="text-xs text-gray-500 font-medium">Remember me</span>
+                                    </label>
+                                    <button type="button" className="text-xs text-orange-600 font-bold hover:underline">Forgot Password?</button>
                                 </div>
-                            )}
-
-                            <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Email Address</label>
-                                    <input type="email" 
-                                           {...register('email')}
-                                           className={`w-full p-4 bg-gray-50 rounded-2xl border ${errors.email ? 'border-red-500 focus:ring-red-500' : 'border-transparent focus:ring-orange-500'} focus:ring-2 outline-none transition`}
-                                           placeholder="name@example.com" />
-                                    {errors.email && <p className="text-xs font-bold text-red-500 mt-1">{errors.email.message}</p>}
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Password</label>
-                                    <div className="relative">
-                                        <input type={showPass ? 'text' : 'password'} 
-                                               {...register('password')}
-                                               className={`w-full p-4 bg-gray-50 rounded-2xl border ${errors.password ? 'border-red-500 focus:ring-red-500' : 'border-transparent focus:ring-orange-500'} focus:ring-2 outline-none transition`}
-                                               placeholder="••••••••" />
-                                        <button type="button" onClick={() => setShowPass(!showPass)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                            <i className={`fas ${showPass ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                                        </button>
-                                    </div>
-                                    {errors.password && <p className="text-xs font-bold text-red-500 mt-1">{errors.password.message}</p>}
-                                    <div className="flex justify-between items-center mt-2">
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <input type="checkbox" className="accent-orange-500 h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
-                                            <span className="text-xs text-gray-500 font-medium">Remember me</span>
-                                        </label>
-                                        <button type="button" className="text-xs text-orange-600 font-bold hover:underline">Forgot Password?</button>
-                                    </div>
-                                </div>
-
-                                <button type="submit" disabled={isLoading}
-                                        className="w-full py-4 bg-black text-white font-bold rounded-2xl shadow-lg hover:bg-orange-600 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 group">
-                                    {isLoading ? <i className="fas fa-spinner fa-spin text-xl"></i> : (
-                                        <>
-                                            <span>Sign In</span>
-                                            <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-                                        </>
-                                    )}
-                                </button>
-                            </form>
-                        </div>
-                    )}
-
-                    {activeTab === 'phone' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <div className="text-center mb-6">
-                                <h3 className="font-display text-3xl font-bold mb-2">Phone Login</h3>
-                                <p className="text-gray-500 text-sm">
-                                    {phoneStep === 1 ? 'Enter your mobile number to get OTP.' : 'Enter the code sent to your phone.'}
-                                </p>
                             </div>
 
-                            {phoneStep === 1 && (
-                                <form onSubmit={handlePhoneSubmit} className="space-y-4">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Mobile Number</label>
-                                        <div className="flex gap-2">
-                                            <div className="p-4 bg-gray-100 rounded-2xl font-bold text-gray-600 select-none">+91</div>
-                                            <input type="tel" required pattern="[0-9]{10}" maxLength={10}
-                                                   value={phone} onChange={(e) => setPhone(e.target.value)}
-                                                   className="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-orange-500 outline-none transition font-medium tracking-wide"
-                                                   placeholder="98765 43210" />
-                                        </div>
-                                    </div>
-
-                                    <button type="submit" disabled={isLoading}
-                                            className="w-full py-4 bg-black text-white font-bold rounded-2xl shadow-lg hover:bg-orange-600 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 group">
-                                        {isLoading ? <i className="fas fa-spinner fa-spin text-xl"></i> : (
-                                            <>
-                                                <span>Get OTP</span>
-                                                <i className="fas fa-paper-plane group-hover:translate-x-1 transition-transform"></i>
-                                            </>
-                                        )}
-                                    </button>
-                                </form>
-                            )}
-
-                            {phoneStep === 2 && (
-                                <form onSubmit={handleOtpSubmit} className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Verification Code</label>
-                                        <input type="text" maxLength={6}
-                                               value={otp} onChange={(e) => setOtp(e.target.value)}
-                                               className="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-orange-500 outline-none transition text-center text-2xl tracking-[0.5em] font-bold"
-                                               placeholder="------" />
-                                    </div>
-
-                                    <button type="submit" disabled={isLoading}
-                                            className="w-full py-4 bg-green-600 text-white font-bold rounded-2xl shadow-lg hover:bg-green-700 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 group">
-                                        {isLoading ? <i className="fas fa-spinner fa-spin text-xl"></i> : (
-                                            <>
-                                                <span>Verify & Login</span>
-                                                <i className="fas fa-check-circle"></i>
-                                            </>
-                                        )}
-                                    </button>
-
-                                    <div className="text-center mt-4">
-                                        <button type="button" onClick={() => setPhoneStep(1)}
-                                                className="text-xs text-gray-500 hover:text-black font-bold">
-                                            Change Number?
-                                        </button>
-                                    </div>
-                                </form>
-                            )}
-                        </div>
-                    )}
+                            <button type="submit" disabled={isLoading}
+                                    className="w-full py-4 bg-black text-white font-bold rounded-2xl shadow-lg hover:bg-orange-600 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 group">
+                                {isLoading ? <i className="fas fa-spinner fa-spin text-xl"></i> : (
+                                    <>
+                                        <span>Sign In</span>
+                                        <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    </div>
 
                     <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center">

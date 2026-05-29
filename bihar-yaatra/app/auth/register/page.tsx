@@ -12,7 +12,7 @@ import { useAuth } from '@/components/providers/AuthProvider';
 const registerSchema = z.object({
   fullName: z.string().min(2, 'Full name is required'),
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
-  phone: z.string().regex(/^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/, 'Must be a valid Indian phone number'),
+  phone: z.string().regex(/^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/, 'Must be a valid Indian phone number').optional().or(z.literal('')),
   password: z.string().min(6, 'Password must be at least 6 characters')
 });
 
@@ -132,10 +132,6 @@ export default function RegisterPage() {
                                 className="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 text-gray-400 hover:text-gray-600">
                             Login
                         </Link>
-                        <Link href="/auth/login"
-                                className="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 text-gray-400 hover:text-gray-600">
-                            Phone
-                        </Link>
                         <button className="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 bg-white shadow-md text-black">
                             Sign Up
                         </button>
@@ -216,11 +212,11 @@ export default function RegisterPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Phone Number</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Phone Number <span className="text-gray-300 normal-case font-medium">(Optional)</span></label>
                                 <input type="tel" 
                                        {...register('phone')}
                                        className={`w-full p-4 bg-gray-50 rounded-2xl border ${errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-transparent focus:ring-orange-500'} focus:ring-2 outline-none transition font-medium`}
-                                       placeholder="+91 9876543210" />
+                                       placeholder="+91 9876543210 (optional)" />
                                 {errors.phone && <p className="text-xs font-bold text-red-500 mt-1">{errors.phone.message}</p>}
                             </div>
 

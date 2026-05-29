@@ -64,6 +64,8 @@ const generalLimiter = rateLimit({
 // Apply rate limiters
 app.use('/api/v1/auth/login', authLimiter);
 app.use('/api/v1/auth/register', authLimiter);
+app.use('/api/v1/auth/send-email-otp', authLimiter);
+app.use('/api/v1/auth/verify-email-otp', authLimiter);
 app.use('/api/v1/ai', aiLimiter);
 app.use('/api/v1', generalLimiter);
 

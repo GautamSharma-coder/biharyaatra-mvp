@@ -1,0 +1,153 @@
+import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+// ── Gmail SMTP Transporter (Primary) ──
+const smtpTransporter = (() => {
+  const host = process.env.SMTP_HOST;
+  const port = parseInt(process.env.SMTP_PORT || '587', 10);
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (!host || !user || !pass) {
+    console.warn('⚠ SMTP credentials not configured. Gmail SMTP will not be available.');
+    return null;
+  }
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465, // true for 465, false for 587
+    auth: { user, pass },
+  });
+})();
+
+// ── Resend Client (Optional Fallback) ──
+const resendClient = (() => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn('⚠ RESEND_API_KEY not configured. Resend fallback will not be available.');
+    return null;
+  }
+  return new Resend(apiKey);
+})();
+
+const RESEND_FROM = process.env.RESEND_FROM_EMAIL || 'Bihar Yaatra <noreply@biharyaatra.com>';
+const SMTP_FROM = process.env.SMTP_USER || '';
+
+/**
+ * Generates a branded HTML email body for OTP verification.
+ */
+function getOtpEmailHtml(otp: string, name?: string): string {
+  const greeting = name ? `Hi ${name},` : 'Hi there,';
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#f8f9fa;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f8f9fa;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="480" cellspacing="0" cellpadding="0" style="background-color:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:32px 40px;text-align:center;">
+              <h1 style="margin:0;font-size:28px;font-weight:900;letter-spacing:-1px;">
+                <span style="color:#ffffff;">Bihar</span><span style="color:#f97316;">Yaatra</span>
+              </h1>
+              <p style="margin:8px 0 0;color:#94a3b8;font-size:13px;letter-spacing:1px;text-transform:uppercase;">Email Verification</p>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px;">
+              <p style="margin:0 0 8px;font-size:16px;color:#334155;font-weight:600;">${greeting}</p>
+              <p style="margin:0 0 28px;font-size:15px;color:#64748b;line-height:1.6;">
+                Use the following verification code to complete your action. This code is valid for <strong>10 minutes</strong>.
+              </p>
+              <!-- OTP Box -->
+              <div style="background:linear-gradient(135deg,#fff7ed 0%,#fef3c7 100%);border:2px solid #fed7aa;border-radius:16px;padding:24px;text-align:center;margin:0 0 28px;">
+                <p style="margin:0 0 8px;font-size:12px;color:#92400e;text-transform:uppercase;letter-spacing:2px;font-weight:700;">Your Verification Code</p>
+                <p style="margin:0;font-size:40px;font-weight:900;letter-spacing:12px;color:#c2410c;font-family:'Courier New',monospace;">${otp}</p>
+              </div>
+              <p style="margin:0 0 4px;font-size:13px;color:#94a3b8;line-height:1.5;">
+                If you didn't request this code, you can safely ignore this email. Someone may have entered your email address by mistake.
+              </p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:20px 40px 28px;border-top:1px solid #f1f5f9;text-align:center;">
+              <p style="margin:0;font-size:12px;color:#cbd5e1;">
+                &copy; ${new Date().getFullYear()} BiharYaatra &mdash; Discover the magic of Bihar
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+/**
+ * Send an OTP email using Gmail SMTP (primary) with Resend as fallback.
+ * Throws if both providers fail.
+ */
+export async function sendOtpEmail(to: string, otp: string, name?: string): Promise<void> {
+  const subject = `${otp} is your BiharYaatra verification code`;
+  const html = getOtpEmailHtml(otp, name);
+  const text = `Your BiharYaatra verification code is: ${otp}. It expires in 10 minutes.`;
+
+  // ── Try Gmail SMTP first ──
+  if (smtpTransporter) {
+    try {
+      await smtpTransporter.sendMail({
+        from: `Bihar Yaatra <${SMTP_FROM}>`,
+        to,
+        subject,
+        text,
+        html,
+      });
+      console.log(`✓ OTP email sent via Gmail SMTP to ${to}`);
+      return;
+    } catch (smtpError: any) {
+      console.error(`✗ Gmail SMTP failed for ${to}:`, smtpError.message);
+      // Fall through to Resend
+    }
+  }
+
+  // ── Try Resend fallback ──
+  if (resendClient) {
+    try {
+      const { error } = await resendClient.emails.send({
+        from: RESEND_FROM,
+        to,
+        subject,
+        text,
+        html,
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      console.log(`✓ OTP email sent via Resend to ${to}`);
+      return;
+    } catch (resendError: any) {
+      console.error(`✗ Resend failed for ${to}:`, resendError.message);
+    }
+  }
+
+  // ── Both failed ──
+  throw new Error(
+    'Failed to send verification email. Neither Gmail SMTP nor Resend is configured/working. ' +
+    'Please check your SMTP_* and RESEND_API_KEY environment variables.'
+  );
+}

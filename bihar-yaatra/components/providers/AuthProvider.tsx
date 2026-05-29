@@ -20,8 +20,8 @@ interface AuthContextType {
   register: (data: Record<string, unknown>) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
-  sendOtp: (phone: string) => Promise<void>;
-  verifyOtp: (phone: string, otp: string) => Promise<void>;
+  sendEmailOtp: (email: string) => Promise<void>;
+  verifyEmailOtp: (email: string, otp: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,6 +53,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (data: Record<string, unknown>) => {
     try {
       const res = await apiClient.post('/auth/login', data);
+
+      // If user needs email verification, redirect to verify-otp page
+      if (res.data.needs_email_verification) {
+        router.push(`/auth/verify-otp?email=${encodeURIComponent(res.data.email)}`);
+        throw res.data.error || 'Email not verified';
+      }
+
       const userObj = res.data.user;
       setUser(userObj);
       // Small delay to ensure the cookie is set before navigating
@@ -65,7 +72,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         router.push('/dashboard/user');
       }
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { error?: string } } };
+      const error = err as { response?: { data?: { error?: string; needs_email_verification?: boolean; email?: string } } };
+
+      // Handle email not verified — redirect to verify-otp
+      if (error.response?.data?.needs_email_verification) {
+        const email = error.response.data.email || '';
+        router.push(`/auth/verify-otp?email=${encodeURIComponent(email)}`);
+        throw error.response.data.error || 'Email not verified. Please check your email for the verification code.';
+      }
+
       throw error.response?.data?.error || 'Login failed';
     }
   };
@@ -74,9 +89,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await apiClient.post('/auth/register', data);
       const needsVerification = res.data?.needs_email_verification;
+      const email = res.data?.email || (data.email as string) || '';
+
       if (needsVerification) {
-        // Redirect to login with a message telling user to check email
-        router.push('/auth/login?registered=true&verify=true');
+        // Redirect to verify-otp page with the email
+        router.push(`/auth/verify-otp?email=${encodeURIComponent(email)}`);
       } else {
         router.push('/auth/login?registered=true');
       }
@@ -99,36 +116,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const sendOtp = async (phone: string) => {
+  const sendEmailOtp = async (email: string) => {
     try {
-      await apiClient.post('/auth/send-otp', { phone });
+      await apiClient.post('/auth/send-email-otp', { email });
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
-      throw error.response?.data?.error || 'Failed to send OTP';
+      throw error.response?.data?.error || 'Failed to send verification code';
     }
   };
 
-  const verifyOtp = async (phone: string, otp: string) => {
+  const verifyEmailOtp = async (email: string, otp: string) => {
     try {
-      const res = await apiClient.post('/auth/verify-otp', { phone, otp });
-      const userObj = res.data.user;
-      setUser(userObj);
-      await new Promise(resolve => setTimeout(resolve, 100));
-      if (userObj && (userObj.role === 'admin' || userObj.role === 'superadmin')) {
-        router.push('/dashboard/admin');
-      } else if (userObj && userObj.role === 'provider') {
-        router.push('/dashboard/provider/homestay');
-      } else {
-        router.push('/dashboard/user');
+      const res = await apiClient.post('/auth/verify-email-otp', { email, otp });
+
+      if (res.data.verified) {
+        // Email verified — redirect to login so user can sign in with password
+        router.push('/auth/login?verified=true');
       }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
-      throw error.response?.data?.error || 'Failed to verify OTP';
+      throw error.response?.data?.error || 'Failed to verify code';
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, sendOtp, verifyOtp }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, sendEmailOtp, verifyEmailOtp }}>
       {children}
     </AuthContext.Provider>
   );

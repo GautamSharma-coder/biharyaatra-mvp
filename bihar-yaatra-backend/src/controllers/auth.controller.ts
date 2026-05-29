@@ -1,13 +1,40 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import { supabase } from '../config/supabase';
+import { generateOtp, storeOtp, verifyStoredOtp } from '../services/otp.service';
+import { sendOtpEmail } from '../services/email.service';
 
-// Helper to set cookies
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'default_access_secret_change_me';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'default_refresh_secret_change_me';
+const SALT_ROUNDS = 12;
+
+// ── JWT Helpers ──
+
+function generateAccessToken(userId: string, email: string, role: string): string {
+  return jwt.sign(
+    { user_id: userId, email, role },
+    JWT_ACCESS_SECRET,
+    { expiresIn: '1h' }
+  );
+}
+
+function generateRefreshToken(userId: string): string {
+  return jwt.sign(
+    { user_id: userId },
+    JWT_REFRESH_SECRET,
+    { expiresIn: '30d' }
+  );
+}
+
+// ── Cookie Helpers ──
+
 const setAuthCookies = (res: Response, access_token: string, refresh_token: string) => {
   res.cookie('access_token', access_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 3600 * 1000 // 1 hour (Default Supabase expiry)
+    maxAge: 3600 * 1000 // 1 hour
   });
 
   res.cookie('refresh_token', refresh_token, {
@@ -18,6 +45,10 @@ const setAuthCookies = (res: Response, access_token: string, refresh_token: stri
   });
 };
 
+// ══════════════════════════════════════════════════
+// ── Public Endpoints ──
+// ══════════════════════════════════════════════════
+
 export const register = async (req: Request, res: Response) => {
   try {
     const { name, email, password, phone, role = 'traveller' } = req.body;
@@ -26,33 +57,64 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Name, email, and password are required' });
     }
 
-    // Use signUp so Supabase sends a verification email when 'Confirm email' is enabled
-    const { createClient } = require('@supabase/supabase-js');
-    const localSupabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-      auth: { persistSession: false, autoRefreshToken: false }
-    });
-
-    const { data, error } = await localSupabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { name, phone, role }, // stored in user_metadata
-      }
-    });
-
-    if (error) {
-      return res.status(400).json({ error: error.message });
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
-    // If email confirmation is enabled, user won't have a session yet
-    const needsConfirmation = !data.session;
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if email already exists
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id, is_verified')
+      .eq('email', normalizedEmail)
+      .single();
+
+    if (existing) {
+      if (existing.is_verified) {
+        return res.status(400).json({ error: 'An account with this email already exists' });
+      }
+      // If they registered but never verified, delete the old entry and let them re-register
+      await supabase.from('users').delete().eq('id', existing.id);
+    }
+
+    // Hash password
+    const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+
+    // Insert into public.users
+    const { data: newUser, error: insertError } = await supabase
+      .from('users')
+      .insert([{
+        name,
+        email: normalizedEmail,
+        phone: phone || null,
+        role,
+        password_hash,
+        is_verified: false,
+      }])
+      .select('id, name, email, role')
+      .single();
+
+    if (insertError) {
+      console.error('Registration insert error:', insertError);
+      return res.status(400).json({ error: insertError.message || 'Registration failed' });
+    }
+
+    // Generate and send OTP
+    try {
+      const otp = generateOtp();
+      await storeOtp(normalizedEmail, otp);
+      await sendOtpEmail(normalizedEmail, otp, name);
+    } catch (emailError: any) {
+      console.error('Failed to send verification OTP email:', emailError.message);
+      // Registration succeeded but email failed — user can resend from verify-otp page
+    }
 
     return res.status(201).json({
-      message: needsConfirmation
-        ? 'Registration successful! Please check your email to verify your account.'
-        : 'Registration successful. You can now log in.',
-      user: data.user,
-      needs_email_verification: needsConfirmation,
+      message: 'Registration successful! Please check your email for your verification code.',
+      user: newUser,
+      needs_email_verification: true,
+      email: normalizedEmail,
     });
   } catch (error: any) {
     console.error('Register error:', error);
@@ -68,97 +130,67 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const { createClient } = require('@supabase/supabase-js');
-    const localSupabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-      auth: { persistSession: false, autoRefreshToken: false }
-    });
+    const normalizedEmail = email.toLowerCase().trim();
 
-    const { data, error } = await localSupabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error || !data.session) {
-      console.error('Supabase Login Error Details:', error, 'Session:', !!data.session);
-
-      // If the email is not confirmed, trigger resending the verification email automatically
-      if (error && error.message?.toLowerCase().includes('email not confirmed')) {
-        try {
-          const { error: resendError } = await localSupabase.auth.resend({
-            type: 'signup',
-            email
-          });
-
-          if (resendError) {
-            console.error('Failed to auto-resend verification email:', resendError);
-            if (resendError.message?.toLowerCase().includes('security purposes') || 
-                resendError.message?.toLowerCase().includes('rate limit') || 
-                resendError.status === 429) {
-              return res.status(401).json({
-                error: 'Email not confirmed. A verification link was recently sent. Please check your inbox (including Spam folder) or wait a minute before requesting another link.'
-              });
-            }
-            return res.status(401).json({
-              error: 'Email not confirmed. We tried to resend the verification link, but failed: ' + resendError.message
-            });
-          }
-
-          return res.status(401).json({
-            error: 'Email not confirmed. A new verification link has been sent to your email.'
-          });
-        } catch (resendCatch: any) {
-          console.error('Error during automatic resend attempt:', resendCatch);
-        }
-      }
-
-      return res.status(401).json({ error: error?.message || 'Invalid email or password' });
-    }
-
-    setAuthCookies(res, data.session.access_token, data.session.refresh_token);
-
-    // Fetch user profile from the public.users table (which has roles, avatar_url, etc.)
-    const userId = data.user.id;
-    let { data: userProfile, error: profileError } = await supabase
+    // Fetch user from public.users
+    const { data: user, error } = await supabase
       .from('users')
-      .select('*')
-      .eq('id', userId)
+      .select('id, name, email, phone, role, password_hash, is_verified, avatar_url')
+      .eq('email', normalizedEmail)
       .single();
 
-    // If profile is missing, trigger self-healing sync directly during login
-    if (profileError || !userProfile) {
-      console.log(`Profile not found in public.users for user ${userId} on login. Attempting self-healing sync...`);
-      const name = data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User';
-      const role = data.user.app_metadata?.role || data.user.user_metadata?.role || 'traveller';
-      const phone = data.user.user_metadata?.phone || null;
+    if (error || !user) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
 
-      const { data: newProfile, error: insertError } = await supabase
-        .from('users')
-        .insert([{
-          id: userId,
-          name,
-          email: data.user.email,
-          phone,
-          role
-        }])
-        .select()
-        .single();
+    if (!user.password_hash) {
+      return res.status(401).json({ error: 'This is a legacy account. Please register again to use the new authentication system.' });
+    }
 
-      if (!insertError && newProfile) {
-        console.log(`Self-healing sync successful during login for user ${userId}!`);
-        userProfile = newProfile;
-      } else {
-        console.error('Failed self-healing insert on login:', insertError);
+    // Verify password
+    const passwordMatch = await bcrypt.compare(password, user.password_hash);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Check if email is verified
+    if (!user.is_verified) {
+      // Send a new OTP automatically
+      try {
+        const otp = generateOtp();
+        await storeOtp(normalizedEmail, otp);
+        await sendOtpEmail(normalizedEmail, otp, user.name);
+
+        return res.status(401).json({
+          error: 'Email not verified. A new verification code has been sent to your email.',
+          needs_email_verification: true,
+          email: normalizedEmail,
+        });
+      } catch (resendError: any) {
+        console.error('Error sending verification OTP on login:', resendError);
+        return res.status(401).json({
+          error: 'Email not verified. Please try again later.'
+        });
       }
     }
+
+    // Generate JWT tokens
+    const accessToken = generateAccessToken(user.id, user.email, user.role);
+    const refreshToken = generateRefreshToken(user.id);
+
+    // Store refresh token in DB
+    await supabase
+      .from('refresh_tokens')
+      .insert([{ user_id: user.id, token: refreshToken }]);
+
+    setAuthCookies(res, accessToken, refreshToken);
+
+    // Return user without password_hash
+    const { password_hash: _, ...safeUser } = user;
 
     return res.status(200).json({
       message: 'Login successful',
-      user: userProfile || {
-        id: data.user.id,
-        email: data.user.email,
-        name: data.user.user_metadata?.name || 'Traveler',
-        role: data.user.user_metadata?.role || 'traveller'
-      }
+      user: safeUser
     });
   } catch (error: any) {
     console.error('Login error:', error);
@@ -174,20 +206,46 @@ export const refresh = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Refresh token is required' });
     }
 
-    const { createClient } = require('@supabase/supabase-js');
-    const localSupabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-      auth: { persistSession: false, autoRefreshToken: false }
-    });
-
-    const { data, error } = await localSupabase.auth.refreshSession({
-      refresh_token: refreshToken
-    });
-
-    if (error || !data.session) {
+    // Verify the refresh token
+    let decoded: any;
+    try {
+      decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+    } catch {
       return res.status(401).json({ error: 'Invalid or expired refresh token' });
     }
 
-    setAuthCookies(res, data.session.access_token, data.session.refresh_token);
+    // Check if the refresh token exists in DB (not revoked)
+    const { data: storedToken } = await supabase
+      .from('refresh_tokens')
+      .select('id')
+      .eq('token', refreshToken)
+      .eq('user_id', decoded.user_id)
+      .single();
+
+    if (!storedToken) {
+      return res.status(401).json({ error: 'Refresh token has been revoked' });
+    }
+
+    // Fetch current user data for the new access token
+    const { data: user } = await supabase
+      .from('users')
+      .select('id, email, role')
+      .eq('id', decoded.user_id)
+      .single();
+
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    // Generate new tokens
+    const newAccessToken = generateAccessToken(user.id, user.email, user.role);
+    const newRefreshToken = generateRefreshToken(user.id);
+
+    // Rotate: delete old refresh token and insert new one
+    await supabase.from('refresh_tokens').delete().eq('id', storedToken.id);
+    await supabase.from('refresh_tokens').insert([{ user_id: user.id, token: newRefreshToken }]);
+
+    setAuthCookies(res, newAccessToken, newRefreshToken);
 
     return res.status(200).json({ message: 'Tokens refreshed' });
   } catch (error) {
@@ -198,7 +256,12 @@ export const refresh = async (req: Request, res: Response) => {
 
 export const logout = async (req: Request, res: Response) => {
   try {
-    await supabase.auth.signOut();
+    const refreshToken = req.cookies?.refresh_token;
+
+    // Delete the refresh token from DB if present
+    if (refreshToken) {
+      await supabase.from('refresh_tokens').delete().eq('token', refreshToken);
+    }
 
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
@@ -215,51 +278,13 @@ export const getMe = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.user_id;
 
-    let { data: user, error } = await supabase
+    const { data: user, error } = await supabase
       .from('users')
-      .select('*')
+      .select('id, name, email, phone, role, avatar_url, is_verified, created_at, updated_at')
       .eq('id', userId)
       .single();
 
     if (error || !user) {
-      console.log(`Profile not found in public.users for user ${userId}. Attempting self-healing sync...`);
-
-      let token = req.cookies?.access_token;
-      if (!token && req.headers.authorization?.startsWith('Bearer ')) {
-        token = req.headers.authorization.split(' ')[1];
-      }
-
-      if (token) {
-        const { data: { user: authUser } } = await supabase.auth.getUser(token);
-        if (authUser) {
-          const name = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User';
-          const role = authUser.app_metadata?.role || authUser.user_metadata?.role || 'traveller';
-          const phone = authUser.user_metadata?.phone || null;
-
-          // Insert the missing profile row dynamically
-          const { data: newUser, error: insertError } = await supabase
-            .from('users')
-            .insert([{
-              id: userId,
-              name,
-              email: authUser.email,
-              phone,
-              role
-            }])
-            .select()
-            .single();
-
-          if (!insertError && newUser) {
-            console.log(`Self-healing sync successful for user ${userId}!`);
-            user = newUser;
-          } else {
-            console.error('Failed self-healing insert:', insertError);
-          }
-        }
-      }
-    }
-
-    if (!user) {
       return res.status(404).json({ error: 'Profile not found' });
     }
 
@@ -279,38 +304,21 @@ export const updateMe = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // ── MED-4 FIX: Read existing role from DB, never allow user to change it ──
-    const { data: existingProfile } = await supabase
-      .from('users')
-      .select('role, email')
-      .eq('id', userId)
-      .single();
-
-    const existingRole = existingProfile?.role || 'traveller';
-    const existingEmail = existingProfile?.email || req.user?.email || '';
-
     const { data: updatedUser, error: updateError } = await supabase
       .from('users')
-      .upsert({
-        id: userId,
+      .update({
         name,
-        email: existingEmail,
         phone: phone || null,
-        role: existingRole,  // Always use DB role, never client-provided
         avatar_url: avatar_url || null,
         updated_at: new Date().toISOString()
       })
-      .select()
+      .eq('id', userId)
+      .select('id, name, email, phone, role, avatar_url, is_verified, created_at, updated_at')
       .single();
 
     if (updateError) {
       throw updateError;
     }
-
-    // Also synchronize user_metadata in Supabase Auth (never sync role here)
-    await supabase.auth.admin.updateUserById(userId, {
-      user_metadata: { name, phone }
-    });
 
     return res.status(200).json({ user: updatedUser });
   } catch (error: any) {
@@ -319,14 +327,15 @@ export const updateMe = async (req: Request, res: Response) => {
   }
 };
 
+// ══════════════════════════════════════════════════
 // ── Admin Endpoints ──
+// ══════════════════════════════════════════════════
 
-// GET /api/v1/auth/users (List all users — admin/superadmin only)
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase
       .from('users')
-      .select('*')
+      .select('id, name, email, phone, role, avatar_url, is_verified, created_at, updated_at')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -337,7 +346,6 @@ export const getAllUsers = async (req: Request, res: Response) => {
   }
 };
 
-// POST /api/v1/auth/admin/create (Create user with any role — superadmin only)
 export const adminCreateUser = async (req: Request, res: Response) => {
   try {
     const { name, email, password, phone, role = 'traveller' } = req.body;
@@ -346,38 +354,29 @@ export const adminCreateUser = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Name, email, and password are required' });
     }
 
-    // Create user via Supabase Admin API
-    const { data, error } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { name, phone, role }
-    });
+    const normalizedEmail = email.toLowerCase().trim();
+    const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
 
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
-
-    // Also insert into public.users table
     const { data: profile, error: profileError } = await supabase
       .from('users')
       .insert([{
-        id: data.user.id,
         name,
-        email,
+        email: normalizedEmail,
         phone: phone || null,
-        role
+        role,
+        password_hash,
+        is_verified: true, // Admin-created users are pre-verified
       }])
-      .select()
+      .select('id, name, email, phone, role, is_verified, created_at')
       .single();
 
     if (profileError) {
-      console.error('Profile insert error:', profileError);
+      return res.status(400).json({ error: profileError.message });
     }
 
     return res.status(201).json({
       message: `User "${name}" created with role "${role}"`,
-      user: profile || { id: data.user.id, name, email, role }
+      user: profile
     });
   } catch (error: any) {
     console.error('adminCreateUser error:', error);
@@ -385,7 +384,6 @@ export const adminCreateUser = async (req: Request, res: Response) => {
   }
 };
 
-// PATCH /api/v1/auth/users/:id/role (Change user role — superadmin only)
 export const updateUserRole = async (req: Request, res: Response) => {
   try {
     const { id: paramId } = req.params;
@@ -397,20 +395,14 @@ export const updateUserRole = async (req: Request, res: Response) => {
       return res.status(400).json({ error: `Invalid role. Must be one of: ${validRoles.join(', ')}` });
     }
 
-    // Update in public.users
     const { data, error } = await supabase
       .from('users')
       .update({ role, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .select()
+      .select('id, name, email, role')
       .single();
 
     if (error) throw error;
-
-    // Also sync to Supabase auth metadata
-    await supabase.auth.admin.updateUserById(id, {
-      user_metadata: { role }
-    });
 
     return res.status(200).json({ message: `Role updated to "${role}"`, user: data });
   } catch (error: any) {
@@ -419,7 +411,6 @@ export const updateUserRole = async (req: Request, res: Response) => {
   }
 };
 
-// DELETE /api/v1/auth/users/:id (Delete user — superadmin only)
 export const adminDeleteUser = async (req: Request, res: Response) => {
   try {
     const { id: paramId } = req.params;
@@ -430,19 +421,16 @@ export const adminDeleteUser = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
-    // Delete from public.users
+    // Delete refresh tokens first
+    await supabase.from('refresh_tokens').delete().eq('user_id', id);
+
+    // Delete user from public.users
     const { error: dbError } = await supabase
       .from('users')
       .delete()
       .eq('id', id);
 
     if (dbError) throw dbError;
-
-    // Delete from Supabase Auth
-    const { error: authError } = await supabase.auth.admin.deleteUser(id);
-    if (authError) {
-      console.error('Auth delete error (user already removed from DB):', authError);
-    }
 
     return res.status(200).json({ message: 'User deleted successfully' });
   } catch (error: any) {
@@ -451,7 +439,6 @@ export const adminDeleteUser = async (req: Request, res: Response) => {
   }
 };
 
-// GET /api/v1/auth/admin/stats (Dashboard counts — admin/superadmin only)
 export const getAdminStats = async (req: Request, res: Response) => {
   try {
     const [users, bookings, homestays, transports, guides, packages] = await Promise.all([
@@ -482,108 +469,72 @@ export const getAdminStats = async (req: Request, res: Response) => {
   }
 };
 
-// POST /api/v1/auth/send-otp
-export const sendOtp = async (req: Request, res: Response) => {
+// ══════════════════════════════════════════════════
+// ── Email OTP Endpoints ──
+// ══════════════════════════════════════════════════
+
+export const sendEmailOtp = async (req: Request, res: Response) => {
   try {
-    const { phone } = req.body;
-    if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
 
-    // Format phone to E.164 if missing '+' (simple check, assume India +91 if length is 10)
-    let formattedPhone = phone;
-    if (phone.length === 10 && !phone.startsWith('+')) {
-      formattedPhone = '+91' + phone;
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Verify the user exists
+    const { data: user } = await supabase
+      .from('users')
+      .select('id, name')
+      .eq('email', normalizedEmail)
+      .single();
+
+    if (!user) {
+      return res.status(404).json({ error: 'No account found with this email. Please register first.' });
     }
 
-    const { createClient } = require('@supabase/supabase-js');
-    const localSupabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-      auth: { persistSession: false, autoRefreshToken: false }
-    });
+    const otp = generateOtp();
+    await storeOtp(normalizedEmail, otp);
+    await sendOtpEmail(normalizedEmail, otp, user.name);
 
-    const { data, error } = await localSupabase.auth.signInWithOtp({
-      phone: formattedPhone
-    });
-
-    if (error) {
-      console.error('sendOtp error:', error);
-      return res.status(400).json({ error: error.message });
-    }
-
-    return res.status(200).json({ message: 'OTP sent successfully', data });
+    return res.status(200).json({ message: 'Verification code sent to your email' });
   } catch (error: any) {
-    console.error('sendOtp unexpected error:', error);
-    return res.status(500).json({ error: 'Failed to send OTP' });
+    console.error('sendEmailOtp error:', error);
+    return res.status(500).json({ error: error.message || 'Failed to send verification code' });
   }
 };
 
-// POST /api/v1/auth/verify-otp
-export const verifyOtp = async (req: Request, res: Response) => {
+export const verifyEmailOtp = async (req: Request, res: Response) => {
   try {
-    const { phone, otp } = req.body;
-    if (!phone || !otp) return res.status(400).json({ error: 'Phone and OTP are required' });
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ error: 'Email and verification code are required' });
 
-    let formattedPhone = phone;
-    if (phone.length === 10 && !phone.startsWith('+')) {
-      formattedPhone = '+91' + phone;
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Verify the OTP
+    const isValid = await verifyStoredOtp(normalizedEmail, otp);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Invalid or expired verification code. Please request a new one.' });
     }
 
-    const { createClient } = require('@supabase/supabase-js');
-    const localSupabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-      auth: { persistSession: false, autoRefreshToken: false }
-    });
-
-    const { data, error } = await localSupabase.auth.verifyOtp({
-      phone: formattedPhone,
-      token: otp,
-      type: 'sms'
-    });
-
-    if (error || !data.session) {
-      console.error('verifyOtp error:', error);
-      return res.status(401).json({ error: error?.message || 'Invalid OTP' });
-    }
-
-    setAuthCookies(res, data.session.access_token, data.session.refresh_token);
-
-    const userId = data.user.id;
-    let { data: userProfile, error: profileError } = await supabase
+    // Mark the user as verified
+    const { data: user, error: updateError } = await supabase
       .from('users')
-      .select('*')
-      .eq('id', userId)
+      .update({ is_verified: true, updated_at: new Date().toISOString() })
+      .eq('email', normalizedEmail)
+      .select('id, name, email, role, avatar_url')
       .single();
 
-    if (profileError || !userProfile) {
-      console.log(`Profile not found in public.users for user ${userId} on OTP login. Attempting self-healing sync...`);
-      const name = data.user.user_metadata?.name || 'User';
-      const role = data.user.app_metadata?.role || data.user.user_metadata?.role || 'traveller';
-
-      const { data: newProfile, error: insertError } = await supabase
-        .from('users')
-        .insert([{
-          id: userId,
-          name,
-          email: data.user.email || null,
-          phone: formattedPhone,
-          role
-        }])
-        .select()
-        .single();
-
-      if (!insertError && newProfile) {
-        userProfile = newProfile;
-      }
+    if (updateError || !user) {
+      console.error('Error updating user verification status:', updateError);
+      return res.status(500).json({ error: 'Failed to verify email' });
     }
 
     return res.status(200).json({
-      message: 'OTP verified successfully',
-      user: userProfile || {
-        id: data.user.id,
-        phone: formattedPhone,
-        name: 'User',
-        role: 'traveller'
-      }
+      message: 'Email verified successfully! You can now log in.',
+      verified: true,
+      user
     });
   } catch (error: any) {
-    console.error('verifyOtp unexpected error:', error);
-    return res.status(500).json({ error: 'Failed to verify OTP' });
+    console.error('verifyEmailOtp error:', error);
+    return res.status(500).json({ error: 'Failed to verify email' });
   }
 };

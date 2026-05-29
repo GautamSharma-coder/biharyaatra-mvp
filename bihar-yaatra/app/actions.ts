@@ -26,7 +26,7 @@ function getErrorStatus(err: unknown): number | null {
 
 function getLocalSaarthiResponse(prompt: string): string {
     const query = prompt.toLowerCase();
-    
+
     if (query.includes("mahabodhi") || query.includes("bodh gaya") || query.includes("bodhgaya")) {
         return `**Namaste! I would love to tell you about the sacred Mahabodhi Temple in Bodh Gaya.** 🙏
         
@@ -41,7 +41,7 @@ The **Mahabodhi Temple complex** is one of the four holy sites related to the li
 
 *💡 Local Tip: Early morning (5:00 AM - 7:00 AM) or sunset are the most peaceful times for meditation and viewing the temple under soft golden light.*`;
     }
-    
+
     if (query.includes("nalanda")) {
         return `**Namaste! Nalanda is one of the greatest treasures of human civilization.** 📚
         
@@ -116,10 +116,10 @@ What specific destination, local food, or cultural experience can I guide you on
 function getLocalJsonItinerary(prompt: string): string {
     const durationMatch = prompt.match(/(\d+)-day/);
     const duration = durationMatch ? parseInt(durationMatch[1]) : 3;
-    
+
     // Create custom days based on duration
     const days: any[] = [];
-    
+
     // Day 1
     days.push({
         day: 1,
@@ -132,7 +132,7 @@ function getLocalJsonItinerary(prompt: string): string {
         ],
         food: "Traditional sattvik vegetarian thali at a local spiritual cafe."
     });
-    
+
     // Day 2
     if (duration >= 2) {
         days.push({
@@ -147,7 +147,7 @@ function getLocalJsonItinerary(prompt: string): string {
             food: "Silao Khaja - multi-layered crispy sweet pastry."
         });
     }
-    
+
     // Day 3
     if (duration >= 3) {
         days.push({
@@ -162,7 +162,7 @@ function getLocalJsonItinerary(prompt: string): string {
             food: "Sattu Paratha served with smoky brinjal chokha."
         });
     }
-    
+
     // Day 4+
     for (let d = 4; d <= duration; d++) {
         days.push({
@@ -189,11 +189,11 @@ function getLocalJsonItinerary(prompt: string): string {
 
 export async function askSaarthi(prompt: string): Promise<SaarthiResponse> {
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_KEY;
-    const isPlaceholder = !apiKey || 
-                          apiKey.includes("your_actual_gemini_key_here") || 
-                          apiKey.includes("placeholder") || 
-                          apiKey === "your_gemini_api_key" ||
-                          apiKey.trim() === "";
+    const isPlaceholder = !apiKey ||
+        apiKey.includes("your_actual_gemini_key_here") ||
+        apiKey.includes("placeholder") ||
+        apiKey === "your_gemini_api_key" ||
+        apiKey.trim() === "";
 
     const isJsonRequest = prompt.includes("JSON") || prompt.includes("trip_title") || prompt.includes("activities");
 
@@ -207,7 +207,7 @@ export async function askSaarthi(prompt: string): Promise<SaarthiResponse> {
         const { GoogleGenerativeAI } = await import("@google/generative-ai");
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.5-flash-lite",
             systemInstruction:
                 "You are Saarthi, a helpful AI travel guide for Bihar. You specialize in Bihar's history (Nalanda, Rajgir), spirituality (Bodh Gaya), and modern travel tips. Keep responses helpful, culturally respectful, and concise.",
         });
