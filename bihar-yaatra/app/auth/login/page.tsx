@@ -25,12 +25,15 @@ const FACTS = [
 function LoginPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { login } = useAuth();
+    const { login, sendOtp, verifyOtp } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [successMsg, setSuccessMsg] = useState<string | null>(
-        searchParams.get('registered') ? 'Registration successful! Please login.' : null
-    );
+    const [successMsg, setSuccessMsg] = useState<string | null>(() => {
+        if (searchParams.get('verify')) {
+            return 'Registration successful! A verification link has been sent to your email. Please verify your email before logging in.';
+        }
+        return searchParams.get('registered') ? 'Registration successful! Please login.' : null;
+    });
 
     const [activeTab, setActiveTab] = useState<'login' | 'phone'>('login');
     const [currentFact, setCurrentFact] = useState(0);
@@ -55,11 +58,17 @@ function LoginPageContent() {
     const onSubmit = async (data: LoginFormValues) => {
         setIsLoading(true);
         setError(null);
+        setSuccessMsg(null);
         try {
             await login(data);
             // Redirect is handled in AuthProvider context
         } catch (err: any) {
-            setError(err);
+            if (typeof err === 'string' && (err.includes('A new verification link') || err.includes('A verification link was recently sent'))) {
+                setSuccessMsg(err);
+                setError(null);
+            } else {
+                setError(err);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -69,18 +78,33 @@ function LoginPageContent() {
         e.preventDefault();
         if (phone.length !== 10) return;
         setIsLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setIsLoading(false);
-        setPhoneStep(2);
+        setError(null);
+        setSuccessMsg(null);
+        try {
+            await sendOtp(phone);
+            setPhoneStep(2);
+            setSuccessMsg('OTP sent successfully to your phone.');
+        } catch (err: any) {
+            setError(err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleOtpSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (otp.length !== 6) return;
         setIsLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setIsLoading(false);
-        router.push('/dashboard/user');
+        setError(null);
+        setSuccessMsg(null);
+        try {
+            await verifyOtp(phone, otp);
+            // Redirect is handled in AuthProvider context
+        } catch (err: any) {
+            setError(err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -95,9 +119,8 @@ function LoginPageContent() {
                 {/* Left Carousel Column */}
                 <div className="relative hidden md:flex flex-col justify-end p-12 text-white bg-gray-900 overflow-hidden group">
                     <div className="absolute inset-0">
-                        <img src="/assets/images/Lumbini.jpg"
+                        <img src="https://images.unsplash.com/photo-1598556776374-0f5f78165537?q=80&w=1965&auto=format&fit=crop"
                              className="w-full h-full object-cover opacity-60 transition-transform duration-[10s] hover:scale-110"
-                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1598556776374-0f5f78165537?q=80&w=1965&auto=format&fit=crop' }}
                              alt="Lumbini" />
                     </div>
 

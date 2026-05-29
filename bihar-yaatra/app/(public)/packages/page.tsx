@@ -15,7 +15,7 @@ export default function PackagesPage() {
 
     const seedData = [
         {
-            id: '1', 
+            id: '00000000-0000-0000-0000-000000000001', 
             title: 'The Buddhist Circuit', 
             category: 'Spiritual', 
             duration: '5 Days / 4 Nights', 
@@ -30,7 +30,7 @@ export default function PackagesPage() {
             ]
         },
         {
-            id: '2', 
+            id: '00000000-0000-0000-0000-000000000002', 
             title: 'Wild Champaran', 
             category: 'Wildlife', 
             duration: '3 Days / 2 Nights', 

@@ -15,7 +15,7 @@ export default function HomestayPage() {
 
     const seedData = [
         {
-            id: '1',
+            id: '00000000-0000-0000-0000-300000000001',
             name: 'Ganga Kinare Haveli',
             location: 'Patna',
             price: 1500,
@@ -27,7 +27,7 @@ export default function HomestayPage() {
             badge: 'Superhost'
         },
         {
-            id: '2',
+            id: '00000000-0000-0000-0000-300000000002',
             name: 'Bodhi Tree Retreat',
             location: 'Bodh Gaya',
             price: 2200,
@@ -38,7 +38,7 @@ export default function HomestayPage() {
             badge: 'Popular'
         },
         {
-            id: '3',
+            id: '00000000-0000-0000-0000-300000000003',
             name: 'Village Mud House',
             location: 'Madhubani',
             price: 900,
@@ -49,7 +49,7 @@ export default function HomestayPage() {
             badge: 'Cultural'
         },
         {
-            id: '4',
+            id: '00000000-0000-0000-0000-300000000004',
             name: 'Valmiki Jungle Cottage',
             location: 'West Champaran',
             price: 2500,

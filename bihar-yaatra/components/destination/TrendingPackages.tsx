@@ -86,42 +86,6 @@ export default function TrendingPackages() {
 
                 </div>
             </div>
-            
-            {/* CTA section after Trending Packages */}
-            <div className="py-24 relative overflow-hidden mt-12 bg-white">
-                <div className="absolute inset-0 bg-gradient opacity-90"></div>
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay z-0 opacity-20"></div>
-
-                <div className="max-w-5xl mx-auto px-6 relative z-10">
-                    <div className="bg-white rounded-[3rem] p-12 shadow-2xl relative overflow-hidden">
-                        <div className="absolute -right-20 -top-20 w-64 h-64 bg-orange-100 rounded-full blur-3xl opacity-50"></div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                            <div>
-                                <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">Plan Your Journey Today</h2>
-                                <p className="text-gray-600 mb-8 text-lg">
-                                    Don't just visit Bihar, experience it. From booking hotels to finding the best local street food spots, we handle it all.
-                                </p>
-                                <div className="flex flex-col sm:flex-row gap-4">
-                                    <a href="/packages" className="inline-flex justify-center items-center px-8 py-4 bg-black text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                                        Start Booking
-                                    </a>
-                                    <a href="#" className="inline-flex justify-center items-center px-8 py-4 bg-white text-black border border-gray-200 font-medium rounded-full shadow-md hover:bg-gray-50 transition-all duration-300">
-                                        Talk to Expert
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div className="relative">
-                                <div className="absolute -left-4 -bottom-4 w-full h-full bg-gradient rounded-3xl -z-10 rotate-3"></div>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=800&auto=format&fit=crop"
-                                    alt="Traveler in India" className="w-full h-64 md:h-80 object-cover rounded-3xl shadow-lg" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </section>
     );
 }

@@ -26,21 +26,33 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Name, email, and password are required' });
     }
 
-    // Sign up with Supabase using admin to bypass email verification for MVP
-    const { data, error } = await supabase.auth.admin.createUser({
+    // Use signUp so Supabase sends a verification email when 'Confirm email' is enabled
+    const { createClient } = require('@supabase/supabase-js');
+    const localSupabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+
+    const { data, error } = await localSupabase.auth.signUp({
       email,
       password,
-      email_confirm: true,
-      user_metadata: { name, phone, role }
+      options: {
+        data: { name, phone, role }, // stored in user_metadata
+      }
     });
 
     if (error) {
       return res.status(400).json({ error: error.message });
     }
 
+    // If email confirmation is enabled, user won't have a session yet
+    const needsConfirmation = !data.session;
+
     return res.status(201).json({
-      message: 'Registration successful. You can now log in.',
-      user: data.user
+      message: needsConfirmation
+        ? 'Registration successful! Please check your email to verify your account.'
+        : 'Registration successful. You can now log in.',
+      user: data.user,
+      needs_email_verification: needsConfirmation,
     });
   } catch (error: any) {
     console.error('Register error:', error);
@@ -68,6 +80,37 @@ export const login = async (req: Request, res: Response) => {
 
     if (error || !data.session) {
       console.error('Supabase Login Error Details:', error, 'Session:', !!data.session);
+
+      // If the email is not confirmed, trigger resending the verification email automatically
+      if (error && error.message?.toLowerCase().includes('email not confirmed')) {
+        try {
+          const { error: resendError } = await localSupabase.auth.resend({
+            type: 'signup',
+            email
+          });
+
+          if (resendError) {
+            console.error('Failed to auto-resend verification email:', resendError);
+            if (resendError.message?.toLowerCase().includes('security purposes') || 
+                resendError.message?.toLowerCase().includes('rate limit') || 
+                resendError.status === 429) {
+              return res.status(401).json({
+                error: 'Email not confirmed. A verification link was recently sent. Please check your inbox (including Spam folder) or wait a minute before requesting another link.'
+              });
+            }
+            return res.status(401).json({
+              error: 'Email not confirmed. We tried to resend the verification link, but failed: ' + resendError.message
+            });
+          }
+
+          return res.status(401).json({
+            error: 'Email not confirmed. A new verification link has been sent to your email.'
+          });
+        } catch (resendCatch: any) {
+          console.error('Error during automatic resend attempt:', resendCatch);
+        }
+      }
+
       return res.status(401).json({ error: error?.message || 'Invalid email or password' });
     }
 
@@ -439,3 +482,108 @@ export const getAdminStats = async (req: Request, res: Response) => {
   }
 };
 
+// POST /api/v1/auth/send-otp
+export const sendOtp = async (req: Request, res: Response) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+
+    // Format phone to E.164 if missing '+' (simple check, assume India +91 if length is 10)
+    let formattedPhone = phone;
+    if (phone.length === 10 && !phone.startsWith('+')) {
+      formattedPhone = '+91' + phone;
+    }
+
+    const { createClient } = require('@supabase/supabase-js');
+    const localSupabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+
+    const { data, error } = await localSupabase.auth.signInWithOtp({
+      phone: formattedPhone
+    });
+
+    if (error) {
+      console.error('sendOtp error:', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.status(200).json({ message: 'OTP sent successfully', data });
+  } catch (error: any) {
+    console.error('sendOtp unexpected error:', error);
+    return res.status(500).json({ error: 'Failed to send OTP' });
+  }
+};
+
+// POST /api/v1/auth/verify-otp
+export const verifyOtp = async (req: Request, res: Response) => {
+  try {
+    const { phone, otp } = req.body;
+    if (!phone || !otp) return res.status(400).json({ error: 'Phone and OTP are required' });
+
+    let formattedPhone = phone;
+    if (phone.length === 10 && !phone.startsWith('+')) {
+      formattedPhone = '+91' + phone;
+    }
+
+    const { createClient } = require('@supabase/supabase-js');
+    const localSupabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+
+    const { data, error } = await localSupabase.auth.verifyOtp({
+      phone: formattedPhone,
+      token: otp,
+      type: 'sms'
+    });
+
+    if (error || !data.session) {
+      console.error('verifyOtp error:', error);
+      return res.status(401).json({ error: error?.message || 'Invalid OTP' });
+    }
+
+    setAuthCookies(res, data.session.access_token, data.session.refresh_token);
+
+    const userId = data.user.id;
+    let { data: userProfile, error: profileError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !userProfile) {
+      console.log(`Profile not found in public.users for user ${userId} on OTP login. Attempting self-healing sync...`);
+      const name = data.user.user_metadata?.name || 'User';
+      const role = data.user.app_metadata?.role || data.user.user_metadata?.role || 'traveller';
+
+      const { data: newProfile, error: insertError } = await supabase
+        .from('users')
+        .insert([{
+          id: userId,
+          name,
+          email: data.user.email || null,
+          phone: formattedPhone,
+          role
+        }])
+        .select()
+        .single();
+
+      if (!insertError && newProfile) {
+        userProfile = newProfile;
+      }
+    }
+
+    return res.status(200).json({
+      message: 'OTP verified successfully',
+      user: userProfile || {
+        id: data.user.id,
+        phone: formattedPhone,
+        name: 'User',
+        role: 'traveller'
+      }
+    });
+  } catch (error: any) {
+    console.error('verifyOtp unexpected error:', error);
+    return res.status(500).json({ error: 'Failed to verify OTP' });
+  }
+};

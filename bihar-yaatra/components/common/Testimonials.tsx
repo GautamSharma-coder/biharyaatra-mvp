@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function Testimonials() {
     return (
-        <section className="py-24 bg-white relative overflow-hidden text-gray-900">
+        <div className="relative overflow-hidden text-gray-900">
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                 <div className="absolute top-20 -left-20 w-72 h-72 bg-orange-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
                 <div className="absolute bottom-20 -right-20 w-72 h-72 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
@@ -85,6 +85,6 @@ export default function Testimonials() {
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
     );
 }

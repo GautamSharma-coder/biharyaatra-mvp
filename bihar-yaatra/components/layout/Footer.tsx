@@ -54,8 +54,9 @@ export default function Footer() {
                                 type="email"
                                 placeholder="Your email"
                                 className="px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-orange-500 transition"
+                                suppressHydrationWarning
                             />
-                            <button type="button" className="px-4 py-3 bg-gradient text-white font-bold rounded-xl hover:opacity-90 transition">
+                            <button type="button" className="px-4 py-3 bg-gradient text-white font-bold rounded-xl hover:opacity-90 transition" suppressHydrationWarning>
                                 Subscribe
                             </button>
                         </form>

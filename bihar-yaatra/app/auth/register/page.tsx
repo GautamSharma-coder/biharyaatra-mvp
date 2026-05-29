@@ -94,9 +94,8 @@ export default function RegisterPage() {
                 {/* Left Carousel Column */}
                 <div className="relative hidden md:flex flex-col justify-end p-12 text-white bg-gray-900 overflow-hidden group">
                     <div className="absolute inset-0">
-                        <img src="/assets/images/Nalanda.jpg"
+                        <img src="https://images.unsplash.com/photo-1598556776374-0f5f78165537?q=80&w=1965&auto=format&fit=crop"
                              className="w-full h-full object-cover opacity-60 transition-transform duration-[10s] hover:scale-110"
-                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1598556776374-0f5f78165537?q=80&w=1965&auto=format&fit=crop' }}
                              alt="Nalanda" />
                     </div>
 

@@ -5,6 +5,7 @@ import Hero from "@/components/common/Hero";
 import Features from "@/components/common/Features";
 import Destinations from "@/components/destination/Destinations";
 import TrendingPackages from "@/components/destination/TrendingPackages";
+import CTABanner from "@/components/common/CTABanner";
 import Testimonials from "@/components/common/Testimonials";
 import FAQ from "@/components/common/FAQ";
 import SaarthiChat from "@/components/ai/SaarthiChat";
@@ -40,8 +41,13 @@ export default function Home() {
             <Features />
             <Destinations />
             <TrendingPackages />
-            <Testimonials />
-            <FAQ />
+            <CTABanner />
+
+            {/* Testimonials + FAQ share one section (matches HTML structure) */}
+            <section className="py-24 bg-white relative overflow-hidden">
+                <Testimonials />
+                <FAQ />
+            </section>
             
             <SaarthiChat />
             <MobileBottomNav />

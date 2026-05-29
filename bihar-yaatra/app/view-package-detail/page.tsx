@@ -30,7 +30,7 @@ type Package = {
 
 const PACKAGES: Package[] = [
   {
-    id: "1",
+    id: "00000000-0000-0000-0000-000000000001",
     title: "The Buddhist Circuit",
     category: "Spiritual",
     duration: "5 Days / 4 Nights",
@@ -49,7 +49,7 @@ const PACKAGES: Package[] = [
     ]
   },
   {
-    id: "2",
+    id: "00000000-0000-0000-0000-000000000002",
     title: "Wild Champaran Safaris",
     category: "Wildlife",
     duration: "3 Days / 2 Nights",

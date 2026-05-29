@@ -3,10 +3,35 @@ import React, { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
 
+interface GuideProfile {
+    id: string;
+    name: string;
+    slug: string;
+    bio: string;
+    location: string;
+    languages: string[];
+    skills: string[];
+    price_per_day: number;
+    is_available: boolean;
+    is_verified: boolean;
+    avg_rating: number;
+}
+
+interface GuideBooking {
+    id: string;
+    service_type: string;
+    service_name: string;
+    status: string;
+    total_amount: string | number;
+    guests: number;
+    check_in: string;
+    check_out: string;
+}
+
 export default function GuideDashboardPage() {
     const { user } = useAuth();
-    const [guideProfiles, setGuideProfiles] = useState<any[]>([]);
-    const [bookings, setBookings] = useState<any[]>([]);
+    const [guideProfiles, setGuideProfiles] = useState<GuideProfile[]>([]);
+    const [bookings, setBookings] = useState<GuideBooking[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

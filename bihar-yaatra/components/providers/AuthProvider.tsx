@@ -20,6 +20,8 @@ interface AuthContextType {
   register: (data: Record<string, unknown>) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  sendOtp: (phone: string) => Promise<void>;
+  verifyOtp: (phone: string, otp: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,8 +36,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       const res = await apiClient.get('/auth/me');
       setUser(res.data.user);
-    } catch (err) {
-      console.error('Refresh user error:', err);
+    } catch (err: any) {
+      if (err.response?.status !== 401) {
+        console.error('Refresh user error:', err);
+      }
       setUser(null);
     } finally {
       setLoading(false);
@@ -68,8 +72,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (data: Record<string, unknown>) => {
     try {
-      await apiClient.post('/auth/register', data);
-      router.push('/auth/login?registered=true');
+      const res = await apiClient.post('/auth/register', data);
+      const needsVerification = res.data?.needs_email_verification;
+      if (needsVerification) {
+        // Redirect to login with a message telling user to check email
+        router.push('/auth/login?registered=true&verify=true');
+      } else {
+        router.push('/auth/login?registered=true');
+      }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
       throw error.response?.data?.error || 'Registration failed';
@@ -89,8 +99,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const sendOtp = async (phone: string) => {
+    try {
+      await apiClient.post('/auth/send-otp', { phone });
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      throw error.response?.data?.error || 'Failed to send OTP';
+    }
+  };
+
+  const verifyOtp = async (phone: string, otp: string) => {
+    try {
+      const res = await apiClient.post('/auth/verify-otp', { phone, otp });
+      const userObj = res.data.user;
+      setUser(userObj);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      if (userObj && (userObj.role === 'admin' || userObj.role === 'superadmin')) {
+        router.push('/dashboard/admin');
+      } else if (userObj && userObj.role === 'provider') {
+        router.push('/dashboard/provider/homestay');
+      } else {
+        router.push('/dashboard/user');
+      }
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      throw error.response?.data?.error || 'Failed to verify OTP';
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, sendOtp, verifyOtp }}>
       {children}
     </AuthContext.Provider>
   );

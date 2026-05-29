@@ -1,11 +1,27 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import Navbar from '@/components/layout/Navbar';
 import { useAuth } from '@/components/providers/AuthProvider';
 
+interface Transport {
+    id: string;
+    operator: string;
+    type: string;
+    route: string;
+    time: string;
+    price: string;
+    numericPrice: number;
+    rating: number;
+    image: string;
+    amenities: string[];
+    status: string;
+}
+
 export default function TransportPage() {
+    const router = useRouter();
     const { user } = useAuth();
     const [searchFrom, setSearchFrom] = useState('');
     const [searchTo, setSearchTo] = useState('');
@@ -14,52 +30,56 @@ export default function TransportPage() {
     const [loading, setLoading] = useState(true);
     
     const [showTrackingModal, setShowTrackingModal] = useState(false);
-    const [trackingVehicle, setTrackingVehicle] = useState<any>(null);
+    const [trackingVehicle, setTrackingVehicle] = useState<Transport | null>(null);
 
-    const seedData = [
+    const seedData: Transport[] = [
         {
-            id: 1,
+            id: '00000000-0000-0000-0000-200000000001',
             operator: 'Bihar State Tourism Bus',
             type: 'Bus (AC)',
             route: 'Patna → Rajgir',
             time: '06:00 AM - 09:30 AM',
             price: '₹450',
+            numericPrice: 450,
             rating: 4.5,
             image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=800',
             amenities: ['AC', 'Wifi', 'Water'],
             status: 'On Time'
         },
         {
-            id: 2,
+            id: '00000000-0000-0000-0000-200000000002',
             operator: 'Ganga Cabs Pvt Ltd',
             type: 'Cab (Sedan)',
             route: 'Patna → Bodh Gaya',
             time: 'Flexible',
             price: '₹2,800',
+            numericPrice: 2800,
             rating: 4.8,
             image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=800',
             amenities: ['AC', 'Private', 'Sanitized'],
             status: 'Available'
         },
         {
-            id: 3,
+            id: '00000000-0000-0000-0000-200000000003',
             operator: 'City Link Shuttle',
             type: 'Bus (Shared)',
             route: 'Patna → Nalanda',
             time: '08:00 AM - 11:00 AM',
             price: '₹300',
+            numericPrice: 300,
             rating: 4.2,
             image: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?q=80&w=800',
             amenities: ['AC', 'Charging Point'],
             status: 'Departed'
         },
         {
-            id: 4,
+            id: '00000000-0000-0000-0000-200000000004',
             operator: 'Royal Bihar Travels',
             type: 'Cab (SUV)',
             route: 'Gaya → Varanasi',
             time: 'Flexible',
             price: '₹4,500',
+            numericPrice: 4500,
             rating: 4.9,
             image: 'https://images.unsplash.com/photo-1506015391300-4802dc74de2e?q=80&w=800',
             amenities: ['AC', 'Premium', 'Snacks'],
@@ -67,7 +87,7 @@ export default function TransportPage() {
         }
     ];
 
-    const [transports, setTransports] = useState(seedData);
+    const [transports] = useState<Transport[]>(seedData);
 
     useEffect(() => {
         
@@ -88,17 +108,27 @@ export default function TransportPage() {
         return matchesType && (matchesFrom || matchesTo);
     });
 
-    const openTracking = (vehicle: any) => {
+    const openTracking = (vehicle: Transport) => {
         setTrackingVehicle(vehicle);
         setShowTrackingModal(true);
     };
 
-    const bookRide = (vehicle: any) => {
+    const bookRide = (vehicle: Transport) => {
         if (!user) {
             alert("Please login to book a ride.");
             return;
         }
-        alert(`Proceeding to checkout for ${vehicle.operator}`);
+        const draft = {
+            title: `${vehicle.operator} — ${vehicle.route}`,
+            type: 'Transport',
+            price: vehicle.numericPrice,
+            service_id: vehicle.id,
+            service_type: 'transport',
+            service_name: vehicle.operator,
+            check_in: travelDate || undefined,
+        };
+        localStorage.setItem('bookingDraft', JSON.stringify(draft));
+        router.push('/dashboard/user/checkout');
     };
 
     return (
@@ -221,7 +251,7 @@ export default function TransportPage() {
                                     <div key={transport.id} className="bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-6 items-center group">
                                         <div className="md:col-span-1 flex items-center gap-4">
                                             <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 bg-gray-100">
-                                                <img src={transport.image} className="w-full h-full object-cover" alt={transport.operator} />
+                                                <Image src={transport.image} className="w-full h-full object-cover" alt={transport.operator} width={80} height={80} unoptimized />
                                             </div>
                                             <div>
                                                 <h3 className="font-bold text-lg leading-tight text-gray-900">{transport.operator}</h3>
@@ -312,7 +342,7 @@ export default function TransportPage() {
                         </div>
 
                         <div className="flex-1 bg-gray-100 relative overflow-hidden group">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Map_of_Bihar.jpg" className="w-full h-full object-cover opacity-30 grayscale group-hover:grayscale-0 transition duration-700" alt="Map" />
+                            <Image src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Map_of_Bihar.jpg" className="w-full h-full object-cover opacity-30 grayscale group-hover:grayscale-0 transition duration-700" alt="Map" fill unoptimized />
 
                             <svg className="absolute inset-0 w-full h-full pointer-events-none">
                                 <path d="M 100 300 Q 400 100 700 300" stroke="#FF9933" strokeWidth="4" fill="none" strokeDasharray="10 5" className="opacity-70" />
@@ -345,7 +375,7 @@ export default function TransportPage() {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-100">
-                                        <img src="https://ui-avatars.com/api/?name=Rajesh+Kumar&background=random" className="w-full h-full" alt="Driver" />
+                                        <Image src="https://ui-avatars.com/api/?name=Rajesh+Kumar&background=random" className="w-full h-full" alt="Driver" width={40} height={40} unoptimized />
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-sm text-gray-900">Driver: Rajesh Kumar</h4>

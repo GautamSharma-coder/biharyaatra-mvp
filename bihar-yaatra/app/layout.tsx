@@ -17,8 +17,12 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "Bihar Yaatra",
-  description: "Discover the Soul of India",
+  title: "Bihar Yaatra - Discover the Soul of India",
+  description:
+    "Book immersive tours to Bodh Gaya, Nalanda, Rajgir, and more. Experience the rich heritage, spirituality, and nature of Bihar with verified guides.",
+  keywords:
+    "Bihar tourism, Bodh Gaya tours, Nalanda university, Rajgir tourism, Bihar travel packages, spiritual tourism India, eco tourism bihar",
+  authors: [{ name: "Bihar Yaatra" }],
 };
 
 import { AuthProvider } from "@/components/providers/AuthProvider";

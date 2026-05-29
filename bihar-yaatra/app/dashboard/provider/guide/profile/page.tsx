@@ -1,11 +1,23 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/components/providers/AuthProvider';
 
+interface GuideProfileData {
+    id: string;
+    name: string;
+    slug: string;
+    bio: string;
+    location: string;
+    languages: string[];
+    skills: string[];
+    price_per_day: number;
+    is_available: boolean;
+}
+
 export default function GuideProfilePage() {
     const { user } = useAuth();
-    const [profiles, setProfiles] = useState<any[]>([]);
+    const [_profiles, setProfiles] = useState<GuideProfileData[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
@@ -25,12 +37,7 @@ export default function GuideProfilePage() {
     const [newLanguage, setNewLanguage] = useState('');
     const [newSkill, setNewSkill] = useState('');
 
-    useEffect(() => {
-        if (!user) return;
-        fetchProfiles();
-    }, [user]);
-
-    const fetchProfiles = async () => {
+    const fetchProfiles = useCallback(async () => {
         try {
             const res = await apiClient.get('/guides/my/listings');
             setProfiles(res.data || []);
@@ -43,16 +50,22 @@ export default function GuideProfilePage() {
         } finally {
             setLoading(false);
         }
-    };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        if (!user) return;
+        fetchProfiles();
+    }, [user, fetchProfiles]);
 
     const generateSlug = (name: string) => {
         return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     };
 
-    const handleChange = (field: string, value: any) => {
+    const handleChange = (field: string, value: string | boolean) => {
         setForm(prev => {
             const updated = { ...prev, [field]: value };
-            if (field === 'name') {
+            if (field === 'name' && typeof value === 'string') {
                 updated.slug = generateSlug(value);
             }
             return updated;
@@ -79,7 +92,7 @@ export default function GuideProfilePage() {
         setForm(prev => ({ ...prev, skills: prev.skills.filter(x => x !== s) }));
     };
 
-    const startEdit = (profile: any) => {
+    const startEdit = (profile: GuideProfileData) => {
         setEditingId(profile.id);
         setForm({
             name: profile.name || '',
@@ -119,8 +132,9 @@ export default function GuideProfilePage() {
                 setSuccessMsg('Guide profile created successfully!');
             }
             await fetchProfiles();
-        } catch (err: any) {
-            setErrorMsg(err.response?.data?.error || 'Failed to save profile.');
+        } catch (err: unknown) {
+            const error = err as { response?: { data?: { error?: string } } };
+            setErrorMsg(error.response?.data?.error || 'Failed to save profile.');
         } finally {
             setSaving(false);
         }
