@@ -17,6 +17,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (data: Record<string, unknown>) => Promise<void>;
+  loginWithGoogle: (credential: string, role?: string) => Promise<void>;
   register: (data: Record<string, unknown>) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -85,6 +86,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async (credential: string, role?: string) => {
+    try {
+      const res = await apiClient.post('/auth/google', { token: credential, role });
+      
+      const userObj = res.data.user;
+      setUser(userObj);
+      
+      await new Promise(resolve => setTimeout(resolve, 100));
+      if (userObj && (userObj.role === 'admin' || userObj.role === 'superadmin')) {
+        router.push('/dashboard/admin');
+      } else if (userObj && userObj.role === 'provider') {
+        router.push('/dashboard/provider/homestay');
+      } else {
+        router.push('/dashboard/user');
+      }
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      throw error.response?.data?.error || 'Google login failed';
+    }
+  };
+
   const register = async (data: Record<string, unknown>) => {
     try {
       const res = await apiClient.post('/auth/register', data);
@@ -140,7 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, sendEmailOtp, verifyEmailOtp }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, register, logout, refreshUser, sendEmailOtp, verifyEmailOtp }}>
       {children}
     </AuthContext.Provider>
   );

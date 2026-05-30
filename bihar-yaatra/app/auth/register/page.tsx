@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { GoogleLogin } from '@react-oauth/google';
 
 // Zod schema for Registration
 const registerSchema = z.object({
@@ -26,7 +27,7 @@ const FACTS = [
 
 export default function RegisterPage() {
     const router = useRouter();
-    const { register: authRegister, user, loading } = useAuth();
+    const { register: authRegister, loginWithGoogle, user, loading } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [currentFact, setCurrentFact] = useState(0);
@@ -269,10 +270,28 @@ export default function RegisterPage() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 shrink-0">
-                        <button type="button" className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-200 hover:bg-gray-50 transition font-medium text-sm">
-                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
-                            <span>Google</span>
-                        </button>
+                        <div className="flex items-center justify-center h-[46px] overflow-hidden rounded-xl border border-gray-200">
+                            <GoogleLogin
+                                onSuccess={credentialResponse => {
+                                    if (credentialResponse.credential) {
+                                        setIsLoading(true);
+                                        loginWithGoogle(credentialResponse.credential, selectedRole).catch(err => {
+                                            setError(typeof err === 'string' ? err : 'Google login failed');
+                                            setIsLoading(false);
+                                        });
+                                    }
+                                }}
+                                onError={() => {
+                                    setError('Google login failed. Please try again.');
+                                }}
+                                useOneTap
+                                type="standard"
+                                theme="outline"
+                                size="large"
+                                text="signup_with"
+                                shape="rectangular"
+                            />
+                        </div>
                         <button type="button" className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-200 hover:bg-gray-50 transition font-medium opacity-50 cursor-not-allowed text-sm" title="Coming Soon">
                             <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" className="w-5 h-5" alt="Facebook" />
                             <span>Facebook</span>

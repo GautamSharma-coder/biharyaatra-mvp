@@ -26,6 +26,7 @@ export const metadata: Metadata = {
 };
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import GlobalNavWrapper from "@/components/layout/GlobalNavWrapper";
 
@@ -45,11 +46,13 @@ export default function RootLayout({
         className={`${spaceGrotesk.variable} ${syne.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
-        <AuthProvider>
-          <GlobalNavWrapper>
-            {children}
-          </GlobalNavWrapper>
-        </AuthProvider>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+          <AuthProvider>
+            <GlobalNavWrapper>
+              {children}
+            </GlobalNavWrapper>
+          </AuthProvider>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, refresh, logout, getMe, updateMe, getAllUsers, adminCreateUser, updateUserRole, adminDeleteUser, getAdminStats, sendEmailOtp, verifyEmailOtp, forgotPassword, resetPassword } from '../controllers/auth.controller';
+import { register, login, refresh, logout, getMe, updateMe, getAllUsers, adminCreateUser, updateUserRole, adminDeleteUser, getAdminStats, sendEmailOtp, verifyEmailOtp, forgotPassword, resetPassword, googleLogin } from '../controllers/auth.controller';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
 
@@ -7,6 +7,7 @@ const router = Router();
 
 router.post('/register', register);
 router.post('/login', login);
+router.post('/google', googleLogin);
 router.post('/refresh', refresh);
 router.post('/logout', logout);
 router.post('/send-email-otp', sendEmailOtp);

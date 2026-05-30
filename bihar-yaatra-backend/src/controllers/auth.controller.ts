@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import { supabase } from '../config/supabase';
 import { generateOtp, storeOtp, verifyStoredOtp } from '../services/otp.service';
 import { sendOtpEmail, sendPasswordResetEmail } from '../services/email.service';
@@ -195,6 +196,82 @@ export const login = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('Login error:', error);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+export const googleLogin = async (req: Request, res: Response) => {
+  try {
+    const { token, role = 'traveller' } = req.body;
+    if (!token) {
+      return res.status(400).json({ error: 'Google ID token is required' });
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      return res.status(400).json({ error: 'Invalid Google token' });
+    }
+
+    const email = payload.email.toLowerCase().trim();
+    const name = payload.name || 'Google User';
+    const avatar_url = payload.picture || null;
+
+    // Check if user exists
+    let { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id, name, email, phone, role, password_hash, is_verified, avatar_url')
+      .eq('email', email)
+      .single();
+
+    if (userError && userError.code !== 'PGRST116') { // PGRST116 is no rows returned
+      throw userError;
+    }
+
+    if (!user) {
+      // Create new user
+      const { data: newUser, error: insertError } = await supabase
+        .from('users')
+        .insert([{
+          name,
+          email,
+          role,
+          is_verified: true,
+          avatar_url,
+          password_hash: null
+        }])
+        .select('id, name, email, phone, role, password_hash, is_verified, avatar_url')
+        .single();
+        
+      if (insertError) throw insertError;
+      user = newUser;
+    }
+
+    // Generate JWT tokens
+    const accessToken = generateAccessToken(user.id, user.email, user.role);
+    const refreshToken = generateRefreshToken(user.id);
+
+    // Store refresh token in DB
+    await supabase
+      .from('refresh_tokens')
+      .insert([{ user_id: user.id, token: refreshToken }]);
+
+    setAuthCookies(res, accessToken, refreshToken);
+
+    // Return user without password_hash
+    const { password_hash: _, ...safeUser } = user;
+
+    return res.status(200).json({
+      message: 'Login successful',
+      user: safeUser
+    });
+  } catch (error: any) {
+    console.error('Google Login error:', error);
+    return res.status(500).json({ error: 'Google authentication failed' });
   }
 };
 
