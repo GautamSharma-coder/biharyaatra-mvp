@@ -1,28 +1,28 @@
-import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
+import { google } from 'googleapis';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// ── Gmail SMTP Transporter (Primary) ──
-const smtpTransporter = (() => {
-  const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+// ── Gmail API Client (Primary) ──
+const gmailClient = (() => {
+  const clientId = process.env.GMAIL_CLIENT_ID;
+  const clientSecret = process.env.GMAIL_CLIENT_SECRET;
+  const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
 
-  if (!host || !user || !pass) {
-    console.warn('⚠ SMTP credentials not configured. Gmail SMTP will not be available.');
+  if (!clientId || !clientSecret || !refreshToken) {
+    console.warn('⚠ Gmail API credentials not configured. Gmail API will not be available.');
     return null;
   }
 
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465, // true for 465, false for 587
-    auth: { user, pass },
-    family: 4, // Force IPv4 to prevent ENETUNREACH on environments without IPv6
-  } as any);
+  const oauth2Client = new google.auth.OAuth2(
+    clientId,
+    clientSecret,
+    "https://developers.google.com/oauthplayground"
+  );
+  
+  oauth2Client.setCredentials({ refresh_token: refreshToken });
+  return google.gmail({ version: 'v1', auth: oauth2Client });
 })();
 
 // ── Resend Client (Optional Fallback) ──
@@ -98,7 +98,7 @@ function getOtpEmailHtml(otp: string, name?: string): string {
 }
 
 /**
- * Send an OTP email using Gmail SMTP (primary) with Resend as fallback.
+ * Send an OTP email using Gmail API (primary) with Resend as fallback.
  * Throws if both providers fail.
  */
 export async function sendOtpEmail(to: string, otp: string, name?: string): Promise<void> {
@@ -106,20 +106,36 @@ export async function sendOtpEmail(to: string, otp: string, name?: string): Prom
   const html = getOtpEmailHtml(otp, name);
   const text = `Your BiharYaatra verification code is: ${otp}. It expires in 10 minutes.`;
 
-  // ── Try Gmail SMTP first ──
-  if (smtpTransporter) {
+  // ── Try Gmail API first ──
+  if (gmailClient) {
     try {
-      await smtpTransporter.sendMail({
-        from: `Bihar Yaatra <${SMTP_FROM}>`,
-        to,
-        subject,
-        text,
-        html,
+      const rawMessage = [
+        `From: Bihar Yaatra <${SMTP_FROM}>`,
+        `To: ${to}`,
+        `Subject: =?utf-8?B?${Buffer.from(subject).toString('base64')}?=`,
+        `MIME-Version: 1.0`,
+        `Content-Type: text/html; charset=utf-8`,
+        ``,
+        html
+      ].join('\r\n');
+
+      const encodedMessage = Buffer.from(rawMessage)
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+
+      await gmailClient.users.messages.send({
+        userId: 'me',
+        requestBody: {
+          raw: encodedMessage,
+        },
       });
-      console.log(`✓ OTP email sent via Gmail SMTP to ${to}`);
+
+      console.log(`✓ OTP email sent via Gmail API to ${to}`);
       return;
-    } catch (smtpError: any) {
-      console.error(`✗ Gmail SMTP failed for ${to}:`, smtpError.message);
+    } catch (apiError: any) {
+      console.error(`✗ Gmail API failed for ${to}:`, apiError.message);
       // Fall through to Resend
     }
   }
@@ -148,8 +164,8 @@ export async function sendOtpEmail(to: string, otp: string, name?: string): Prom
 
   // ── Both failed ──
   throw new Error(
-    'Failed to send verification email. Neither Gmail SMTP nor Resend is configured/working. ' +
-    'Please check your SMTP_* and RESEND_API_KEY environment variables.'
+    'Failed to send verification email. Neither Gmail API nor Resend is configured/working. ' +
+    'Please check your GMAIL_* and RESEND_API_KEY environment variables.'
   );
 }
 
@@ -220,20 +236,36 @@ export async function sendPasswordResetEmail(to: string, otp: string, name?: str
   const html = getPasswordResetEmailHtml(otp, name);
   const text = `Your BiharYaatra password reset code is: ${otp}. It expires in 10 minutes.`;
 
-  // ── Try Gmail SMTP first ──
-  if (smtpTransporter) {
+  // ── Try Gmail API first ──
+  if (gmailClient) {
     try {
-      await smtpTransporter.sendMail({
-        from: `Bihar Yaatra <${SMTP_FROM}>`,
-        to,
-        subject,
-        text,
-        html,
+      const rawMessage = [
+        `From: Bihar Yaatra <${SMTP_FROM}>`,
+        `To: ${to}`,
+        `Subject: =?utf-8?B?${Buffer.from(subject).toString('base64')}?=`,
+        `MIME-Version: 1.0`,
+        `Content-Type: text/html; charset=utf-8`,
+        ``,
+        html
+      ].join('\r\n');
+
+      const encodedMessage = Buffer.from(rawMessage)
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+
+      await gmailClient.users.messages.send({
+        userId: 'me',
+        requestBody: {
+          raw: encodedMessage,
+        },
       });
-      console.log(`✓ Password reset email sent via Gmail SMTP to ${to}`);
+
+      console.log(`✓ Password reset email sent via Gmail API to ${to}`);
       return;
-    } catch (smtpError: any) {
-      console.error(`✗ Gmail SMTP failed for ${to}:`, smtpError.message);
+    } catch (apiError: any) {
+      console.error(`✗ Gmail API failed for ${to}:`, apiError.message);
       // Fall through to Resend
     }
   }
@@ -261,7 +293,7 @@ export async function sendPasswordResetEmail(to: string, otp: string, name?: str
 
   // ── Both failed ──
   throw new Error(
-    'Failed to send password reset email. Neither Gmail SMTP nor Resend is configured/working. ' +
-    'Please check your SMTP_* and RESEND_API_KEY environment variables.'
+    'Failed to send password reset email. Neither Gmail API nor Resend is configured/working. ' +
+    'Please check your GMAIL_* and RESEND_API_KEY environment variables.'
   );
 }

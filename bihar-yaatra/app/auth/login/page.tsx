@@ -209,6 +209,10 @@ function LoginPageContent() {
                         </button>
                     </div>
 
+                    <div className="mt-8 text-center text-sm text-gray-500 font-medium">
+                        Don&apos;t have an account? <Link href="/auth/register" className="text-orange-600 font-bold hover:underline">Sign up</Link>
+                    </div>
+
                 </div>
             </div>
         </main>
