@@ -1,9 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
-import Navbar from '@/components/layout/Navbar';
-
 export default function GuideSupportPage() {
 
     const [showFilters, setShowFilters] = useState(false);
@@ -97,8 +94,7 @@ export default function GuideSupportPage() {
 
     return (
         <div className="bg-gray-50 text-gray-900 font-sans overflow-x-hidden min-h-screen flex flex-col">
-            <Navbar />
-
+            
             <main className="max-w-7xl mx-auto px-6 py-24 pt-32 flex-1">
                 <div className="text-center mb-10">
                     <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">Expert Guides for <span className="text-orange-600">Every Step</span></h1>
@@ -244,7 +240,7 @@ export default function GuideSupportPage() {
                 </div>
             </main>
 
-            <MobileBottomNav />
+            
         </div>
     );
 }

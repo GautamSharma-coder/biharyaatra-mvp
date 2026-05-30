@@ -4,26 +4,6 @@ export type SaarthiResponse =
     | { ok: true; text: string }
     | { ok: false; error: string };
 
-function getErrorMessage(err: unknown): string {
-    if (typeof err === "object" && err !== null && "message" in err) {
-        const message = (err as { message?: unknown }).message;
-        if (typeof message === "string" && message.trim()) {
-            return message;
-        }
-    }
-    return "Saarthi AI is unavailable right now. Please try again.";
-}
-
-function getErrorStatus(err: unknown): number | null {
-    if (typeof err === "object" && err !== null && "status" in err) {
-        const status = (err as { status?: unknown }).status;
-        if (typeof status === "number") {
-            return status;
-        }
-    }
-    return null;
-}
-
 function getLocalSaarthiResponse(prompt: string): string {
     const query = prompt.toLowerCase();
 
@@ -118,7 +98,7 @@ function getLocalJsonItinerary(prompt: string): string {
     const duration = durationMatch ? parseInt(durationMatch[1]) : 3;
 
     // Create custom days based on duration
-    const days: any[] = [];
+    const days: { day: number; title: string; activities: string[]; food: string }[] = [];
 
     // Day 1
     days.push({

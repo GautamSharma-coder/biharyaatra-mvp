@@ -1,14 +1,10 @@
 "use client";
 import React from 'react';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
 
 export default function AboutPage() {
     return (
         <main className="text-gray-900 bg-white font-sans min-h-screen">
-            <Navbar />
-
+            
             <section className="relative pt-40 pb-20 overflow-hidden bg-white">
                 <div className="absolute top-0 right-0 w-1/3 h-full bg-orange-50 skew-x-12 opacity-50 pointer-events-none"></div>
                 <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -224,8 +220,6 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            <MobileBottomNav />
-            <Footer />
-        </main>
+                                </main>
     );
 }

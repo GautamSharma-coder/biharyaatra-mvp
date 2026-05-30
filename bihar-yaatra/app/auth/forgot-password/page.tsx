@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 import { apiClient } from '@/lib/api-client';
 
@@ -17,8 +18,19 @@ type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
     const router = useRouter();
+    const { user, loading } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!loading && user) {
+            if (user.role === 'admin' || user.role === 'superadmin') {
+                router.push('/dashboard/admin');
+            } else {
+                router.push('/dashboard/user');
+            }
+        }
+    }, [user, loading, router]);
 
     const { register, handleSubmit, formState: { errors } } = useForm<ForgotPasswordValues>({
         resolver: zodResolver(forgotPasswordSchema)
@@ -32,8 +44,8 @@ export default function ForgotPasswordPage() {
 
             // Redirect to reset password page with email
             router.push(`/auth/reset-password?email=${encodeURIComponent(data.email)}`);
-        } catch (error) {
-            const err = error as any;
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string } }; message?: string };
             setError(err.response?.data?.error || err.message || 'Failed to request password reset');
         } finally {
             setIsLoading(false);
@@ -57,7 +69,7 @@ export default function ForgotPasswordPage() {
                 <div className="text-center mb-8">
                     <h3 className="font-display text-3xl font-bold mb-2">Forgot Password?</h3>
                     <p className="text-gray-500 text-sm">
-                        No worries! Enter your email address below and we'll send you a code to reset your password.
+                        No worries! Enter your email address below and we&apos;ll send you a code to reset your password.
                     </p>
                 </div>
 

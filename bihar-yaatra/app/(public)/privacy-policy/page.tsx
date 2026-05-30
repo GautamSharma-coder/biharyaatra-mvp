@@ -1,9 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
-import Navbar from '@/components/layout/Navbar';
-
 export default function PrivacyPolicyPage() {
 
     useEffect(() => {
@@ -11,8 +8,7 @@ export default function PrivacyPolicyPage() {
 
     return (
         <div className="bg-[#FAFAFA] text-gray-900 font-sans overflow-x-hidden min-h-screen flex flex-col">
-            <Navbar />
-
+            
             <main className="flex-1 pt-32 pb-20">
                 <div className="max-w-4xl mx-auto px-6">
                     <div className="text-center mb-16">
@@ -121,7 +117,7 @@ export default function PrivacyPolicyPage() {
 
             {/* Footer space */}
 
-            <MobileBottomNav />
+            
         </div>
     );
 }

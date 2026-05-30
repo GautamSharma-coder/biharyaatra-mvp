@@ -1,13 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
-import Navbar from '@/components/layout/Navbar';
-
 export default function HomestayPage() {
     const router = useRouter();
-
     const [searchLocation, setSearchLocation] = useState('');
     const [checkIn, setCheckIn] = useState('');
     const [checkOut, setCheckOut] = useState('');
@@ -61,7 +56,7 @@ export default function HomestayPage() {
         }
     ];
 
-    const [homestays, setHomestays] = useState(seedData);
+    const [homestays] = useState(seedData);
 
     useEffect(() => {
         
@@ -96,8 +91,7 @@ export default function HomestayPage() {
 
     return (
         <div className="bg-[#FAFAFA] text-gray-900 font-sans overflow-x-hidden min-h-screen flex flex-col">
-            <Navbar />
-
+            
             <main className="flex-1">
                 <section className="relative pt-32 md:pt-40 pb-20 bg-white overflow-hidden">
                     <div className="absolute top-0 right-0 w-1/3 h-full bg-green-50 skew-x-12 opacity-50 pointer-events-none"></div>
@@ -283,7 +277,7 @@ export default function HomestayPage() {
 
             {/* Footer space could be included here or a separate component */}
 
-            <MobileBottomNav />
+            
         </div>
     );
 }

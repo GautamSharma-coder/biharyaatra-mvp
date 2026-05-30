@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
 
 export default function ComingSoonPage() {
     const [timeLeft, setTimeLeft] = useState({
@@ -145,7 +144,6 @@ export default function ComingSoonPage() {
                 </div>
             </main>
 
-            <MobileBottomNav />
-        </div>
+                    </div>
     );
 }

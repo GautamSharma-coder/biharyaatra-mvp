@@ -2,8 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
-import Navbar from '@/components/layout/Navbar';
 import { useAuth } from '@/components/providers/AuthProvider';
 
 interface Transport {
@@ -150,8 +148,7 @@ export default function TransportPage() {
                     100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 153, 51, 0); }
                 }
             `}} />
-            <Navbar />
-
+            
             <main className="flex-1">
                 <section className="relative pt-32 pb-16 bg-white overflow-hidden">
                     <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/shattered-island.png')] pointer-events-none"></div>
@@ -392,7 +389,7 @@ export default function TransportPage() {
                 </div>
             )}
 
-            <MobileBottomNav />
+            
         </div>
     );
 }

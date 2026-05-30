@@ -3,7 +3,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import MobileBottomNav from "@/components/layout/MobileBottomNav";
 
 type Destination = {
   id: string;
@@ -99,8 +98,7 @@ function ViewDetailPageContent() {
         )}
       </div>
 
-      <MobileBottomNav />
-    </main>
+          </main>
   );
 }
 

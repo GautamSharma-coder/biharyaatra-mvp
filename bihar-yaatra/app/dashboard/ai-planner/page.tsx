@@ -1,8 +1,5 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import { askSaarthi } from '@/app/actions';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter } from 'next/navigation';
@@ -164,8 +161,7 @@ export default function AIPlannerPage() {
 
     return (
         <main className="text-gray-900 font-sans min-h-screen bg-[#FAFAFA]">
-            <Navbar />
-
+            
             <section className="pt-32 pb-32 px-6">
                 <div className="max-w-4xl mx-auto text-center mb-12">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-50 rounded-full text-orange-600 text-sm font-bold mb-6 border border-orange-100 shadow-sm">
@@ -380,8 +376,6 @@ export default function AIPlannerPage() {
                 )}
             </section>
 
-            <MobileBottomNav />
-            <Footer />
-        </main>
+                                </main>
     );
 }

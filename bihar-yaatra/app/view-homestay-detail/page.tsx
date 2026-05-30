@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 type Homestay = {
@@ -118,7 +117,7 @@ function ViewHomestayDetailPageContent() {
                 <div className="relative h-72 md:h-96 overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent"></div>
                   <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-gray-800 shadow-sm">
                     {item.badge}
                   </div>
@@ -209,7 +208,7 @@ function ViewHomestayDetailPageContent() {
 
                 <button
                   onClick={handleBookNow}
-                  className="w-full py-4 bg-gradient-to-r from-orange-600 to-pink-600 text-white font-bold rounded-xl shadow-lg hover:opacity-90 transition-all duration-300 flex justify-center items-center gap-2"
+                  className="w-full py-4 bg-linear-to-r from-orange-600 to-pink-600 text-white font-bold rounded-xl shadow-lg hover:opacity-90 transition-all duration-300 flex justify-center items-center gap-2"
                 >
                   <span>Book Now</span>
                   <i className="fas fa-arrow-right"></i>
@@ -224,8 +223,7 @@ function ViewHomestayDetailPageContent() {
         )}
       </div>
 
-      <MobileBottomNav />
-    </main>
+          </main>
   );
 }
 

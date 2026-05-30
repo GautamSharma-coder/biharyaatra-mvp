@@ -1,9 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
-import Navbar from '@/components/layout/Navbar';
-
 import dynamic from 'next/dynamic';
 
 function ExploreDestinationPage() {
@@ -45,8 +42,7 @@ function ExploreDestinationPage() {
 
     return (
         <div className="bg-gray-50 text-gray-900 font-sans overflow-x-hidden min-h-screen flex flex-col">
-            <Navbar />
-
+            
             <main className="flex-1">
                 <section className="relative pt-40 pb-16 bg-gray-50 overflow-hidden">
                     <div className="absolute right-0 top-0 w-1/2 h-full bg-linear-to-l from-orange-50 to-transparent pointer-events-none"></div>
@@ -149,7 +145,7 @@ function ExploreDestinationPage() {
                 </section>
             </main>
 
-            <MobileBottomNav />
+            
         </div>
     );
 }

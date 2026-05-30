@@ -2,9 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function PackagesPage() {
@@ -63,8 +60,7 @@ export default function PackagesPage() {
 
     return (
         <div className="bg-[#FAFAFA] text-gray-900 font-sans overflow-x-hidden min-h-screen flex flex-col">
-            <Navbar />
-
+            
             <main className="flex-1">
                 {/* Hero Section */}
                 <section className="relative pt-32 pb-16 bg-white overflow-hidden">
@@ -185,8 +181,6 @@ export default function PackagesPage() {
                 </section>
             </main>
 
-            <Footer />
-            <MobileBottomNav />
-        </div>
+                                </div>
     );
 }

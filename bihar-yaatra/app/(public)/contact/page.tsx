@@ -1,9 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
-import Navbar from '@/components/layout/Navbar';
-
 export default function ContactPage() {
 
     const [form, setForm] = useState({
@@ -42,8 +39,7 @@ export default function ContactPage() {
 
     return (
         <div className="bg-gray-50 text-gray-900 font-sans overflow-x-hidden min-h-screen">
-            <Navbar />
-
+            
             <section className="pt-40 pb-12 bg-white text-center">
                 <h1 className="font-display text-5xl md:text-6xl font-bold mb-4">
                     Get in <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-pink-500">Touch</span>
@@ -165,7 +161,7 @@ export default function ContactPage() {
                 </div>
             </section>
 
-            <MobileBottomNav />
+            
         </div>
     );
 }

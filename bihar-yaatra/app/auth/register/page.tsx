@@ -26,7 +26,7 @@ const FACTS = [
 
 export default function RegisterPage() {
     const router = useRouter();
-    const { register: authRegister } = useAuth();
+    const { register: authRegister, user, loading } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [currentFact, setCurrentFact] = useState(0);
@@ -46,6 +46,16 @@ export default function RegisterPage() {
         }, 6000);
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        if (!loading && user) {
+            if (user.role === 'admin' || user.role === 'superadmin') {
+                router.push('/dashboard/admin');
+            } else {
+                router.push('/dashboard/user');
+            }
+        }
+    }, [user, loading, router]);
 
     useEffect(() => {
         // Evaluate password strength
@@ -126,16 +136,6 @@ export default function RegisterPage() {
 
                 {/* Right Form Column */}
                 <div className="p-8 md:p-12 flex flex-col justify-center relative bg-white overflow-y-auto custom-scroll max-h-[85vh] md:max-h-none">
-                    
-                    <div className="flex justify-center mb-8 bg-gray-50 p-1 rounded-full w-fit mx-auto border border-gray-100 shrink-0">
-                        <Link href="/auth/login"
-                                className="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 text-gray-400 hover:text-gray-600">
-                            Login
-                        </Link>
-                        <button className="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 bg-white shadow-md text-black">
-                            Sign Up
-                        </button>
-                    </div>
 
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 grow">
                         <div className="text-center mb-6">

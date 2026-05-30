@@ -3,9 +3,6 @@
 import React, { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 type ItineraryDay = {
@@ -113,8 +110,7 @@ function PackageDetailPageContent() {
 
   return (
     <div className="bg-[#FAFAFA] text-gray-900 font-sans min-h-screen flex flex-col overflow-x-hidden">
-      <Navbar />
-
+      
       <main className="flex-1 pt-24 pb-20">
         {/* Hero Section */}
         <section className="relative h-[450px] overflow-hidden">
@@ -259,9 +255,7 @@ function PackageDetailPageContent() {
         </section>
       </main>
 
-      <MobileBottomNav />
-      <Footer />
-    </div>
+                </div>
   );
 }
 

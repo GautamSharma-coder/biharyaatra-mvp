@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 import { apiClient } from '@/lib/api-client';
 
@@ -24,6 +25,17 @@ function ResetPasswordPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const email = searchParams.get('email');
+    const { user, loading } = useAuth();
+    
+    useEffect(() => {
+        if (!loading && user) {
+            if (user.role === 'admin' || user.role === 'superadmin') {
+                router.push('/dashboard/admin');
+            } else {
+                router.push('/dashboard/user');
+            }
+        }
+    }, [user, loading, router]);
     
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -43,7 +55,7 @@ function ResetPasswordPageContent() {
                         <i className="fas fa-exclamation-triangle"></i>
                     </div>
                     <h3 className="font-display text-2xl font-bold mb-4">Missing Information</h3>
-                    <p className="text-gray-500 mb-8">We couldn't find an email address to reset the password for. Please start the process again.</p>
+                    <p className="text-gray-500 mb-8">We couldn&apos;t find an email address to reset the password for. Please start the process again.</p>
                     <Link href="/auth/forgot-password"
                           className="w-full inline-block py-4 bg-black text-white font-bold rounded-2xl shadow-lg hover:bg-orange-600 transition-all duration-300">
                         Back to Forgot Password
@@ -65,8 +77,8 @@ function ResetPasswordPageContent() {
 
             // Redirect to login page with success message
             router.push('/auth/login?verified=true'); // we can reuse verified or use a custom message if needed, but verified works nicely as a green toast.
-        } catch (error) {
-            const err = error as any;
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string } }; message?: string };
             setError(err.response?.data?.error || err.message || 'Failed to reset password');
         } finally {
             setIsLoading(false);

@@ -25,7 +25,7 @@ const FACTS = [
 function LoginPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { login } = useAuth();
+    const { login, user, loading } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(() => {
@@ -52,6 +52,16 @@ function LoginPageContent() {
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        if (!loading && user) {
+            if (user.role === 'admin' || user.role === 'superadmin') {
+                router.push('/dashboard/admin');
+            } else {
+                router.push('/dashboard/user');
+            }
+        }
+    }, [user, loading, router]);
+
     const onSubmit = async (data: LoginFormValues) => {
         setIsLoading(true);
         setError(null);
@@ -59,12 +69,13 @@ function LoginPageContent() {
         try {
             await login(data);
             // Redirect is handled in AuthProvider context
-        } catch (err: any) {
-            if (typeof err === 'string' && (err.includes('verification code') || err.includes('not verified'))) {
-                setSuccessMsg(err);
+        } catch (err: unknown) {
+            const errorMsg = typeof err === 'string' ? err : (err instanceof Error ? err.message : 'Login failed');
+            if (typeof errorMsg === 'string' && (errorMsg.includes('verification code') || errorMsg.includes('not verified'))) {
+                setSuccessMsg(errorMsg);
                 setError(null);
             } else {
-                setError(err);
+                setError(errorMsg);
             }
         } finally {
             setIsLoading(false);
@@ -115,16 +126,6 @@ function LoginPageContent() {
 
                 {/* Right Form Column */}
                 <div className="p-8 md:p-12 flex flex-col justify-center relative bg-white">
-                    
-                    <div className="flex justify-center mb-8 bg-gray-50 p-1 rounded-full w-fit mx-auto border border-gray-100">
-                        <button className="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 bg-white shadow-md text-black">
-                            Login
-                        </button>
-                        <Link href="/auth/register"
-                                className="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 text-gray-400 hover:text-gray-600">
-                            Sign Up
-                        </Link>
-                    </div>
 
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                         <div className="text-center mb-6">

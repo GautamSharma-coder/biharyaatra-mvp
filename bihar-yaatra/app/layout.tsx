@@ -27,6 +27,8 @@ export const metadata: Metadata = {
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
 
+import GlobalNavWrapper from "@/components/layout/GlobalNavWrapper";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -44,7 +46,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <AuthProvider>
-          {children}
+          <GlobalNavWrapper>
+            {children}
+          </GlobalNavWrapper>
         </AuthProvider>
       </body>
     </html>

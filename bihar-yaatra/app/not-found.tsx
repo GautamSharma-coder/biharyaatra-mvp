@@ -2,15 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
 
 export default function NotFound() {
     return (
         <div className="bg-[#FAFAFA] text-gray-900 font-sans min-h-screen flex flex-col overflow-x-hidden">
-            <Navbar />
-
+            
             <main className="flex-1 flex items-center justify-center pt-32 pb-20 px-6 relative">
                 {/* Stunning Premium Background Gradients */}
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
@@ -55,8 +51,6 @@ export default function NotFound() {
                 </div>
             </main>
 
-            <MobileBottomNav />
-            <Footer />
-        </div>
+                                </div>
     );
 }
