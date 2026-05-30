@@ -91,7 +91,7 @@ app.use('/api/v1/ai', aiRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.status(200).json({ status: 'ok! Your server is still live to serve the data', timestamp: new Date().toISOString() });
 });
 
 // Start server
