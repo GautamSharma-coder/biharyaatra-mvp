@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { supabase } from '../config/supabase';
+import { sendBookingEmail } from '../services/email.service';
 
 // POST /api/v1/bookings (Create a booking after Razorpay success/init)
 export const createBooking = async (req: Request, res: Response) => {
@@ -8,15 +9,16 @@ export const createBooking = async (req: Request, res: Response) => {
     const { service_type, service_id, service_name, check_in, check_out, guests, notes } = req.body;
 
     // ── CRIT-3 FIX: Server-side price validation ──
-    // Look up the actual price from the database when possible.
-    // For MVP seed data (non-UUID IDs), the lookup may fail — default to 0.
     let unitPrice = 0;
+    let fetchError = null;
     
     if (service_type === 'package') {
-      const { data: pkg } = await supabase.from('packages').select('price_per_person').eq('id', service_id).single();
+      const { data: pkg, error } = await supabase.from('packages').select('price_per_person').eq('id', service_id).single();
+      fetchError = error;
       if (pkg) unitPrice = Number(pkg.price_per_person);
     } else if (service_type === 'homestay') {
-      const { data: hs } = await supabase.from('homestays').select('price_per_night').eq('id', service_id).single();
+      const { data: hs, error } = await supabase.from('homestays').select('price_per_night').eq('id', service_id).single();
+      fetchError = error;
       if (hs) {
         let nights = 1;
         if (check_in && check_out) {
@@ -26,14 +28,23 @@ export const createBooking = async (req: Request, res: Response) => {
         unitPrice = Number(hs.price_per_night) * nights;
       }
     } else if (service_type === 'transport') {
-      const { data: tr } = await supabase.from('transports').select('price_per_day').eq('id', service_id).single();
+      const { data: tr, error } = await supabase.from('transports').select('price_per_day').eq('id', service_id).single();
+      fetchError = error;
       if (tr) unitPrice = Number(tr.price_per_day);
     } else if (service_type === 'guide') {
-      const { data: g } = await supabase.from('guides').select('price_per_day').eq('id', service_id).single();
+      const { data: g, error } = await supabase.from('guides').select('price_per_day').eq('id', service_id).single();
+      fetchError = error;
       if (g) unitPrice = Number(g.price_per_day);
+    } else {
+      return res.status(400).json({ error: 'Invalid service type' });
     }
 
-    const total_amount = unitPrice * guests;
+    if (fetchError || unitPrice <= 0) {
+      return res.status(404).json({ error: 'Service not found or price unavailable' });
+    }
+
+    const validGuests = guests ? Math.max(1, Number(guests)) : 1;
+    const total_amount = unitPrice * validGuests;
 
     const bookingData = { 
       service_type,
@@ -100,7 +111,102 @@ export const getBookingById = async (req: Request, res: Response) => {
        return res.status(403).json({ error: 'Forbidden' });
     }
 
-    return res.status(200).json(data);
+    // Fetch user details for enrichment
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('name, email, phone')
+      .eq('id', data.user_id)
+      .single();
+
+    // Fetch service location details
+    let location = 'Bihar, India';
+    if (data.service_type === 'homestay') {
+      const { data: hs } = await supabase.from('homestays').select('location').eq('id', data.service_id).single();
+      if (hs) location = hs.location;
+    } else if (data.service_type === 'package') {
+      const { data: pkg } = await supabase.from('packages').select('route').eq('id', data.service_id).single();
+      if (pkg && pkg.route) location = pkg.route;
+    } else if (data.service_type === 'transport') {
+      const { data: tr } = await supabase.from('transports').select('route_from, route_to').eq('id', data.service_id).single();
+      if (tr) location = `${tr.route_from} to ${tr.route_to}`;
+    } else if (data.service_type === 'guide') {
+      const { data: g } = await supabase.from('guides').select('location').eq('id', data.service_id).single();
+      if (g && (g as any).location) location = (g as any).location;
+    }
+
+    const enrichedBooking = {
+      ...data,
+      guest_name: userProfile?.name || 'Guest',
+      guest_email: userProfile?.email || '',
+      guest_phone: userProfile?.phone || '',
+      location,
+    };
+
+    return res.status(200).json(enrichedBooking);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+// POST /api/v1/bookings/:id/confirm-location (Confirm Pay at Location booking)
+export const confirmLocationBooking = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.user_id;
+
+    // Fetch booking
+    const { data: booking, error: fetchError } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !booking) return res.status(404).json({ error: 'Booking not found' });
+    if (booking.user_id !== userId) return res.status(403).json({ error: 'Forbidden' });
+
+    // Update booking status to confirmed
+    const { data: updatedBooking, error: updateError } = await supabase
+      .from('bookings')
+      .update({
+        status: 'confirmed',
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    // Fetch user details for email
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('name, email')
+      .eq('id', booking.user_id)
+      .single();
+
+    // Fetch service location details
+    let details: { location?: string } = {};
+    if (booking.service_type === 'homestay') {
+      const { data: hs } = await supabase.from('homestays').select('location').eq('id', booking.service_id).single();
+      if (hs) details.location = hs.location;
+    } else if (booking.service_type === 'package') {
+      const { data: pkg } = await supabase.from('packages').select('route').eq('id', booking.service_id).single();
+      if (pkg) details.location = pkg.route;
+    } else if (booking.service_type === 'transport') {
+      const { data: tr } = await supabase.from('transports').select('route_from, route_to').eq('id', booking.service_id).single();
+      if (tr) details.location = `${tr.route_from} to ${tr.route_to}`;
+    } else if (booking.service_type === 'guide') {
+      const { data: g } = await supabase.from('guides').select('location').eq('id', booking.service_id).single();
+      if (g && (g as any).location) details.location = (g as any).location;
+    }
+
+    // Send confirmation email asynchronously
+    if (userProfile && userProfile.email) {
+      sendBookingEmail(userProfile.email, updatedBooking, userProfile, details).catch(err => {
+        console.error('Failed to send booking confirmation email:', err);
+      });
+    }
+
+    return res.status(200).json(updatedBooking);
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
@@ -154,17 +260,63 @@ export const getAllBookings = async (req: Request, res: Response) => {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return res.status(200).json(data || []);
+
+    // Fetch user profiles to map customer details
+    const { data: users, error: usersError } = await supabase
+      .from('users')
+      .select('id, name, email, phone');
+
+    const userMap = new Map((users || []).map(u => [u.id, u]));
+
+    const enrichedBookings = (data || []).map(booking => {
+      const u = userMap.get(booking.user_id);
+      return {
+        ...booking,
+        guest_name: u?.name || 'Guest',
+        guest_email: u?.email || '',
+        guest_phone: u?.phone || '',
+      };
+    });
+
+    return res.status(200).json(enrichedBookings);
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
 };
 
-// PATCH /api/v1/bookings/:id/status (Admin updates booking status)
+// PATCH /api/v1/bookings/:id/status (Admin/Provider updates booking status)
 export const updateBookingStatus = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
+    const userId = req.user?.user_id;
+    const role = req.user?.role;
+
+    if (role === 'provider') {
+      const { data: booking, error: fetchError } = await supabase
+        .from('bookings')
+        .select('service_type, service_id')
+        .eq('id', id)
+        .single();
+        
+      if (fetchError || !booking) return res.status(404).json({ error: 'Booking not found' });
+
+      let ownsService = false;
+      if (booking.service_type === 'homestay') {
+        const { data } = await supabase.from('homestays').select('id').eq('id', booking.service_id).eq('host_id', userId).single();
+        if (data) ownsService = true;
+      } else if (booking.service_type === 'transport') {
+        const { data } = await supabase.from('transports').select('id').eq('id', booking.service_id).eq('provider_id', userId).single();
+        if (data) ownsService = true;
+      } else if (booking.service_type === 'guide') {
+        const { data } = await supabase.from('guides').select('id').eq('id', booking.service_id).eq('user_id', userId).single();
+        if (data) ownsService = true;
+      }
+
+      if (!ownsService) {
+        return res.status(403).json({ error: 'Forbidden: You do not own this service' });
+      }
+    }
 
     const { data, error } = await supabase
       .from('bookings')

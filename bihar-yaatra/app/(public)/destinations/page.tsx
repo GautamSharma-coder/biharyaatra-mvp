@@ -3,6 +3,17 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
+interface Destination {
+    id: string;
+    category?: string;
+    hero_image_url?: string;
+    name?: string;
+    location?: string;
+    rating?: string | number;
+    description?: string;
+    tagline?: string;
+}
+
 function ExploreDestinationPage() {
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -11,7 +22,7 @@ function ExploreDestinationPage() {
 
     const categories = ['All', 'heritage', 'spiritual', 'nature', 'cultural'];
     
-    const [destinations, setDestinations] = useState<any[]>([]);
+    const [destinations, setDestinations] = useState<Destination[]>([]);
 
     useEffect(() => {
         import('@/lib/api-client').then(({ apiClient }) => {

@@ -11,6 +11,9 @@ interface User {
   role: string;
   avatar_url?: string;
   phone?: string;
+  provider_type?: string;
+  provider_status?: string;
+  legal_documents?: any;
 }
 
 interface AuthContextType {
@@ -68,7 +71,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (userObj && (userObj.role === 'admin' || userObj.role === 'superadmin')) {
         router.push('/dashboard/admin');
       } else if (userObj && userObj.role === 'provider') {
-        router.push('/dashboard/provider/homestay');
+        if (userObj.provider_status !== 'verified') {
+          router.push('/dashboard/provider/setup');
+        } else if (userObj.provider_type === 'guide') {
+          router.push('/dashboard/provider/guide');
+        } else if (userObj.provider_type === 'transport') {
+          router.push('/dashboard/provider/transport');
+        } else {
+          router.push('/dashboard/provider/homestay');
+        }
       } else {
         router.push('/dashboard/user');
       }
@@ -97,7 +108,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (userObj && (userObj.role === 'admin' || userObj.role === 'superadmin')) {
         router.push('/dashboard/admin');
       } else if (userObj && userObj.role === 'provider') {
-        router.push('/dashboard/provider/homestay');
+        if (userObj.provider_status !== 'verified') {
+          router.push('/dashboard/provider/setup');
+        } else if (userObj.provider_type === 'guide') {
+          router.push('/dashboard/provider/guide');
+        } else if (userObj.provider_type === 'transport') {
+          router.push('/dashboard/provider/transport');
+        } else {
+          router.push('/dashboard/provider/homestay');
+        }
       } else {
         router.push('/dashboard/user');
       }

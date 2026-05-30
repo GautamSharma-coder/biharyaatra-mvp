@@ -14,6 +14,12 @@ export default function HomestayDashboardLayout({ children }: { children: React.
     const hostInitials = hostName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
     const hostId = user?.id?.slice(0, 8) || 'N/A';
 
+    React.useEffect(() => {
+        if (user && user.role === 'provider' && user.provider_status !== 'verified') {
+            router.push('/dashboard/provider/setup');
+        }
+    }, [user, router]);
+
     const navLinks = [
         { label: 'Overview', isHeader: true },
         { href: '/dashboard/provider/homestay', label: 'Dashboard', icon: 'fas fa-chart-pie', exact: true },

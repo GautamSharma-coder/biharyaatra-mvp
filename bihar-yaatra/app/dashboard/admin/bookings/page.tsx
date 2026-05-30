@@ -11,6 +11,8 @@ interface AdminBooking {
     check_out?: string;
     created_at: string;
     total_amount?: number | string;
+    guest_name?: string;
+    guest_email?: string;
 }
 
 export default function AdminBookingsPage() {
@@ -57,7 +59,14 @@ export default function AdminBookingsPage() {
         const bService = String(b.service_name || '');
         const bType = String(b.service_type || '');
         const bId = String(b.id || '');
-        const matchSearch = !q || bService.toLowerCase().includes(q) || bType.toLowerCase().includes(q) || bId.toLowerCase().includes(q);
+        const bGuest = String(b.guest_name || '');
+        const bEmail = String(b.guest_email || '');
+        const matchSearch = !q || 
+            bService.toLowerCase().includes(q) || 
+            bType.toLowerCase().includes(q) || 
+            bId.toLowerCase().includes(q) ||
+            bGuest.toLowerCase().includes(q) ||
+            bEmail.toLowerCase().includes(q);
         const matchStatus = !filterStatus || b.status === filterStatus;
         const matchType = !filterType || b.service_type === filterType;
         return matchSearch && matchStatus && matchType;
@@ -155,6 +164,7 @@ export default function AdminBookingsPage() {
                                 <thead>
                                     <tr className="bg-gray-50 border-b border-gray-100">
                                         <th className="text-left px-6 py-4 text-xs font-bold text-gray-400 uppercase">Booking ID</th>
+                                        <th className="text-left px-6 py-4 text-xs font-bold text-gray-400 uppercase">Customer</th>
                                         <th className="text-left px-6 py-4 text-xs font-bold text-gray-400 uppercase">Service</th>
                                         <th className="text-left px-6 py-4 text-xs font-bold text-gray-400 uppercase">Type</th>
                                         <th className="text-left px-6 py-4 text-xs font-bold text-gray-400 uppercase">Dates</th>
@@ -167,6 +177,10 @@ export default function AdminBookingsPage() {
                                     {filtered.map(booking => (
                                         <tr key={booking.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
                                             <td className="px-6 py-4 font-mono text-xs text-gray-500">{booking.id.substring(0, 8)}...</td>
+                                            <td className="px-6 py-4">
+                                                <p className="font-bold text-gray-800">{booking.guest_name || 'Guest'}</p>
+                                                <p className="text-xs text-gray-400">{booking.guest_email || ''}</p>
+                                            </td>
                                             <td className="px-6 py-4">
                                                 <p className="font-bold text-gray-800 truncate max-w-[180px]">{booking.service_name || '—'}</p>
                                             </td>

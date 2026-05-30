@@ -62,6 +62,12 @@ CREATE TABLE IF NOT EXISTS public.transports (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- 1b. Add Provider Verification Columns to users table
+ALTER TABLE public.users
+  ADD COLUMN IF NOT EXISTS provider_type VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS provider_status VARCHAR(50) DEFAULT 'pending_setup',
+  ADD COLUMN IF NOT EXISTS legal_documents JSONB DEFAULT '{}'::jsonb;
+
 -- 2. Add new columns for CMS frontend fields
 ALTER TABLE public.destinations 
   ADD COLUMN IF NOT EXISTS description TEXT,

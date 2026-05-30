@@ -1,12 +1,19 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function GuideDashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const { logout } = useAuth();
+    const { user, logout } = useAuth();
+    const router = useRouter();
+
+    React.useEffect(() => {
+        if (user && user.role === 'provider' && user.provider_status !== 'verified') {
+            router.push('/dashboard/provider/setup');
+        }
+    }, [user, router]);
 
     const menu = [
         { id: 'home', href: '/dashboard/provider/guide', label: 'My Schedule', icon: 'fas fa-calendar-day', exact: true },

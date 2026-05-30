@@ -61,7 +61,7 @@ const clearAuthCookies = (res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, phone, role = 'traveller' } = req.body;
+    const { name, email, password, phone, role = 'traveller', provider_type } = req.body;
 
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'Name, email, and password are required' });
@@ -101,8 +101,10 @@ export const register = async (req: Request, res: Response) => {
         role,
         password_hash,
         is_verified: false,
+        provider_type: role === 'provider' ? provider_type : null,
+        provider_status: role === 'provider' ? 'pending_setup' : null,
       }])
-      .select('id, name, email, role')
+      .select('id, name, email, role, provider_type, provider_status')
       .single();
 
     if (insertError) {
@@ -145,7 +147,7 @@ export const login = async (req: Request, res: Response) => {
     // Fetch user from public.users
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, name, email, phone, role, password_hash, is_verified, avatar_url')
+      .select('id, name, email, phone, role, password_hash, is_verified, avatar_url, provider_type, provider_status, legal_documents')
       .eq('email', normalizedEmail)
       .single();
 
@@ -233,7 +235,7 @@ export const googleLogin = async (req: Request, res: Response) => {
     // Check if user exists
     let { data: user, error: userError } = await supabase
       .from('users')
-      .select('id, name, email, phone, role, password_hash, is_verified, avatar_url')
+      .select('id, name, email, phone, role, password_hash, is_verified, avatar_url, provider_type, provider_status, legal_documents')
       .eq('email', email)
       .single();
 
@@ -253,7 +255,7 @@ export const googleLogin = async (req: Request, res: Response) => {
           avatar_url,
           password_hash: null
         }])
-        .select('id, name, email, phone, role, password_hash, is_verified, avatar_url')
+        .select('id, name, email, phone, role, password_hash, is_verified, avatar_url, provider_type, provider_status, legal_documents')
         .single();
         
       if (insertError) throw insertError;
@@ -364,7 +366,7 @@ export const getMe = async (req: Request, res: Response) => {
 
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, name, email, phone, role, avatar_url, is_verified, created_at, updated_at')
+      .select('id, name, email, phone, role, avatar_url, is_verified, created_at, updated_at, provider_type, provider_status, legal_documents')
       .eq('id', userId)
       .single();
 
@@ -397,7 +399,7 @@ export const updateMe = async (req: Request, res: Response) => {
         updated_at: new Date().toISOString()
       })
       .eq('id', userId)
-      .select('id, name, email, phone, role, avatar_url, is_verified, created_at, updated_at')
+      .select('id, name, email, phone, role, avatar_url, is_verified, created_at, updated_at, provider_type, provider_status, legal_documents')
       .single();
 
     if (updateError) {
@@ -411,6 +413,42 @@ export const updateMe = async (req: Request, res: Response) => {
   }
 };
 
+export const verifyProvider = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.user_id;
+    const { documents } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (!documents) {
+      return res.status(400).json({ error: 'Documents are required' });
+    }
+
+    const { data: updatedUser, error: updateError } = await supabase
+      .from('users')
+      .update({
+        legal_documents: documents,
+        provider_status: 'pending_verification',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+      .eq('role', 'provider')
+      .select('id, name, email, role, provider_type, provider_status, legal_documents')
+      .single();
+
+    if (updateError || !updatedUser) {
+      return res.status(400).json({ error: 'Failed to submit verification' });
+    }
+
+    return res.status(200).json({ message: 'Verification documents submitted successfully', user: updatedUser });
+  } catch (error: any) {
+    console.error('verifyProvider error:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};
+
 // ══════════════════════════════════════════════════
 // ── Admin Endpoints ──
 // ══════════════════════════════════════════════════
@@ -419,7 +457,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase
       .from('users')
-      .select('id, name, email, phone, role, avatar_url, is_verified, created_at, updated_at')
+      .select('id, name, email, phone, role, avatar_url, is_verified, created_at, updated_at, provider_type, provider_status')
       .order('created_at', { ascending: false });
 
     if (error) throw error;

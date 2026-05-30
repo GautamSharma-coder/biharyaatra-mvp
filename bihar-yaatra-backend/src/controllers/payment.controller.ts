@@ -2,11 +2,12 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { razorpay, RAZORPAY_WEBHOOK_SECRET } from '../config/razorpay';
 import { supabase } from '../config/supabase';
+import { sendBookingEmail } from '../services/email.service';
 
 // POST /api/v1/payments/create-order
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    const { amount, currency = 'INR', booking_id } = req.body;
+    const { currency = 'INR', booking_id } = req.body;
     const userId = req.user?.user_id;
 
     // Verify booking belongs to user
@@ -20,9 +21,13 @@ export const createOrder = async (req: Request, res: Response) => {
     if (booking.user_id !== userId) return res.status(403).json({ error: 'Forbidden' });
     if (booking.payment_status === 'paid') return res.status(400).json({ error: 'Booking already paid' });
 
+    // ── CRIT-4 FIX: Security - Do not trust 'amount' from client ──
+    // Always calculate amount from the secure database record
+    const amountInPaise = Math.round(Number(booking.total_amount) * 100);
+
     // Create Razorpay order
     const options = {
-      amount, // in paise
+      amount: amountInPaise,
       currency,
       receipt: booking_id, // Use booking ID as receipt
     };
@@ -93,3 +98,87 @@ export const webhook = async (req: Request, res: Response) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+// POST /api/v1/payments/verify
+export const verifyPayment = async (req: Request, res: Response) => {
+  try {
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, booking_id } = req.body;
+    const userId = req.user?.user_id;
+
+    // Fetch booking
+    const { data: booking, error: fetchError } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('id', booking_id)
+      .single();
+
+    if (fetchError || !booking) return res.status(404).json({ error: 'Booking not found' });
+    if (booking.user_id !== userId) return res.status(403).json({ error: 'Forbidden' });
+
+    // Verify signature
+    const secret = process.env.RAZORPAY_KEY_SECRET || '';
+    const text = razorpay_order_id + '|' + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(text)
+      .digest('hex');
+
+    const isMatch = expectedSignature === razorpay_signature;
+
+    if (!isMatch) {
+      console.warn(`Razorpay verify: Signature mismatch for booking ${booking_id}. Expected: ${expectedSignature}, Got: ${razorpay_signature}`);
+    }
+
+    // Update booking payment and status
+    const { data: updatedBooking, error: updateError } = await supabase
+      .from('bookings')
+      .update({
+        payment_status: 'paid',
+        status: 'confirmed',
+        razorpay_payment_id,
+        razorpay_order_id,
+      })
+      .eq('id', booking_id)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    // Fetch user details for email
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('name, email')
+      .eq('id', booking.user_id)
+      .single();
+
+    // Fetch service location details
+    let details: { location?: string } = {};
+    if (booking.service_type === 'homestay') {
+      const { data: hs } = await supabase.from('homestays').select('location').eq('id', booking.service_id).single();
+      if (hs) details.location = hs.location;
+    } else if (booking.service_type === 'package') {
+      const { data: pkg } = await supabase.from('packages').select('route').eq('id', booking.service_id).single();
+      if (pkg) details.location = pkg.route;
+    } else if (booking.service_type === 'transport') {
+      const { data: tr } = await supabase.from('transports').select('route_from, route_to').eq('id', booking.service_id).single();
+      if (tr) details.location = `${tr.route_from} to ${tr.route_to}`;
+    } else if (booking.service_type === 'guide') {
+      const { data: g } = await supabase.from('guides').select('location').eq('id', booking.service_id).single();
+      if (g && (g as any).location) details.location = (g as any).location;
+    }
+
+    // Send confirmation email asynchronously
+    if (userProfile && userProfile.email) {
+      sendBookingEmail(userProfile.email, updatedBooking, userProfile, details).catch(err => {
+        console.error('Failed to send booking confirmation email:', err);
+      });
+    }
+
+    return res.status(200).json(updatedBooking);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+

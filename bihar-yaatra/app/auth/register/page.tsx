@@ -34,6 +34,7 @@ export default function RegisterPage() {
     const [showPass, setShowPass] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState(0);
     const [selectedRole, setSelectedRole] = useState<'traveller' | 'provider'>('traveller');
+    const [providerType, setProviderType] = useState('homestay');
 
     const { register, handleSubmit, formState: { errors }, watch } = useForm<RegisterFormValues>({
         resolver: zodResolver(registerSchema)
@@ -83,9 +84,9 @@ export default function RegisterPage() {
         setIsLoading(true);
         setError(null);
         try {
-            // Map fullName to name for backend, include selected role
+            // Map fullName to name for backend, include selected role and provider type
             const { fullName, ...rest } = data;
-            await authRegister({ name: fullName, ...rest, role: selectedRole });
+            await authRegister({ name: fullName, ...rest, role: selectedRole, provider_type: selectedRole === 'provider' ? providerType : undefined });
         } catch (err: any) {
             setError(err);
         } finally {
@@ -185,6 +186,21 @@ export default function RegisterPage() {
                                 <p className={`text-[11px] mt-0.5 ${selectedRole === 'provider' ? 'text-blue-600' : 'text-gray-400'}`}>List homestays, transport & guides</p>
                             </button>
                         </div>
+
+                        {selectedRole === 'provider' && (
+                            <div className="mb-6 animate-fade-in">
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">What will you offer?</label>
+                                <select 
+                                    value={providerType}
+                                    onChange={(e) => setProviderType(e.target.value)}
+                                    className="w-full p-4 bg-gray-50 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition font-bold text-gray-700 cursor-pointer"
+                                >
+                                    <option value="homestay">Homestay & Accommodation</option>
+                                    <option value="guide">Local Tour Guide</option>
+                                    <option value="transport">Transport & Vehicles</option>
+                                </select>
+                            </div>
+                        )}
 
                         {error && (
                             <div className="mb-4 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm font-bold animate-in fade-in duration-300">

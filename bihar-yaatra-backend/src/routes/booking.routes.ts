@@ -6,7 +6,8 @@ import {
   cancelBooking, 
   getAllBookings,
   updateBookingStatus,
-  getProviderBookings
+  getProviderBookings,
+  confirmLocationBooking
 } from '../controllers/booking.controller';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
@@ -26,10 +27,11 @@ router.get('/my', getMyBookings);
 router.get('/provider', authorize('provider', 'admin', 'superadmin'), getProviderBookings);
 
 router.get('/:id', getBookingById);
+router.post('/:id/confirm-location', confirmLocationBooking);
 router.patch('/:id/cancel', cancelBooking);
 
-// Admin endpoints
+// Admin and Provider endpoints
 router.get('/', authorize('admin', 'superadmin'), getAllBookings);
-router.patch('/:id/status', authorize('admin', 'superadmin'), validate(updateBookingStatusSchema), updateBookingStatus);
+router.patch('/:id/status', authorize('provider', 'admin', 'superadmin'), validate(updateBookingStatusSchema), updateBookingStatus);
 
 export default router;

@@ -3,35 +3,24 @@
 import React, { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { apiClient } from '@/lib/api-client';
 
 type BookingData = {
     id: string;
-    title: string;
-    subtitle?: string;
-    type: string;
-    date?: string;
-    checkIn?: string;
-    checkOut?: string;
-    location: string;
+    service_name: string;
+    service_type: string;
+    check_in?: string;
+    check_out?: string;
     guests: number;
-    price: number;
-    paymentId: string;
-    guestDetails?: { name: string };
-};
-
-const MOCK_BOOKING: BookingData = {
-    id: 'bk-a1b2c3d4e5f6',
-    title: 'Mahabodhi Temple Experience',
-    subtitle: 'Buddhist Circuit Tour',
-    type: 'Destination',
-    date: '2026-01-15',
-    checkIn: '2026-01-15',
-    checkOut: '2026-01-17',
-    location: 'Bodh Gaya, Bihar',
-    guests: 2,
-    price: 3250,
-    paymentId: 'pay_NxZ7kL9mPqR2Ts',
-    guestDetails: { name: 'Rahul Sharma' },
+    total_amount: number;
+    status: string;
+    payment_status: string;
+    razorpay_payment_id?: string;
+    guest_name?: string;
+    guest_email?: string;
+    guest_phone?: string;
+    location?: string;
+    notes?: string;
 };
 
 function TicketContent() {
@@ -41,11 +30,21 @@ function TicketContent() {
     const [booking, setBooking] = useState<BookingData | null>(null);
 
     useEffect(() => {
-        // Simulate fetching
-        setTimeout(() => {
-            setBooking(MOCK_BOOKING);
+        if (!bookingId) {
             setLoading(false);
-        }, 800);
+            return;
+        }
+
+        setLoading(true);
+        apiClient.get(`/bookings/${bookingId}`)
+            .then(({ data }) => {
+                setBooking(data);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error('Failed to fetch booking details:', err);
+                setLoading(false);
+            });
     }, [bookingId]);
 
     const formatDate = (dateStr?: string) => {
@@ -87,7 +86,7 @@ function TicketContent() {
                                 <span className="font-display font-bold text-2xl tracking-tight text-white">
                                     Bihar<span className="text-orange-500">Yaatra</span>
                                 </span>
-                                <span className="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border border-white/10">Confirmed</span>
+                                <span className="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border border-white/10">{booking.status}</span>
                             </div>
                             <div className="relative z-10 text-right">
                                 <p className="text-[10px] text-gray-400 uppercase tracking-widest">Booking ID</p>
@@ -99,23 +98,28 @@ function TicketContent() {
                         <div className="p-8 md:p-12 relative">
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 pb-8 border-b border-dashed border-gray-200">
                                 <div>
-                                    <h2 className="text-3xl font-display font-bold text-gray-900 mb-2">{booking.title}</h2>
-                                    <p className="text-gray-500 font-medium">{booking.subtitle || booking.type + ' Reservation'}</p>
+                                    <h2 className="text-3xl font-display font-bold text-gray-900 mb-2">{booking.service_name}</h2>
+                                    <p className="text-gray-500 font-medium">{(booking.service_type || '').charAt(0).toUpperCase() + (booking.service_type || '').slice(1)} Reservation</p>
                                 </div>
                                 <div className="mt-4 md:mt-0 text-right">
-                                    <div className="bg-green-50 text-green-700 px-4 py-2 rounded-xl border border-green-100 inline-block text-sm font-bold">
-                                        <i className="fas fa-check-circle mr-2"></i>Payment Successful
+                                    <div className={`px-4 py-2 rounded-xl border inline-block text-sm font-bold ${
+                                        booking.payment_status === 'paid' 
+                                            ? 'bg-green-50 text-green-700 border-green-100' 
+                                            : 'bg-orange-50 text-orange-700 border-orange-100'
+                                    }`}>
+                                        <i className={`fas ${booking.payment_status === 'paid' ? 'fa-check-circle' : 'fa-clock'} mr-2`}></i>
+                                        Payment {booking.payment_status === 'paid' ? 'Successful' : (booking.payment_status === 'unpaid' ? 'Pending / Location' : booking.payment_status.toUpperCase())}
                                     </div>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 mb-10">
                                 <div>
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Check In / Start</p>
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{booking.service_type === 'transport' ? 'Travel Date' : 'Check In / Start'}</p>
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600"><i className="fas fa-calendar-check"></i></div>
                                         <div>
-                                            <p className="font-bold text-gray-900">{formatDate(booking.date || booking.checkIn)}</p>
+                                            <p className="font-bold text-gray-900">{formatDate(booking.check_in)}</p>
                                             <p className="text-xs text-gray-500">12:00 PM</p>
                                         </div>
                                     </div>
@@ -125,7 +129,7 @@ function TicketContent() {
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600"><i className="fas fa-calendar-times"></i></div>
                                         <div>
-                                            <p className="font-bold text-gray-900">{booking.checkOut ? formatDate(booking.checkOut) : 'Same Day'}</p>
+                                            <p className="font-bold text-gray-900">{booking.check_out ? formatDate(booking.check_out) : 'Same Day'}</p>
                                             <p className="text-xs text-gray-500">11:00 AM</p>
                                         </div>
                                     </div>
@@ -135,8 +139,8 @@ function TicketContent() {
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"><i className="fas fa-user"></i></div>
                                         <div>
-                                            <p className="font-bold text-gray-900">{booking.guestDetails?.name || 'Guest'}</p>
-                                            <p className="text-xs text-gray-500">{booking.guests} Adults</p>
+                                            <p className="font-bold text-gray-900">{booking.guest_name || 'Guest'}</p>
+                                            <p className="text-xs text-gray-500">{booking.guests} {booking.guests > 1 ? 'Adults' : 'Adult'}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -145,7 +149,7 @@ function TicketContent() {
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-600"><i className="fas fa-map-marker-alt"></i></div>
                                         <div>
-                                            <p className="font-bold text-gray-900">{booking.location}</p>
+                                            <p className="font-bold text-gray-900">{booking.location || 'Bihar, India'}</p>
                                             <button className="text-xs text-blue-600 hover:underline">Get Directions</button>
                                         </div>
                                     </div>
@@ -158,15 +162,15 @@ function TicketContent() {
                                 <div className="space-y-2 text-sm">
                                     <div className="flex justify-between text-gray-600">
                                         <span>Base Fare</span>
-                                        <span>₹{booking.price - 250}</span>
+                                        <span>₹{(Number(booking.total_amount) * 0.9).toFixed(0)}</span>
                                     </div>
                                     <div className="flex justify-between text-gray-600">
                                         <span>Taxes & Fees</span>
-                                        <span>₹250</span>
+                                        <span>₹{(Number(booking.total_amount) * 0.1).toFixed(0)}</span>
                                     </div>
                                     <div className="flex justify-between font-bold text-lg text-gray-900 pt-2 border-t border-gray-200 mt-2">
-                                        <span>Total Paid</span>
-                                        <span>₹{booking.price}</span>
+                                        <span>Total Amount</span>
+                                        <span>₹{Number(booking.total_amount).toLocaleString('en-IN')}</span>
                                     </div>
                                 </div>
                             </div>
@@ -177,7 +181,7 @@ function TicketContent() {
                                     <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BY-BOOKING-${booking.id}`} className="w-24 h-24 border-4 border-white shadow-lg" alt="QR Code" />
                                     <div className="text-xs text-gray-400">
                                         <p className="mb-1">Scan to verify</p>
-                                        <p className="font-mono text-gray-600 select-all">{booking.paymentId}</p>
+                                        <p className="font-mono text-gray-600 select-all">{booking.razorpay_payment_id || 'PAY-LOC-' + booking.id.slice(-8).toUpperCase()}</p>
                                     </div>
                                 </div>
                                 <div className="text-center md:text-right">

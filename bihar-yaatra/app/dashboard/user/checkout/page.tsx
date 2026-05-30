@@ -62,6 +62,7 @@ export default function CheckoutPage() {
     });
     const [extraTravelers, setExtraTravelers] = useState<Array<{ name: string; age: string }>>([]);
     const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+    const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
 
     useEffect(() => {
         // Get booking draft from localStorage
@@ -71,19 +72,24 @@ export default function CheckoutPage() {
             return;
         }
         const parsed = JSON.parse(draft) as BookingItem;
-        setBookingItem(parsed);
-        const guestCount = parsed.guests || 1;
-        setForm(prev => ({
-            ...prev,
-            guests: guestCount,
-            check_in: parsed.check_in || '',
-            check_out: parsed.check_out || '',
-        }));
-        // Initialize extra travelers if guests > 1
-        if (guestCount > 1) {
-            setExtraTravelers(Array.from({ length: guestCount - 1 }, () => ({ name: '', age: '' })));
-        }
-        setLoading(false);
+
+        const timer = setTimeout(() => {
+            setBookingItem(parsed);
+            const guestCount = parsed.guests || 1;
+            setForm(prev => ({
+                ...prev,
+                guests: guestCount,
+                check_in: parsed.check_in || '',
+                check_out: parsed.check_out || '',
+            }));
+            // Initialize extra travelers if guests > 1
+            if (guestCount > 1) {
+                setExtraTravelers(Array.from({ length: guestCount - 1 }, () => ({ name: '', age: '' })));
+            }
+            setLoading(false);
+        }, 0);
+
+        return () => clearTimeout(timer);
     }, [router]);
 
     const calculateTotal = useCallback(() => {
@@ -142,23 +148,38 @@ export default function CheckoutPage() {
         setProcessing(true);
 
         try {
+            const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+            
+            // Validate payment gateway configuration BEFORE creating booking
+            if (paymentMethod === 'online' && (!razorpayKeyId || (!razorpayLoaded && !window.Razorpay))) {
+                alert('Payment gateway is not configured or still loading. Please make sure the API keys are added and the dev server has been restarted.');
+                setProcessing(false);
+                return;
+            }
+
             // Build notes with extra traveler info
             const travelerNotes = extraTravelers.length > 0
                 ? `\n\nAdditional Travelers:\n${extraTravelers.map((t, i) => `${i + 2}. ${t.name} (Age: ${t.age})`).join('\n')}`
                 : '';
 
-            // Step 1: Create the booking on the backend
-            const bookingPayload = {
-                service_type: bookingItem.service_type,
-                service_id: bookingItem.service_id,
-                service_name: bookingItem.service_name || bookingItem.title,
-                guests: form.guests,
-                check_in: form.check_in || undefined,
-                check_out: form.check_out || undefined,
-                notes: ((form.notes || '') + travelerNotes).trim() || undefined,
-            };
+            // Step 1: Create the booking on the backend (skip if already created)
+            let currentBookingId = createdBookingId;
+            
+            if (!currentBookingId) {
+                const bookingPayload = {
+                    service_type: bookingItem.service_type,
+                    service_id: bookingItem.service_id,
+                    service_name: bookingItem.service_name || bookingItem.title,
+                    guests: form.guests,
+                    check_in: form.check_in || undefined,
+                    check_out: form.check_out || undefined,
+                    notes: ((form.notes || '') + travelerNotes).trim() || undefined,
+                };
 
-            const { data: booking } = await apiClient.post('/bookings', bookingPayload);
+                const { data: booking } = await apiClient.post('/bookings', bookingPayload);
+                currentBookingId = booking.id;
+                setCreatedBookingId(booking.id);
+            }
 
             if (paymentMethod === 'online') {
                 // Step 2: Create Razorpay order
@@ -166,28 +187,36 @@ export default function CheckoutPage() {
                 const { data: order } = await apiClient.post('/payments/create-order', {
                     amount: amountInPaise,
                     currency: 'INR',
-                    booking_id: booking.id,
+                    booking_id: currentBookingId,
                 });
 
                 // Step 3: Open Razorpay checkout modal
-                const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-                if (!razorpayKeyId || !razorpayLoaded) {
-                    alert('Payment gateway is not configured. Please try "Pay at Location" instead.');
-                    setProcessing(false);
-                    return;
-                }
 
                 const options: RazorpayOptions = {
-                    key: razorpayKeyId,
+                    key: razorpayKeyId || '',
                     amount: order.amount,
                     currency: order.currency || 'INR',
                     name: 'BiharYaatra',
                     description: `Booking: ${bookingItem.title}`,
                     order_id: order.id,
-                    handler: () => {
-                        // Payment succeeded — the webhook will update DB status
-                        localStorage.removeItem('bookingDraft');
-                        router.push('/dashboard/user/bookings');
+                    handler: async (response: RazorpayResponse) => {
+                        try {
+                            setProcessing(true);
+                            // Call verification endpoint on the backend
+                            await apiClient.post('/payments/verify', {
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature,
+                                booking_id: currentBookingId,
+                            });
+                            localStorage.removeItem('bookingDraft');
+                            router.push(`/dashboard/user/ticket?id=${currentBookingId}`);
+                        } catch (verifyErr) {
+                            console.error('Payment verification failed:', verifyErr);
+                            // Fallback redirect to ticket page anyway since Razorpay transaction succeeded
+                            localStorage.removeItem('bookingDraft');
+                            router.push(`/dashboard/user/ticket?id=${currentBookingId}`);
+                        }
                     },
                     prefill: {
                         name: form.name,
@@ -195,7 +224,7 @@ export default function CheckoutPage() {
                         contact: form.phone,
                     },
                     notes: {
-                        booking_id: booking.id,
+                        booking_id: currentBookingId || '',
                     },
                     theme: {
                         color: '#F97316',
@@ -212,9 +241,16 @@ export default function CheckoutPage() {
                 return; // Don't setProcessing(false) — modal handles it
             }
 
-            // Pay at Location — just redirect
-            localStorage.removeItem('bookingDraft');
-            router.push('/dashboard/user/bookings');
+            // Pay at Location — call backend confirm and redirect to ticket
+            try {
+                await apiClient.post(`/bookings/${currentBookingId}/confirm-location`);
+                localStorage.removeItem('bookingDraft');
+                router.push(`/dashboard/user/ticket?id=${currentBookingId}`);
+            } catch (locationErr) {
+                console.error('Failed to confirm location booking:', locationErr);
+                localStorage.removeItem('bookingDraft');
+                router.push(`/dashboard/user/ticket?id=${currentBookingId}`);
+            }
         } catch (err: unknown) {
             const error = err as { response?: { data?: { error?: string | { message?: string }[] } } };
             const message = typeof error.response?.data?.error === 'string'

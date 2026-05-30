@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, refresh, logout, getMe, updateMe, getAllUsers, adminCreateUser, updateUserRole, adminDeleteUser, getAdminStats, sendEmailOtp, verifyEmailOtp, forgotPassword, resetPassword, googleLogin } from '../controllers/auth.controller';
+import { register, login, refresh, logout, getMe, updateMe, getAllUsers, adminCreateUser, updateUserRole, adminDeleteUser, getAdminStats, sendEmailOtp, verifyEmailOtp, forgotPassword, resetPassword, googleLogin, verifyProvider } from '../controllers/auth.controller';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
 
@@ -18,6 +18,7 @@ router.post('/reset-password', resetPassword);
 // Protected routes
 router.get('/me', authenticate, getMe);
 router.put('/me', authenticate, updateMe);
+router.post('/provider-verify', authenticate, authorize('provider'), verifyProvider);
 
 // Admin routes
 router.get('/users', authenticate, authorize('admin', 'superadmin'), getAllUsers);
