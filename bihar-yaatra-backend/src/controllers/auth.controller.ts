@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { supabase } from '../config/supabase';
 import { generateOtp, storeOtp, verifyStoredOtp } from '../services/otp.service';
-import { sendOtpEmail } from '../services/email.service';
+import { sendOtpEmail, sendPasswordResetEmail } from '../services/email.service';
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'default_access_secret_change_me';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'default_refresh_secret_change_me';
@@ -472,6 +472,83 @@ export const getAdminStats = async (req: Request, res: Response) => {
 // ══════════════════════════════════════════════════
 // ── Email OTP Endpoints ──
 // ══════════════════════════════════════════════════
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if user exists
+    const { data: user } = await supabase
+      .from('users')
+      .select('id, name')
+      .eq('email', normalizedEmail)
+      .single();
+
+    // To prevent email enumeration, we can still say "If an account exists, a reset code was sent"
+    // But since the current flow is more explicit, let's return a 404 for clarity just like sendEmailOtp.
+    if (!user) {
+      return res.status(404).json({ error: 'No account found with this email.' });
+    }
+
+    const otp = generateOtp();
+    await storeOtp(normalizedEmail, otp);
+    await sendPasswordResetEmail(normalizedEmail, otp, user.name);
+
+    return res.status(200).json({ message: 'Password reset code sent to your email.' });
+  } catch (error: any) {
+    console.error('forgotPassword error:', error);
+    return res.status(500).json({ error: 'Failed to process forgot password request.' });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ error: 'Email, verification code, and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Verify the OTP
+    const isValid = await verifyStoredOtp(normalizedEmail, otp);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Invalid or expired verification code. Please request a new one.' });
+    }
+
+    // Hash the new password
+    const password_hash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+    // Update the password in the database
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ password_hash, updated_at: new Date().toISOString() })
+      .eq('email', normalizedEmail);
+
+    if (updateError) {
+      console.error('Error updating password:', updateError);
+      return res.status(500).json({ error: 'Failed to reset password.' });
+    }
+
+    // Optionally: Revoke all existing refresh tokens so the user is logged out of all devices
+    const { data: user } = await supabase.from('users').select('id').eq('email', normalizedEmail).single();
+    if (user) {
+      await supabase.from('refresh_tokens').delete().eq('user_id', user.id);
+    }
+
+    return res.status(200).json({ message: 'Password has been reset successfully. You can now log in.' });
+  } catch (error: any) {
+    console.error('resetPassword error:', error);
+    return res.status(500).json({ error: 'Failed to reset password.' });
+  }
+};
 
 export const sendEmailOtp = async (req: Request, res: Response) => {
   try {

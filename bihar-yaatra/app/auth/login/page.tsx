@@ -174,7 +174,7 @@ function LoginPageContent() {
                                         <input type="checkbox" className="accent-orange-500 h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
                                         <span className="text-xs text-gray-500 font-medium">Remember me</span>
                                     </label>
-                                    <button type="button" className="text-xs text-orange-600 font-bold hover:underline">Forgot Password?</button>
+                                    <Link href="/auth/forgot-password" className="text-xs text-orange-600 font-bold hover:underline">Forgot Password?</Link>
                                 </div>
                             </div>
 

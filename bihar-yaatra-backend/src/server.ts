@@ -18,6 +18,7 @@ import aiRoutes from './routes/ai.routes';
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 8000;
 
 // ── Security Middleware ──
@@ -36,6 +37,9 @@ app.use('/api/v1/payments/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
+import dns from 'node:dns';
+dns.setDefaultResultOrder('ipv4first'); // Force IPv4 to prevent ENETUNREACH in Node 18+
+
 // ── HIGH-4 FIX: Rate limiting ──
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -43,6 +47,7 @@ const authLimiter = rateLimit({
   message: { error: 'Too many authentication attempts. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false }, // Bypass validation crash on Render
 });
 
 const aiLimiter = rateLimit({
@@ -51,6 +56,7 @@ const aiLimiter = rateLimit({
   message: { error: 'Saarthi AI rate limit exceeded. Please wait a moment.' },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
 });
 
 const generalLimiter = rateLimit({
@@ -59,6 +65,7 @@ const generalLimiter = rateLimit({
   message: { error: 'Too many requests. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
 });
 
 // Apply rate limiters
@@ -66,6 +73,8 @@ app.use('/api/v1/auth/login', authLimiter);
 app.use('/api/v1/auth/register', authLimiter);
 app.use('/api/v1/auth/send-email-otp', authLimiter);
 app.use('/api/v1/auth/verify-email-otp', authLimiter);
+app.use('/api/v1/auth/forgot-password', authLimiter);
+app.use('/api/v1/auth/reset-password', authLimiter);
 app.use('/api/v1/ai', aiLimiter);
 app.use('/api/v1', generalLimiter);
 
