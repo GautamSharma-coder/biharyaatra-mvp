@@ -35,8 +35,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       decoded = jwt.verify(token, JWT_ACCESS_SECRET);
     } catch (jwtError: any) {
       // Auto-clear invalid/expired cookies to self-heal state
-      res.clearCookie('access_token');
-      res.clearCookie('refresh_token');
+      const isProd = process.env.NODE_ENV === 'production';
+      const opts = { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' as const : 'strict' as const };
+      res.clearCookie('access_token', opts);
+      res.clearCookie('refresh_token', opts);
       
       if (jwtError.name === 'TokenExpiredError') {
         return res.status(401).json({ error: 'Token expired. Please refresh.' });

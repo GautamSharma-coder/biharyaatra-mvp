@@ -31,19 +31,28 @@ function generateRefreshToken(userId: string): string {
 // ── Cookie Helpers ──
 
 const setAuthCookies = (res: Response, access_token: string, refresh_token: string) => {
+  const isProd = process.env.NODE_ENV === 'production';
+  
   res.cookie('access_token', access_token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'strict',
     maxAge: 3600 * 1000 // 1 hour
   });
 
   res.cookie('refresh_token', refresh_token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'strict',
     maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
   });
+};
+
+const clearAuthCookies = (res: Response) => {
+  const isProd = process.env.NODE_ENV === 'production';
+  const opts = { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' as const : 'strict' as const };
+  res.clearCookie('access_token', opts);
+  res.clearCookie('refresh_token', opts);
 };
 
 // ══════════════════════════════════════════════════
@@ -340,13 +349,11 @@ export const logout = async (req: Request, res: Response) => {
       await supabase.from('refresh_tokens').delete().eq('token', refreshToken);
     }
 
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
+    clearAuthCookies(res);
 
     return res.status(200).json({ message: 'Logout successful' });
   } catch (error) {
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
+    clearAuthCookies(res);
     return res.status(500).json({ error: 'Internal server error during logout' });
   }
 };
