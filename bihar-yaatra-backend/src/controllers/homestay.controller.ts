@@ -6,7 +6,7 @@ export const getHomestays = async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase
       .from('homestays')
-      .select('id, name, slug, location, price_per_night, max_guests, amenities, images, avg_rating, review_count')
+      .select('id, name, slug, location, price_per_night, max_guests, amenities, images, cover_image_url, badge, avg_rating, review_count')
       .eq('is_published', true)
       .eq('is_available', true);
 
@@ -78,7 +78,7 @@ export const updateHomestay = async (req: Request, res: Response) => {
     }
 
     // ── CRIT-2 FIX: Whitelist allowed fields to prevent mass assignment ──
-    const { name, location, address, lat, lng, price_per_night, max_guests, amenities, images } = req.body;
+    const { name, location, address, lat, lng, price_per_night, max_guests, amenities, images, cover_image_url, badge, avg_rating, review_count } = req.body;
     const allowedUpdate: Record<string, any> = {};
     if (name !== undefined) allowedUpdate.name = name;
     if (location !== undefined) allowedUpdate.location = location;
@@ -89,6 +89,10 @@ export const updateHomestay = async (req: Request, res: Response) => {
     if (max_guests !== undefined) allowedUpdate.max_guests = max_guests;
     if (amenities !== undefined) allowedUpdate.amenities = amenities;
     if (images !== undefined) allowedUpdate.images = images;
+    if (cover_image_url !== undefined) allowedUpdate.cover_image_url = cover_image_url;
+    if (badge !== undefined) allowedUpdate.badge = badge;
+    if (avg_rating !== undefined) allowedUpdate.avg_rating = avg_rating;
+    if (review_count !== undefined) allowedUpdate.review_count = review_count;
 
     const { data, error } = await supabase
       .from('homestays')

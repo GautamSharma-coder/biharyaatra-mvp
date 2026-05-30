@@ -9,40 +9,29 @@ function ExploreDestinationPage() {
     const [activeCategory, setActiveCategory] = useState('All');
     const [loading, setLoading] = useState(true);
 
-    const categories = ['All', 'Spiritual', 'Historical', 'Nature', 'Wildlife'];
+    const categories = ['All', 'heritage', 'spiritual', 'nature', 'cultural'];
     
-    const seedData = [
-        { id: 1, name: 'Bodh Gaya', category: 'Spiritual', location: 'Gaya District', image: 'https://images.unsplash.com/photo-1569485896349-49c0d9a6c65e?q=80&w=1200', rating: 4.9, reviews: 320, price: '₹1,500', description: 'The holiest of Buddhist pilgrimage centers, where Lord Buddha attained enlightenment under the Bodhi tree. A serene place filled with monasteries from various countries.' },
-        { id: 2, name: 'Nalanda Ruins', category: 'Historical', location: 'Nalanda', image: 'https://images.unsplash.com/photo-1628063597843-085732c57569?q=80&w=1200', rating: 4.8, reviews: 215, price: '₹1,200', description: 'Explore the red brick ruins of one of the world\'s oldest universities, a UNESCO World Heritage site that once hosted 10,000 students.' },
-        { id: 3, name: 'Rajgir Hills', category: 'Nature', location: 'Rajgir', image: 'https://images.unsplash.com/photo-1622303037987-2cb2a3364f76?q=80&w=1200', rating: 4.7, reviews: 180, price: '₹2,000', description: 'A scenic town set in a green valley, famous for its hot springs, ropeway, and the Vishwa Shanti Stupa atop the Ratnagiri Hill.' },
-        { id: 4, name: 'Valmiki Reserve', category: 'Wildlife', location: 'West Champaran', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Valmiki_Nagar_Tiger_Reserve.jpg/800px-Valmiki_Nagar_Tiger_Reserve.jpg', rating: 4.6, reviews: 95, price: '₹3,500', description: 'The only tiger reserve in Bihar, offering thrilling jungle safaris and eco-friendly cottage stays amidst dense sal forests.' },
-        { id: 5, name: 'Sher Shah Suri Tomb', category: 'Historical', location: 'Sasaram', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Sher_Shah_Suri_Tomb.jpg/800px-Sher_Shah_Suri_Tomb.jpg', rating: 4.5, reviews: 150, price: '₹800', description: 'An architectural masterpiece of Indo-Islamic style, this red sandstone mausoleum stands majestically in the middle of a man-made lake.' },
-        { id: 6, name: 'Kakolat Falls', category: 'Nature', location: 'Nawada', image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiN3a9_M-6gqL8O733H_0wN2Q5w4z4-8z8z8z8z8z8z8z8z8z8z8z8z8z8z8z8/s1600/Kakolat-Waterfall-Nawada-Bihar.jpg', rating: 4.4, reviews: 210, price: '₹600', description: 'A stunning waterfall cascading down from a height of 160 feet, perfect for a refreshing summer dip and picnic.' },
-        { id: 7, name: 'Vikramshila', category: 'Historical', location: 'Bhagalpur', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Vikramshila_Ruins.jpg/800px-Vikramshila_Ruins.jpg', rating: 4.3, reviews: 80, price: '₹1,000', description: 'The ruins of another great ancient university, known for Tantric Buddhism, located on the banks of the Ganges.' },
-        { id: 8, name: 'Jal Mandir', category: 'Spiritual', location: 'Pawapuri', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Jal_Mandir%2C_Pawapuri.jpg/800px-Jal_Mandir%2C_Pawapuri.jpg', rating: 4.8, reviews: 130, price: '₹900', description: 'A beautiful white marble temple dedicated to Lord Mahavira, situated in the middle of a lotus-filled tank.' },
-        { id: 9, name: 'Kesaria Stupa', category: 'Historical', location: 'East Champaran', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Kesariya_Stupa.jpg/800px-Kesariya_Stupa.jpg', rating: 4.6, reviews: 110, price: '₹700', description: 'One of the tallest Buddhist stupas in the world, dating back to the Gupta period.' }
-    ];
-
-    const [destinations, setDestinations] = useState<typeof seedData>([]);
+    const [destinations, setDestinations] = useState<any[]>([]);
 
     useEffect(() => {
-        
-        // Mock data fetch
-        setTimeout(() => {
-            setDestinations(seedData);
-            setLoading(false);
-        }, 800);
+        import('@/lib/api-client').then(({ apiClient }) => {
+            apiClient.get('/destinations')
+                .then(res => {
+                    setDestinations(res.data || []);
+                })
+                .catch(err => console.error('Error fetching destinations:', err))
+                .finally(() => setLoading(false));
+        });
     }, []);
 
     const filteredDestinations = destinations.filter(item => {
-        const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
-        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = activeCategory === 'All' || item.category?.toLowerCase() === activeCategory.toLowerCase();
+        const matchesSearch = item.name?.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
     });
 
     return (
         <div className="bg-gray-50 text-gray-900 font-sans overflow-x-hidden min-h-screen flex flex-col">
-            
             <main className="flex-1">
                 <section className="relative pt-40 pb-16 bg-gray-50 overflow-hidden">
                     <div className="absolute right-0 top-0 w-1/2 h-full bg-linear-to-l from-orange-50 to-transparent pointer-events-none"></div>
@@ -95,7 +84,7 @@ function ExploreDestinationPage() {
                                     {filteredDestinations.map((item) => (
                                         <div key={item.id} className="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col h-full animate-fade-in-up">
                                             <div className="relative h-64 overflow-hidden">
-                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                                <img src={item.hero_image_url || 'https://images.unsplash.com/photo-1569485896349-49c0d9a6c65e?q=80&w=1200'} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-gray-800 shadow-sm uppercase tracking-wide">
                                                     {item.category}
                                                 </div>
@@ -112,11 +101,11 @@ function ExploreDestinationPage() {
                                                     </div>
                                                     <div className="flex items-center bg-yellow-50 px-2 py-1 rounded-lg">
                                                         <i className="fas fa-star text-yellow-500 text-sm mr-1"></i>
-                                                        <span className="font-bold text-sm">{item.rating}</span>
+                                                        <span className="font-bold text-sm">{item.rating || '5.0'}</span>
                                                     </div>
                                                 </div>
 
-                                                <p className="text-gray-600 text-sm leading-relaxed mb-6 line-clamp-2">{item.description}</p>
+                                                <p className="text-gray-600 text-sm leading-relaxed mb-6 line-clamp-2">{item.description || item.tagline}</p>
 
                                                 <div className="mt-auto pt-6 border-t border-gray-100">
                                                     <Link href={`/view-detail?id=${item.id}`} className="block w-full py-3 text-center bg-black text-white font-bold rounded-xl shadow-md hover:bg-orange-600 hover:scale-[1.02] transition-all duration-300">
@@ -144,8 +133,6 @@ function ExploreDestinationPage() {
                     </div>
                 </section>
             </main>
-
-            
         </div>
     );
 }

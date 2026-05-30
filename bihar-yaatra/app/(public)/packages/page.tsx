@@ -10,51 +10,22 @@ export default function PackagesPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
 
-    const seedData = [
-        {
-            id: '00000000-0000-0000-0000-000000000001', 
-            title: 'The Buddhist Circuit', 
-            category: 'Spiritual', 
-            duration: '5 Days / 4 Nights', 
-            price: '₹12,999',
-            image: 'https://images.unsplash.com/photo-1591264247204-74d15024b420?q=80&w=800', 
-            route: 'Patna → Bodh Gaya', 
-            rating: 4.9,
-            description: 'Walk in the footsteps of Lord Buddha. Covers Mahabodhi Temple, Nalanda, and Rajgir.',
-            itinerary: [
-                { day: 'Day 1', title: 'Patna', desc: 'Arrival at Patna, check-in. Evening free for local sightseeing.' }, 
-                { day: 'Day 2', title: 'Bodh Gaya', desc: 'Travel to Bodh Gaya. Visit Mahabodhi Temple and local monasteries.' }
-            ]
-        },
-        {
-            id: '00000000-0000-0000-0000-000000000002', 
-            title: 'Wild Champaran', 
-            category: 'Wildlife', 
-            duration: '3 Days / 2 Nights', 
-            price: '₹6,499',
-            image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Valmiki_Nagar_Tiger_Reserve.jpg/800px-Valmiki_Nagar_Tiger_Reserve.jpg', 
-            route: 'Valmiki Nagar', 
-            rating: 4.7,
-            description: 'Jungle safari in Valmiki Tiger Reserve.',
-            itinerary: [
-                { day: 'Day 1', title: 'Arrival', desc: 'Jungle Stay & Safari brief.' },
-                { day: 'Day 2', title: 'Safari', desc: 'Morning and evening jungle safaris in Valmiki Reserve.' }
-            ]
-        }
-    ];
-
-    const [packages] = useState(seedData);
+    const [packages, setPackages] = useState<any[]>([]);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 800);
-        return () => clearTimeout(timer);
+        import('@/lib/api-client').then(({ apiClient }) => {
+            apiClient.get('/packages')
+                .then(res => {
+                    setPackages(res.data || []);
+                })
+                .catch(err => console.error('Error fetching packages:', err))
+                .finally(() => setLoading(false));
+        });
     }, []);
 
     const filteredPackages = packages.filter(item => {
         const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
-        const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = item.title?.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
     });
 
@@ -119,17 +90,17 @@ export default function PackagesPage() {
                                         className="group bg-white rounded-4xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 border border-gray-100 flex flex-col h-full cursor-pointer animate-fade-in-up"
                                     >
                                         <div className="relative h-64 overflow-hidden">
-                                            <img src={pkg.image} alt={pkg.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
+                                            <img src={pkg.cover_image_url || 'https://images.unsplash.com/photo-1591264247204-74d15024b420?q=80&w=800'} alt={pkg.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
                                             <div className="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-transparent"></div>
 
                                             <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-gray-800 shadow-sm flex items-center gap-2">
                                                 <i className="fas fa-clock text-orange-500"></i>
-                                                <span>{pkg.duration}</span>
+                                                <span>{pkg.duration_days} Days / {pkg.duration_nights} Nights</span>
                                             </div>
 
                                             <div className="absolute bottom-4 left-4 text-white">
                                                 <span className="px-2.5 py-1 bg-orange-500 rounded-lg text-[10px] font-bold uppercase tracking-wider mb-2 inline-block shadow-lg">
-                                                    {pkg.category}
+                                                    {pkg.category || 'Package'}
                                                 </span>
                                             </div>
                                         </div>
@@ -141,7 +112,7 @@ export default function PackagesPage() {
                                                 </h3>
                                                 <div className="flex items-center bg-yellow-50 px-2 py-1 rounded-lg gap-1 border border-yellow-100">
                                                     <i className="fas fa-star text-yellow-400 text-xs"></i>
-                                                    <span className="font-bold text-gray-800 text-xs">{pkg.rating}</span>
+                                                    <span className="font-bold text-gray-800 text-xs">{pkg.rating || '5.0'}</span>
                                                 </div>
                                             </div>
 
@@ -157,7 +128,7 @@ export default function PackagesPage() {
                                             <div className="mt-auto pt-6 border-t border-gray-100 flex items-center justify-between">
                                                 <div>
                                                     <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Starting From</p>
-                                                    <p className="text-xl font-bold text-gray-900">{pkg.price}</p>
+                                                    <p className="text-xl font-bold text-gray-900">₹{(pkg.price_per_person || 0).toLocaleString('en-IN')}</p>
                                                 </div>
                                                 <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center group-hover:bg-orange-600 transition shadow-lg">
                                                     <i className="fas fa-arrow-right -rotate-45 group-hover:rotate-0 transition-transform duration-300"></i>

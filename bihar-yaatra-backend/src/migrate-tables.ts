@@ -62,8 +62,28 @@ CREATE TABLE IF NOT EXISTS public.transports (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 2. Add description column to homestays (if missing)
-ALTER TABLE public.homestays ADD COLUMN IF NOT EXISTS description TEXT;
+-- 2. Add new columns for CMS frontend fields
+ALTER TABLE public.destinations 
+  ADD COLUMN IF NOT EXISTS description TEXT,
+  ADD COLUMN IF NOT EXISTS price VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS rating NUMERIC(3,2),
+  ADD COLUMN IF NOT EXISTS review_count INTEGER DEFAULT 0;
+
+ALTER TABLE public.homestays 
+  ADD COLUMN IF NOT EXISTS description TEXT,
+  ADD COLUMN IF NOT EXISTS cover_image_url TEXT,
+  ADD COLUMN IF NOT EXISTS badge VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS avg_rating NUMERIC(3,2),
+  ADD COLUMN IF NOT EXISTS review_count INTEGER DEFAULT 0;
+
+ALTER TABLE public.packages 
+  ADD COLUMN IF NOT EXISTS category VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS route VARCHAR(150),
+  ADD COLUMN IF NOT EXISTS description TEXT,
+  ADD COLUMN IF NOT EXISTS rating NUMERIC(3,2),
+  ADD COLUMN IF NOT EXISTS stay_details TEXT,
+  ADD COLUMN IF NOT EXISTS transport_details TEXT,
+  ADD COLUMN IF NOT EXISTS meal_details TEXT;
 
 -- 3. Enable RLS on transports
 ALTER TABLE public.transports ENABLE ROW LEVEL SECURITY;

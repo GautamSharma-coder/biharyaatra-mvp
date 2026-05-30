@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+
 export default function HomestayPage() {
     const router = useRouter();
     const [searchLocation, setSearchLocation] = useState('');
@@ -8,61 +9,17 @@ export default function HomestayPage() {
     const [checkOut, setCheckOut] = useState('');
     const [loading, setLoading] = useState(true);
 
-    const seedData = [
-        {
-            id: '00000000-0000-0000-0000-300000000001',
-            name: 'Ganga Kinare Haveli',
-            location: 'Patna',
-            price: 1500,
-            rating: 4.8,
-            reviews: 120,
-            image: '/images/homestay-patna.jpg', // Using generic unsplash in real app, but let's use what was in HTML
-            imageUrl: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=800',
-            amenities: ['wifi', 'utensils', 'snowflake'],
-            badge: 'Superhost'
-        },
-        {
-            id: '00000000-0000-0000-0000-300000000002',
-            name: 'Bodhi Tree Retreat',
-            location: 'Bodh Gaya',
-            price: 2200,
-            rating: 4.9,
-            reviews: 245,
-            imageUrl: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=800',
-            amenities: ['wifi', 'spa', 'leaf'],
-            badge: 'Popular'
-        },
-        {
-            id: '00000000-0000-0000-0000-300000000003',
-            name: 'Village Mud House',
-            location: 'Madhubani',
-            price: 900,
-            rating: 4.6,
-            reviews: 85,
-            imageUrl: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?q=80&w=800',
-            amenities: ['paint-brush', 'fire', 'leaf'],
-            badge: 'Cultural'
-        },
-        {
-            id: '00000000-0000-0000-0000-300000000004',
-            name: 'Valmiki Jungle Cottage',
-            location: 'West Champaran',
-            price: 2500,
-            rating: 4.9,
-            reviews: 98,
-            imageUrl: 'https://images.unsplash.com/photo-1449156493391-d2cfa28e468b?q=80&w=800',
-            amenities: ['tree', 'binoculars', 'fire'],
-            badge: 'Adventure'
-        }
-    ];
-
-    const [homestays] = useState(seedData);
+    const [homestays, setHomestays] = useState<any[]>([]);
 
     useEffect(() => {
-        
-        setTimeout(() => {
-            setLoading(false);
-        }, 800);
+        import('@/lib/api-client').then(({ apiClient }) => {
+            apiClient.get('/homestays')
+                .then(res => {
+                    setHomestays(res.data || []);
+                })
+                .catch(err => console.error('Error fetching homestays:', err))
+                .finally(() => setLoading(false));
+        });
     }, []);
 
     const filteredHomestays = homestays.filter(item =>
@@ -206,7 +163,7 @@ export default function HomestayPage() {
                                         onClick={() => router.push(`/view-homestay-detail?id=${stay.id}`)}
                                     >
                                         <div className="relative h-64 overflow-hidden">
-                                            <img src={stay.imageUrl} alt={stay.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
+                                            <img src={stay.cover_image_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=800'} alt={stay.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
                                             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent"></div>
 
                                             <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-gray-800 shadow-sm">
@@ -231,26 +188,26 @@ export default function HomestayPage() {
                                                 </div>
                                                 <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100">
                                                     <i className="fas fa-star text-yellow-400 text-sm"></i>
-                                                    <span className="font-bold text-sm text-gray-800">{stay.rating}</span>
+                                                    <span className="font-bold text-sm text-gray-800">{stay.avg_rating || '5.0'}</span>
                                                 </div>
                                             </div>
 
                                             <div className="flex gap-3 my-4">
-                                                {stay.amenities.slice(0, 3).map((amenity, idx) => (
+                                                {(stay.amenities || []).slice(0, 3).map((amenity: string, idx: number) => (
                                                     <div key={idx} className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 text-xs border border-gray-200" title={amenity}>
                                                         <i className={getAmenityIcon(amenity)}></i>
                                                     </div>
                                                 ))}
-                                                {stay.amenities.length > 3 && (
+                                                {(stay.amenities?.length || 0) > 3 && (
                                                     <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 text-xs border border-gray-200 font-bold">
-                                                        +{stay.amenities.length - 3}
+                                                        +{(stay.amenities?.length || 0) - 3}
                                                     </div>
                                                 )}
                                             </div>
 
                                             <div className="mt-auto pt-6 border-t border-gray-100 flex items-center justify-between">
                                                 <div>
-                                                    <span className="text-xl font-bold text-gray-900">₹{stay.price}</span>
+                                                    <span className="text-xl font-bold text-gray-900">₹{(stay.price_per_night || 0).toLocaleString('en-IN')}</span>
                                                     <span className="text-xs text-gray-500 font-bold"> / night</span>
                                                 </div>
                                                 <button className="px-5 py-2.5 bg-black text-white font-bold rounded-xl shadow-md group-hover:bg-orange-600 transition-all text-sm flex items-center gap-2">
@@ -274,10 +231,6 @@ export default function HomestayPage() {
                     </div>
                 </section>
             </main>
-
-            {/* Footer space could be included here or a separate component */}
-
-            
         </div>
     );
 }

@@ -7,7 +7,6 @@ import TrendingPackages from "@/components/destination/TrendingPackages";
 import CTABanner from "@/components/common/CTABanner";
 import Testimonials from "@/components/common/Testimonials";
 import FAQ from "@/components/common/FAQ";
-import SaarthiChat from "@/components/ai/SaarthiChat";
 
 export default function Home() {
     const [mouseX, setMouseX] = useState(0);
@@ -44,8 +43,6 @@ export default function Home() {
                 <Testimonials />
                 <FAQ />
             </section>
-            
-            <SaarthiChat />
                                 </main>
     );
 }

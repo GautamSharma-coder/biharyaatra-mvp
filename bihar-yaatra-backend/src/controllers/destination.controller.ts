@@ -6,7 +6,7 @@ export const getDestinations = async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase
       .from('destinations')
-      .select('id, name, slug, tagline, category, location, hero_image_url, is_published')
+      .select('id, name, slug, tagline, description, price, rating, review_count, category, location, hero_image_url, is_published')
       .eq('is_published', true);
 
     if (error) throw error;
@@ -58,11 +58,15 @@ export const updateDestination = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     // ── CRIT-2 FIX: Whitelist allowed fields to prevent mass assignment ──
-    const { name, slug, tagline, category, location, hero_image_url, sections, highlights, best_time, lat, lng, tags, is_published } = req.body;
+    const { name, slug, tagline, description, price, rating, review_count, category, location, hero_image_url, sections, highlights, best_time, lat, lng, tags, is_published } = req.body;
     const allowedUpdate: Record<string, any> = {};
     if (name !== undefined) allowedUpdate.name = name;
     if (slug !== undefined) allowedUpdate.slug = slug;
     if (tagline !== undefined) allowedUpdate.tagline = tagline;
+    if (description !== undefined) allowedUpdate.description = description;
+    if (price !== undefined) allowedUpdate.price = price;
+    if (rating !== undefined) allowedUpdate.rating = rating;
+    if (review_count !== undefined) allowedUpdate.review_count = review_count;
     if (category !== undefined) allowedUpdate.category = category;
     if (location !== undefined) allowedUpdate.location = location;
     if (hero_image_url !== undefined) allowedUpdate.hero_image_url = hero_image_url;

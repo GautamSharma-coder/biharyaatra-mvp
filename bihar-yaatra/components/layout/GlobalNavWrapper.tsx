@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import MobileBottomNav from './MobileBottomNav';
 import Footer from './Footer';
+import SaarthiChat from '@/components/ai/SaarthiChat';
 
 export default function GlobalNavWrapper({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -22,6 +23,7 @@ export default function GlobalNavWrapper({ children }: { children: React.ReactNo
             {children}
             <MobileBottomNav />
             <Footer />
+            <SaarthiChat />
         </>
     );
 }

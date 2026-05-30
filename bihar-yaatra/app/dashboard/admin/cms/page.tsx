@@ -43,11 +43,11 @@ export default function AdminCMSPage() {
     const openCreateModal = () => {
         setEditingItem(null);
         if (activeTab === 'packages') {
-            setForm({ title: '', slug: '', duration_days: 3, duration_nights: 2, price_per_person: 0, cover_image_url: '', destination_ids: [], itinerary: [{ day: 1, title: '', description: '', meals: '' }], includes: [], excludes: [], max_group_size: 20, difficulty: 'easy', is_published: false });
+            setForm({ title: '', slug: '', duration_days: 3, duration_nights: 2, price_per_person: 0, cover_image_url: '', destination_ids: [], itinerary: [{ day: 1, title: '', description: '', meals: '' }], includes: [], excludes: [], max_group_size: 20, difficulty: 'easy', is_published: false, category: 'Spiritual', route: '', description: '', rating: 5.0 });
         } else if (activeTab === 'destinations') {
-            setForm({ name: '', slug: '', tagline: '', category: 'heritage', location: '', hero_image_url: '', highlights: [], best_time: '', is_published: false });
+            setForm({ name: '', slug: '', tagline: '', category: 'heritage', location: '', hero_image_url: '', highlights: [], best_time: '', is_published: false, description: '', price: '', rating: 5.0, review_count: 0 });
         } else {
-            setForm({ name: '', slug: '', description: '', location: '', price_per_night: 0, max_guests: 4, amenities: [], cover_image_url: '', is_available: true });
+            setForm({ name: '', slug: '', description: '', location: '', price_per_night: 0, max_guests: 4, amenities: [], cover_image_url: '', is_available: true, badge: '', avg_rating: 5.0, review_count: 0 });
         }
         setIsModalOpen(true);
     };
@@ -63,6 +63,10 @@ export default function AdminCMSPage() {
                 includes: item.includes || [], excludes: item.excludes || [],
                 max_group_size: item.max_group_size || 20, difficulty: item.difficulty || 'easy',
                 is_published: item.is_published ?? false,
+                category: item.category || 'Spiritual', route: item.route || '',
+                description: item.description || '', rating: item.rating || 5.0,
+                stay_details: item.stay_details || '', transport_details: item.transport_details || '',
+                meal_details: item.meal_details || '',
             });
         } else if (activeTab === 'destinations') {
             setForm({
@@ -70,6 +74,8 @@ export default function AdminCMSPage() {
                 category: item.category || 'heritage', location: item.location || '',
                 hero_image_url: item.hero_image_url || '', highlights: item.highlights || [],
                 best_time: item.best_time || '', is_published: item.is_published ?? false,
+                description: item.description || '', price: item.price || '',
+                rating: item.rating || 5.0, review_count: item.review_count || 0,
             });
         } else {
             setForm({
@@ -77,6 +83,7 @@ export default function AdminCMSPage() {
                 location: item.location || '', price_per_night: item.price_per_night || 0,
                 max_guests: item.max_guests || 4, amenities: item.amenities || [],
                 cover_image_url: item.cover_image_url || '', is_available: item.is_available ?? true,
+                badge: item.badge || '', avg_rating: item.avg_rating || 5.0, review_count: item.review_count || 0,
             });
         }
         setIsModalOpen(true);
@@ -99,10 +106,17 @@ export default function AdminCMSPage() {
                 payload.duration_nights = Number(payload.duration_nights);
                 payload.price_per_person = Number(payload.price_per_person);
                 payload.max_group_size = Number(payload.max_group_size);
+                payload.rating = Number(payload.rating);
+            }
+            if (activeTab === 'destinations') {
+                payload.rating = Number(payload.rating);
+                payload.review_count = Number(payload.review_count);
             }
             if (activeTab === 'homestays') {
                 payload.price_per_night = Number(payload.price_per_night);
                 payload.max_guests = Number(payload.max_guests);
+                payload.avg_rating = Number(payload.avg_rating);
+                payload.review_count = Number(payload.review_count);
             }
 
             if (editingItem) {
@@ -174,6 +188,101 @@ export default function AdminCMSPage() {
                         <input type="url" value={form.cover_image_url} onChange={e => setForm((p: Record<string, any>) => ({ ...p, cover_image_url: e.target.value }))}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" placeholder="https://..." />
                     </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Category</label>
+                        <select value={form.category} onChange={e => setForm((p: Record<string, any>) => ({ ...p, category: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm">
+                            <option value="Spiritual">Spiritual</option>
+                            <option value="Wildlife">Wildlife</option>
+                            <option value="Heritage">Heritage</option>
+                            <option value="Nature">Nature</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Route</label>
+                        <input type="text" value={form.route} onChange={e => setForm((p: Record<string, any>) => ({ ...p, route: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" placeholder="e.g. Patna → Bodh Gaya" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Rating</label>
+                        <input type="number" step="0.1" value={form.rating} onChange={e => setForm((p: Record<string, any>) => ({ ...p, rating: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Description</label>
+                        <textarea rows={3} value={form.description} onChange={e => setForm((p: Record<string, any>) => ({ ...p, description: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" placeholder="Package description..." />
+                    </div>
+
+                    <div className="md:col-span-2 bg-orange-50 p-4 rounded-xl border border-orange-100 mb-2">
+                        <h4 className="text-sm font-bold text-orange-800 mb-3 uppercase tracking-wider">Highlights (Card Details)</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-orange-700 uppercase mb-1">Stays</label>
+                                <input type="text" value={form.stay_details} onChange={e => setForm((p: Record<string, any>) => ({ ...p, stay_details: e.target.value }))}
+                                    className="w-full px-4 py-2 rounded-lg border border-orange-200 focus:border-orange-500 outline-none transition text-sm" placeholder="e.g. Premium Hotel Stay" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-orange-700 uppercase mb-1">Transport</label>
+                                <input type="text" value={form.transport_details} onChange={e => setForm((p: Record<string, any>) => ({ ...p, transport_details: e.target.value }))}
+                                    className="w-full px-4 py-2 rounded-lg border border-orange-200 focus:border-orange-500 outline-none transition text-sm" placeholder="e.g. AC Private Cab" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-orange-700 uppercase mb-1">Meals</label>
+                                <input type="text" value={form.meal_details} onChange={e => setForm((p: Record<string, any>) => ({ ...p, meal_details: e.target.value }))}
+                                    className="w-full px-4 py-2 rounded-lg border border-orange-200 focus:border-orange-500 outline-none transition text-sm" placeholder="e.g. Breakfast & Dinner Incl." />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Detailed Itinerary */}
+                    <div className="md:col-span-2">
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="block text-xs font-bold text-gray-500 uppercase">Detailed Itinerary</label>
+                            <button type="button" onClick={() => {
+                                const newItinerary = [...(form.itinerary || [])];
+                                newItinerary.push({ day: newItinerary.length + 1, title: '', description: '', meals: '' });
+                                setForm((p: Record<string, any>) => ({ ...p, itinerary: newItinerary }));
+                            }} className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded hover:bg-orange-100">
+                                + Add Day
+                            </button>
+                        </div>
+                        <div className="space-y-3">
+                            {(form.itinerary || []).map((dayData: any, idx: number) => (
+                                <div key={idx} className="bg-gray-50 p-4 rounded-xl border border-gray-100 relative">
+                                    <button type="button" onClick={() => {
+                                        const newItinerary = [...(form.itinerary || [])];
+                                        newItinerary.splice(idx, 1);
+                                        // Update day numbers
+                                        newItinerary.forEach((d, i) => d.day = i + 1);
+                                        setForm((p: Record<string, any>) => ({ ...p, itinerary: newItinerary }));
+                                    }} className="absolute top-2 right-2 text-red-400 hover:text-red-600">
+                                        <i className="fas fa-times"></i>
+                                    </button>
+                                    <div className="font-bold text-sm mb-2 text-gray-700">Day {dayData.day}</div>
+                                    <div className="grid grid-cols-1 gap-3">
+                                        <input type="text" value={dayData.title} onChange={e => {
+                                            const newItinerary = [...(form.itinerary || [])];
+                                            newItinerary[idx].title = e.target.value;
+                                            setForm((p: Record<string, any>) => ({ ...p, itinerary: newItinerary }));
+                                        }} className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-orange-500 outline-none text-sm" placeholder="Title (e.g., Arrival in Patna)" />
+                                        
+                                        <textarea rows={2} value={dayData.description} onChange={e => {
+                                            const newItinerary = [...(form.itinerary || [])];
+                                            newItinerary[idx].description = e.target.value;
+                                            setForm((p: Record<string, any>) => ({ ...p, itinerary: newItinerary }));
+                                        }} className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-orange-500 outline-none text-sm" placeholder="Activities for the day..." />
+                                        
+                                        <input type="text" value={dayData.meals} onChange={e => {
+                                            const newItinerary = [...(form.itinerary || [])];
+                                            newItinerary[idx].meals = e.target.value;
+                                            setForm((p: Record<string, any>) => ({ ...p, itinerary: newItinerary }));
+                                        }} className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-orange-500 outline-none text-sm" placeholder="Meals (e.g., Breakfast & Dinner)" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                     <div className="md:col-span-2 flex items-center gap-3">
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" checked={form.is_published} onChange={e => setForm((p: Record<string, any>) => ({ ...p, is_published: e.target.checked }))} className="sr-only peer" />
@@ -222,6 +331,26 @@ export default function AdminCMSPage() {
                         <input type="url" value={form.hero_image_url} onChange={e => setForm((p: Record<string, any>) => ({ ...p, hero_image_url: e.target.value }))}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" placeholder="https://..." />
                     </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Description</label>
+                        <textarea rows={3} value={form.description} onChange={e => setForm((p: Record<string, any>) => ({ ...p, description: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" placeholder="Detailed description..." />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Price / Avg Cost</label>
+                        <input type="text" value={form.price} onChange={e => setForm((p: Record<string, any>) => ({ ...p, price: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" placeholder="e.g. ₹1,500" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Rating</label>
+                        <input type="number" step="0.1" value={form.rating} onChange={e => setForm((p: Record<string, any>) => ({ ...p, rating: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Review Count</label>
+                        <input type="number" value={form.review_count} onChange={e => setForm((p: Record<string, any>) => ({ ...p, review_count: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" />
+                    </div>
                     <div className="md:col-span-2 flex items-center gap-3">
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" checked={form.is_published} onChange={e => setForm((p: Record<string, any>) => ({ ...p, is_published: e.target.checked }))} className="sr-only peer" />
@@ -264,6 +393,26 @@ export default function AdminCMSPage() {
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Cover Image URL</label>
                     <input type="url" value={form.cover_image_url} onChange={e => setForm((p: Record<string, any>) => ({ ...p, cover_image_url: e.target.value }))}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" placeholder="https://..." />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Badge</label>
+                    <input type="text" value={form.badge} onChange={e => setForm((p: Record<string, any>) => ({ ...p, badge: e.target.value }))}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" placeholder="e.g. Superhost, Popular" />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Rating</label>
+                    <input type="number" step="0.1" value={form.avg_rating} onChange={e => setForm((p: Record<string, any>) => ({ ...p, avg_rating: e.target.value }))}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Review Count</label>
+                    <input type="number" value={form.review_count} onChange={e => setForm((p: Record<string, any>) => ({ ...p, review_count: e.target.value }))}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" />
+                </div>
+                <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Amenities (comma separated)</label>
+                    <input type="text" value={form.amenities?.join(', ') || ''} onChange={e => setForm((p: Record<string, any>) => ({ ...p, amenities: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean) }))}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition text-sm" placeholder="e.g. Wifi, Kitchen, AC" />
                 </div>
             </div>
         );
